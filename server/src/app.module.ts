@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UsersModule } from './users/users.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { FacedataModule } from './facedata/facedata.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { UsersModule } from './users/users.module';
       autoLoadEntities: true,
     }),
     UsersModule,
+    AttendanceModule,
+    FacedataModule,
   ],
   controllers: [AppController],
   providers: [AppService],
