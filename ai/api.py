@@ -1,12 +1,16 @@
 # api.py
-from fastapi import FastAPI, HTTPException,Request
+from fastapi import FastAPI, HTTPException,Request,UploadFile,File
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from processing import load_known_face, tracking_face
 from pydantic import BaseModel
 from compress  import compress_all_person,compress_single_image
-from pydantic import BaseModel
+from fastapi import FastAPI, UploadFile, File
 import cv2
+from fastapi.responses import JSONResponse
+import cv2
+import numpy as np
+import base64
 
 app = FastAPI()
 
@@ -42,21 +46,32 @@ def root():
 #     return {"detected_faces": result[1]}
 
 @app.post("/track_faces")
-async def track_faces(request: Request):
-    body = await request.body()  # รับ blob (bytes) ของ jpeg
-    np_array = np.frombuffer(body, np.uint8)  # แปลง bytes เป็น numpy array
-    frame = cv2.imdecode(np_array, cv2.IMREAD_COLOR)  # decode jpeg เป็น OpenCV image
-    
-    if frame is None:
-        return {"error": "Could not decode image"}
-    
-    result = tracking_face(frame)  # ส่ง frame ไปประมวลผลแทน video_path
-    return {"detected_faces": result}
+async def track_faces(file: UploadFile = File(...)):
+    content = await file.read()
 
-@app.get("/tf")
-def track_faces():
-    result = tracking_face(video_path)
-    return {"detected_faces": result[1]}
+    print(f"Filename: {file.filename}")
+    print(f"Content type: {file.content_type}")
+
+    frame = None
+
+    if file.content_type == "image/jpeg":
+        nparr = np.frombuffer(content, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    if frame is None:
+        return {"error": "Failed to decode image"}
+      
+    # cv2.imwrite("/Users/natthanichasamanchat/Documents/ART/Development/GitHub/FaceID-Office/ai/result/output.jpeg", frame)
+    
+    result = tracking_face(frame)
+    return {"message": "Face tracking completed.", "result": result}
+    
+    
+    
+# @app.get("/tf")
+# def track_faces():
+#     result = tracking_face(video_path)
+#     return {"detected_faces": result[1]}
 
 
 class CompressRequest(BaseModel):

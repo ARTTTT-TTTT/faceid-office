@@ -102,112 +102,101 @@ def rotation_camera(frame,direction=None):
 
 def tracking_face(video_path):
     known_faces = load_known_face(known_faces_dir)
-    cap = cv2.VideoCapture(video_path)
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        # cropped_images = []
+    # cap = cv2.VideoCapture(video_path)
 
-        # === ROTAION ===
-        frame = rotation_camera(frame,'F')
+    # ==== Prediction ====
+    results = model.predict(source=video_path, conf=confidence_threshold, verbose=False)
+    detections = results[0]
+    # annotated_frame = detections.plot()
 
-        # ==== Prediction ====
-        results = model.predict(source=frame, conf=confidence_threshold, verbose=False)
-        detections = results[0]
-        # annotated_frame = detections.plot()
+    # ==== Detected ====
+    if not detections.boxes:
+        return "No faces detected in this frame."
+    else:
+        track_current_frame = []
+        for box in detections.boxes:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            cropped = video_path[y1:y2, x1:x2]
+            
+            # center
+            center_x = (x1 + x2) // 2
+            center_y = (y1 + y2) // 2
+            
+            # แปลง cropped face เป็น embedding
+            vector_image = image_embedding(cropped_image=cropped)
+            # print('vec:',vector_image)
+            # เก็บ distance per person, per image
+            person_distances = {}
 
-            # ==== Detected ====
-        if not detections.boxes:
-            print("No faces detected in this frame.")
-        else:
-            track_current_frame = []
-            for box in detections.boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cropped = frame[y1:y2, x1:x2]
+            for person_folder, person_faces in known_faces.items():
+                distances = []
+                for name, known_embedding in person_faces.items():
+                    distance = cosine(vector_image, known_embedding)
+                    distances.append((name, distance))
+                min_name, min_dist = min(distances, key=lambda x: x[1])
+                person_distances[person_folder] = (min_name, min_dist)
+
+            #best_folder ชื่อคน best_name ชื่อ files ที่อยู่ใน Folder
+            best_folder, (best_distance) = min(person_distances.items(), key=lambda x: x[1][1])
+            if best_distance < 0.25:
+                track_current_frame.append(best_folder)
+                # name_result = best_folder
+                # print('Best Folder : ', best_folder, 'best_distance :', best_distance, 'center_x :', center_x , 'center_y:', center_y)
+                # ==== UPDATE track_old_face ====
+
+                found = False
+                for person in track_old_face:
+                    if person["name_person"] == best_folder:
+                        person["life_time"] += 1
+                        found = True
+                        break
+
+                if not found:
+                    track_old_face.append({
+                        "name_person": best_folder,
+                        "time_found": time.time(),
+                        "life_time": 1
+                    })
+                results_path = r"results"+f"/{best_folder}"
+                if not os.path.exists(results_path):
+                    print("Folder ยังไม่มี! จะสร้างใหม่ให้...")
+                    os.makedirs(os.path.join(current_directory,results_path))
+                else:
+                    print("Folder มีอยู่แล้ว!")
+
+                best_result_path = os.path.join(results_path, best_folder) #name file
                 
-                # center
-                center_x = (x1 + x2) // 2
-                center_y = (y1 + y2) // 2
+                found_day = datetime.now().strftime('%Y-%m-%d')
+                found_time = datetime.now().strftime('%H-%M')
+
+                picture_path = f"{best_result_path}_{found_time}_{found_day}"
+                if os.path.exists(f"{picture_path}.jpg"):
+                    print("picture_path",picture_path)
+                    cv2.imwrite(f'{picture_path}.jpg', cropped)
+                else:
+                    cv2.imwrite(f'{picture_path}.jpg', cropped)
+                new_update_log = f"name_person: {best_folder} ป/ด/ว: {found_day} เวลา(ชม/นาที): {found_time}"
+                if os.path.exists(f"{best_result_path}.txt"):
+                    with open(f"{best_result_path}.txt", 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        last = lines[-1].strip() if lines else ''  # ใช้ strip() เพื่อให้ลบการเว้นช่องว่างหรือการขึ้นบรรทัดใหม่
+                        print("last:", type(last))
+                        print("new_update_log:", type(new_update_log))
+                        print("check :",last == new_update_log)
+                        if f"{last}" == new_update_log:
+                            print("overwrite")  # ถ้าบรรทัดสุดท้ายเหมือนกับใหม่ก็จะไม่เขียนซ้ำ
+                        else:
+                            with open(f"{best_result_path}.txt", 'a', encoding='utf-8') as f:
+                                f.write(f"{new_update_log}\n")
+                else:
+                    with open(f"{best_result_path}.txt", 'w', encoding='utf-8') as f:
+                        f.write(f"{new_update_log}\n")
+                # ==== Debug print ====
+                print("Faces detected in this frame:")
+                for name in track_current_frame:
+                  #print(f"  {name}")
+                  return name
+                    
                 
-                # แปลง cropped face เป็น embedding
-                vector_image = image_embedding(cropped_image=cropped)
-                # print('vec:',vector_image)
-                # เก็บ distance per person, per image
-                person_distances = {}
-
-                for person_folder, person_faces in known_faces.items():
-                    distances = []
-                    for name, known_embedding in person_faces.items():
-                        distance = cosine(vector_image, known_embedding)
-                        distances.append((name, distance))
-                    min_name, min_dist = min(distances, key=lambda x: x[1])
-                    person_distances[person_folder] = (min_name, min_dist)
-
-                #best_folder ชื่อคน best_name ชื่อ files ที่อยู่ใน Folder
-                best_folder, (best_name, best_distance) = min(person_distances.items(), key=lambda x: x[1][1])
-                if best_distance < 0.25:
-                    track_current_frame.append(best_folder)
-                    # name_result = best_folder
-                    # print('Best Folder : ', best_folder, 'best_distance :', best_distance, 'center_x :', center_x , 'center_y:', center_y)
-                    # ==== UPDATE track_old_face ====
-
-                    found = False
-                    for person in track_old_face:
-                        if person["name_person"] == best_folder:
-                            person["life_time"] += 1
-                            found = True
-                            break
-
-                    if not found:
-                        track_old_face.append({
-                            "name_person": best_folder,
-                            "time_found": time.time(),
-                            "life_time": 1
-                        })
-                    results_path = r"result"+f"\{best_folder}"
-                    if not os.path.exists(results_path):
-                        print("Folder ยังไม่มี! จะสร้างใหม่ให้...")
-                        os.makedirs(os.path.join(current_directory,results_path))
-                    else:
-                        print("Folder มีอยู่แล้ว!")
-
-                    best_result_path = os.path.join(results_path, best_folder) #name file
-                    
-                    found_day = datetime.now().strftime('%Y-%m-%d')
-                    found_time = datetime.now().strftime('%H-%M')
-
-                    picture_path = f"{best_result_path}_{found_time}_{found_day}"
-                    if os.path.exists(f"{picture_path}.jpg"):
-                        print("picture_path",picture_path)
-                        cv2.imwrite(f'{picture_path}.jpg', cropped)
-                    else:
-                        cv2.imwrite(f'{picture_path}.jpg', cropped)
-                    new_update_log = f"name_person: {best_folder} ป/ด/ว: {found_day} เวลา(ชม/นาที): {found_time}"
-                    if os.path.exists(f"{best_result_path}.txt"):
-                        with open(f"{best_result_path}.txt", 'r', encoding='utf-8') as f:
-                            lines = f.readlines()
-                            last = lines[-1].strip() if lines else ''  # ใช้ strip() เพื่อให้ลบการเว้นช่องว่างหรือการขึ้นบรรทัดใหม่
-                            print("last:", type(last))
-                            print("new_update_log:", type(new_update_log))
-                            print("check :",last == new_update_log)
-                            if f"{last}" == new_update_log:
-                                print("overwrite")  # ถ้าบรรทัดสุดท้ายเหมือนกับใหม่ก็จะไม่เขียนซ้ำ
-                            else:
-                                with open(f"{best_result_path}.txt", 'a', encoding='utf-8') as f:
-                                    f.write(f"{new_update_log}\n")
-                    else:
-                        with open(f"{best_result_path}.txt", 'w', encoding='utf-8') as f:
-                            f.write(f"{new_update_log}\n")
-                    # ==== Debug print ====
-                    print("Faces detected in this frame:")
-                    for name in track_current_frame:
-                        print(f"  {name}")
-                    
-            print(f"{track_current_frame}")
-            print("=======================================================")
-            return track_current_frame
-
-    print("name all :",track_old_face ,"\n")
-    cap.release()
-    cv2.destroyAllWindows()
+        print(f"{track_current_frame}")
+        print("=======================================================")
