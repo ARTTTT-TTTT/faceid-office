@@ -8,6 +8,8 @@ import logger from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+import { sendImageForDetection } from '@/app/api/detection/route';
+
 export const CameraStream: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -40,8 +42,11 @@ export const CameraStream: React.FC = () => {
 
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const imageDataURL = canvas.toDataURL('image/jpeg');
-        analyzeFace(imageDataURL);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            analyzeFace(blob);
+          }
+        }, 'image/jpeg');
       }, 1000 / 1); // 1 FPS
 
       setIsCameraOn(true);
@@ -77,8 +82,8 @@ export const CameraStream: React.FC = () => {
     }
   };
 
-  const analyzeFace = (imageBase64: string) => {
-    console.log('[analyzeFace] Frame captured:', imageBase64.slice(0, 50));
+  const analyzeFace = (imageBlob: Blob) => {
+    sendImageForDetection(imageBlob);
   };
 
   useEffect(() => {
