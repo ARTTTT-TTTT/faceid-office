@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register พนักงานใหม่</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+        background-color: #f4f6f8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .register-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 400px;
+      }
+      h2 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group input[type="tel"],
+      .form-group input[type="file"] {
+        width: calc(100% - 12px);
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 1rem;
+      }
+      .face-data-section {
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .face-data-section p {
+        color: #777;
+        margin-bottom: 10px;
+      }
+      .face-capture-controls button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      .face-capture-controls button:hover {
+        background-color: #0056b3;
+      }
+      button[type="submit"] {
+        background-color: #28a745;
+        color: white;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        width: 100%;
+        margin-top: 20px;
+      }
+      button[type="submit"]:hover {
+        background-color: #1e7e34;
+      }
+      .error-message {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="register-container">
+      <h2>ลงทะเบียนพนักงานใหม่</h2>
+      <form id="registrationForm">
+        <div class="form-group">
+          <label for="name">ชื่อ:</label>
+          <input type="text" id="name" name="name" required />
+          <div class="error-message" id="nameError"></div>
+        </div>
+        <div class="form-group">
+          <label for="email">อีเมล:</label>
+          <input type="email" id="email" name="email" required />
+          <div class="error-message" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label for="phone">เบอร์โทรศัพท์:</label>
+          <input type="tel" id="phone" name="phone" />
+          <div class="error-message" id="phoneError"></div>
+        </div>
+        <div class="form-group">
+          <label for="profile_image">รูปภาพโปรไฟล์:</label>
+          <input type="file" id="profile_image" name="profile_image" accept="image/*" required />
+          <div class="error-message" id="imageError"></div>
+        </div>
+
+        <div class="face-data-section">
+          <p>เก็บข้อมูลใบหน้า (10 ภาพ):</p>
+          <p class="face-instruction">
+            Admin จะต้องดำเนินการเก็บภาพใบหน้าพนักงาน 10 ครั้งผ่านกล้อง (ส่วนนี้จะมีการทำงานร่วมกับ
+            JavaScript และ Web API)
+          </p>
+          <div class="face-capture-controls">
+            <button type="button" id="startFaceCapture">เริ่มเก็บข้อมูลใบหน้า</button>
+          </div>
+          <div class="error-message" id="faceCaptureError"></div>
+        </div>
+
+        <button type="submit">บันทึกพนักงาน</button>
+      </form>
+    </div>
+
+    <script>
+      const registrationForm = document.getElementById("registrationForm");
+      const startFaceCaptureButton = document.getElementById("startFaceCapture");
+      const nameInput = document.getElementById("name");
+      const emailInput = document.getElementById("email");
+      const imageInput = document.getElementById("profile_image");
+      const nameError = document.getElementById("nameError");
+      const emailError = document.getElementById("emailError");
+      const imageError = document.getElementById("imageError");
+      const faceCaptureError = document.getElementById("faceCaptureError");
+
+      // ฟังก์ชันง่ายๆ สำหรับตรวจสอบความถูกต้องของฟอร์ม (Client-side)
+      function validateForm() {
+        let isValid = true;
+
+        if (nameInput.value.trim() === "") {
+          nameError.textContent = "กรุณากรอกชื่อ";
+          isValid = false;
+        } else {
+          nameError.textContent = "";
+        }
+
+        if (emailInput.value.trim() === "") {
+          emailError.textContent = "กรุณากรอกอีเมล";
+          isValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(emailInput.value)) {
+          emailError.textContent = "รูปแบบอีเมลไม่ถูกต้อง";
+          isValid = false;
+        } else {
+          emailError.textContent = "";
+        }
+
+        if (imageInput.files.length === 0) {
+          imageError.textContent = "กรุณาอัปโหลดรูปภาพโปรไฟล์";
+          isValid = false;
+        } else {
+          imageError.textContent = "";
+        }
+
+        // การตรวจสอบเพิ่มเติมสามารถเพิ่มได้
+
+        return isValid;
+      }
+
+      registrationForm.addEventListener("submit", function (event) {
+        event.preventDefault(); // ป้องกันการ Submit แบบปกติ
+        if (validateForm()) {
+          // ในระบบจริง: จะมีการส่งข้อมูลฟอร์มไปยัง Backend
+          alert("ข้อมูลพนักงานถูกส่งไปยังเซิร์ฟเวอร์แล้ว (จำลอง)");
+          // อาจมีการ Redirect ไปยังหน้าอื่นหลังจากลงทะเบียนสำเร็จ
+        }
+      });
+
+      startFaceCaptureButton.addEventListener("click", function () {
+        // ในระบบจริง: ส่วนนี้จะเริ่มกระบวนการเข้าถึงกล้อง
+        // แสดง UI สำหรับการเก็บภาพใบหน้า 10 ครั้ง
+        // และส่งข้อมูลภาพใบหน้าไปยัง Backend
+        alert("ระบบจะเริ่มกระบวนการเก็บข้อมูลใบหน้า (จำลอง)");
+        faceCaptureError.textContent = "กำลังรอการทำงานร่วมกับกล้อง...";
+        // หลังจากจำลองเสร็จสิ้นหรือเกิดข้อผิดพลาด:
+        setTimeout(() => {
+          faceCaptureError.textContent = ""; // ล้างข้อความ
+        }, 3000);
+      });
+    </script>
+  </body>
+</html>

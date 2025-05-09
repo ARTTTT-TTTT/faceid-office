@@ -2,8 +2,9 @@ import { Metadata } from 'next';
 
 import '@/styles/globals.css';
 
-import { siteConfig } from '@/constant/config';
+import { ThemeProvider } from '@/components/theme-provider';
 
+import { siteConfig } from '@/constant/config';
 // !STARTERCONF Change these default meta
 // !STARTERCONF Look at @/constant/config to change them
 export const metadata: Metadata = {
@@ -45,8 +46,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
-      <body>{children}</body>
+    <html lang='en' suppressHydrationWarning>
+      <head />
+      <body>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leave Management</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+        background-color: #f4f6f8;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .leave-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .leave-table th,
+      .leave-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      .leave-table th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+      }
+      .leave-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .action-buttons button {
+        background-color: #28a745;
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-right: 5px;
+      }
+      .action-buttons button.reject {
+        background-color: #dc3545;
+      }
+      .action-buttons button:hover {
+        opacity: 0.8;
+      }
+      .pending {
+        color: orange;
+        font-weight: bold;
+      }
+      .approved {
+        color: green;
+        font-weight: bold;
+      }
+      .rejected {
+        color: red;
+        font-weight: bold;
+      }
+      .no-data {
+        text-align: center;
+        color: #777;
+        font-style: italic;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>จัดการคำขอลางาน</h1>
+      <table class="leave-table" id="leaveManagementTable">
+        <thead>
+          <tr>
+            <th>ชื่อพนักงาน</th>
+            <th>ประเภทการลา</th>
+            <th>วันที่เริ่มต้น</th>
+            <th>วันที่สิ้นสุด</th>
+            <th>เหตุผล</th>
+            <th>สถานะ</th>
+            <th>การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody id="leaveRequests"></tbody>
+      </table>
+      <p class="no-data" id="noDataMessage" style="display: none">ไม่มีคำขอลางาน</p>
+    </div>
+
+    <script>
+      const leaveRequestsTableBody = document.getElementById("leaveRequests");
+      const noDataMessage = document.getElementById("noDataMessage");
+      const leaveManagementTable = document.getElementById("leaveManagementTable");
+
+      // ข้อมูลจำลองคำขอลางาน (ในระบบจริงจะดึงจาก Backend)
+      const leaveRequestsData = [
+        {
+          id: 1,
+          employee: "สมชาย ใจดี",
+          type: "ลาพักร้อน",
+          start_date: "2025-05-05",
+          end_date: "2025-05-07",
+          reason: "พักผ่อนประจำปี",
+          status: "pending",
+        },
+        {
+          id: 2,
+          employee: "สมหญิง เก่งมาก",
+          type: "ลาป่วย",
+          start_date: "2025-05-10",
+          end_date: "2025-05-10",
+          reason: "ปวดศีรษะ",
+          status: "approved",
+        },
+        {
+          id: 3,
+          employee: "ธนากร มีชัย",
+          type: "ลากิจ",
+          start_date: "2025-05-15",
+          end_date: "2025-05-16",
+          reason: "ทำธุระส่วนตัว",
+          status: "pending",
+        },
+        {
+          id: 4,
+          employee: "นารี สุขใจ",
+          type: "ลาป่วย",
+          start_date: "2025-05-20",
+          end_date: "2025-05-22",
+          reason: "ไม่สบาย",
+          status: "rejected",
+        },
+      ];
+
+      function loadLeaveRequests() {
+        leaveRequestsTableBody.innerHTML = "";
+        noDataMessage.style.display = "none";
+        leaveManagementTable.style.display = "table";
+
+        if (leaveRequestsData.length > 0) {
+          leaveRequestsData.forEach((request) => {
+            const row = leaveRequestsTableBody.insertRow();
+            const employeeCell = row.insertCell();
+            const typeCell = row.insertCell();
+            const startDateCell = row.insertCell();
+            const endDateCell = row.insertCell();
+            const reasonCell = row.insertCell();
+            const statusCell = row.insertCell();
+            const actionsCell = row.insertCell();
+
+            employeeCell.textContent = request.employee;
+            typeCell.textContent = request.type;
+            startDateCell.textContent = request.start_date;
+            endDateCell.textContent = request.end_date;
+            reasonCell.textContent = request.reason;
+            statusCell.textContent = request.status.toUpperCase();
+            statusCell.classList.add(request.status); // เพิ่ม class ตามสถานะ (pending, approved, rejected)
+
+            const actionsDiv = document.createElement("div");
+            actionsDiv.classList.add("action-buttons");
+
+            if (request.status === "pending") {
+              const approveButton = document.createElement("button");
+              approveButton.textContent = "อนุมัติ";
+              approveButton.addEventListener("click", () => approveLeaveRequest(request.id));
+              actionsDiv.appendChild(approveButton);
+
+              const rejectButton = document.createElement("button");
+              rejectButton.textContent = "ไม่อนุมัติ";
+              rejectButton.classList.add("reject");
+              rejectButton.addEventListener("click", () => rejectLeaveRequest(request.id));
+              actionsDiv.appendChild(rejectButton);
+            } else {
+              actionsDiv.textContent = "-";
+            }
+
+            actionsCell.appendChild(actionsDiv);
+          });
+        } else {
+          leaveManagementTable.style.display = "none";
+          noDataMessage.style.display = "block";
+        }
+      }
+
+      function approveLeaveRequest(requestId) {
+        // ในระบบจริง: ส่งคำร้องไปยัง Backend API เพื่ออนุมัติคำขอลางาน ID นี้
+        alert(`อนุมัติคำขอลางาน ID: ${requestId} แล้ว (จำลอง)`);
+        // หลังจากอนุมัติสำเร็จ ควรจะมีการอัปเดต UI (เช่น โหลดข้อมูลใหม่)
+        loadLeaveRequests();
+      }
+
+      function rejectLeaveRequest(requestId) {
+        // ในระบบจริง: ส่งคำร้องไปยัง Backend API เพื่อไม่อนุมัติคำขอลางาน ID นี้
+        alert(`ไม่อนุมัติคำขอลางาน ID: ${requestId} แล้ว (จำลอง)`);
+        // หลังจากไม่อนุมัติสำเร็จ ควรจะมีการอัปเดต UI (เช่น โหลดข้อมูลใหม่)
+        loadLeaveRequests();
+      }
+
+      // โหลดคำขอลางานเมื่อหน้าเว็บโหลด
+      loadLeaveRequests();
+    </script>
+  </body>
+</html>
