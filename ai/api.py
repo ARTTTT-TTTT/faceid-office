@@ -19,9 +19,11 @@ video_path = r"D:\Project\FastAPI\FaceDetectedAPI\data\MotherPun2.mp4"
 def root():
     return {"message": "Face Recognition API is running"}
 
-@app.get("/track_faces")
-def track_faces():
-    result = tracking_face(video_path)
+class VideoRequest(BaseModel):
+    video_path: str #base64
+@app.post("/track_faces")
+def track_faces(request:VideoRequest):
+    result = tracking_face(request.video_path)
     return {"detected_faces": result[1]}
 
 class CompressRequest(BaseModel):
