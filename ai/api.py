@@ -26,6 +26,12 @@ def track_faces(request:VideoRequest):
     result = tracking_face(request.video_path)
     return {"detected_faces": result[1]}
 
+@app.get("/tf")
+def track_faces():
+    result = tracking_face(video_path)
+    return {"detected_faces": result[1]}
+
+
 class CompressRequest(BaseModel):
     input_image_dir: str
     output_npy_dir: str

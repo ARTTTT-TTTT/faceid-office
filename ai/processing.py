@@ -165,10 +165,10 @@ def tracking_face(video_path):
                             "time_found": time.time(),
                             "life_time": 1
                         })
-                    results_path = r".\result"+f"\{best_folder}"
+                    results_path = r"result"+f"\{best_folder}"
                     if not os.path.exists(results_path):
                         print("Folder ยังไม่มี! จะสร้างใหม่ให้...")
-                        os.makedirs(current_directory,results_path)
+                        os.makedirs(os.path.join(current_directory,results_path))
                     else:
                         print("Folder มีอยู่แล้ว!")
 
