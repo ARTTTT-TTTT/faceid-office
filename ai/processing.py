@@ -4,7 +4,6 @@ from ultralytics import YOLO
 import numpy as np
 from facenet_pytorch import InceptionResnetV1
 from PIL import Image
-import torch
 from torchvision import transforms
 from scipy.spatial.distance import cosine
 import time
