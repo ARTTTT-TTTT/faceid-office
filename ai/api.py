@@ -1,11 +1,11 @@
 # api.py
-from fastapi import FastAPI, HTTPException
-from numpy import compress
+from fastapi import FastAPI, HTTPException,Request, UploadFile, File
+import numpy as np
 from processing import load_known_face, tracking_face
 from pydantic import BaseModel
 from compress  import compress_all_person,compress_single_image
 from pydantic import BaseModel
-
+import cv2
 app = FastAPI()
 
 # config
@@ -19,12 +19,23 @@ video_path = r"D:\Project\FastAPI\FaceDetectedAPI\data\MotherPun2.mp4"
 def root():
     return {"message": "Face Recognition API is running"}
 
-class VideoRequest(BaseModel):
-    video_path: str #base64
+# @app.post("/track_faces")
+# async def track_faces(file: UploadFile = File(...)):
+#     body = await request.body()
+#     result = tracking_face(body)
+#     return {"detected_faces": result[1]}
+
 @app.post("/track_faces")
-def track_faces(request:VideoRequest):
-    result = tracking_face(request.video_path)
-    return {"detected_faces": result[1]}
+async def track_faces(request: Request):
+    body = await request.body()  # รับ blob (bytes) ของ jpeg
+    np_array = np.frombuffer(body, np.uint8)  # แปลง bytes เป็น numpy array
+    frame = cv2.imdecode(np_array, cv2.IMREAD_COLOR)  # decode jpeg เป็น OpenCV image
+    
+    if frame is None:
+        return {"error": "Could not decode image"}
+    
+    result = tracking_face(frame)  # ส่ง frame ไปประมวลผลแทน video_path
+    return {"detected_faces": result}
 
 @app.get("/tf")
 def track_faces():
