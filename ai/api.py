@@ -1,12 +1,28 @@
 # api.py
-from fastapi import FastAPI, HTTPException,Request, UploadFile, File
+from fastapi import FastAPI, HTTPException,Request
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from processing import load_known_face, tracking_face
 from pydantic import BaseModel
 from compress  import compress_all_person,compress_single_image
 from pydantic import BaseModel
 import cv2
+
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",
+]
+
+# !DEV ONLY
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 
 # config
 # known_faces_dir = r'D:\Project\FastAPI\FaceDetectedAPI\data\person_npy'
