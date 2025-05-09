@@ -25,7 +25,21 @@ video_path7 = r"D:\Project\FaceDetect\.venv\data\MotherPun2.mp4"
 video_path8 = r"D:\Project\FaceDetect\.venv\data\face4.mp4"
 
 # ==== Load known faces ====
-known_faces_dir = r'D:\Project\FaceDetect\.venv\data\person_npy'
+# known_faces_dir = r'model_dir\data\person_npy'
+
+# path ของโฟลเดอร์ที่ไฟล์นี้อยู่
+
+current_directory = os.getcwd()
+
+# ตรวจสอบว่าโปรแกรมทำงานอยู่ที่ไหน
+
+print(f"Current Directory: {current_directory}")
+
+
+# path ไปยัง model/
+model_dir = os.path.join(current_directory, 'models',"yolov11l-face.pt")
+known_faces_dir = os.path.join(current_directory, 'data',"person_npy")
+
 
 def load_known_face(known_faces_dir) :
     known_faces = {}
@@ -44,7 +58,7 @@ def load_known_face(known_faces_dir) :
     return known_faces
 
 # ==== Load models ====
-model = YOLO(r"D:\Project\FaceDetect\.venv\model\yolov11l-face.pt")
+model = YOLO(model_dir)
 model_face = InceptionResnetV1(pretrained='vggface2').eval()
 
 # ===  define  ===
@@ -152,10 +166,10 @@ def tracking_face(video_path):
                             "time_found": time.time(),
                             "life_time": 1
                         })
-                    results_path = r"result"+f"\{best_folder}"
+                    results_path = r".\result"+f"\{best_folder}"
                     if not os.path.exists(results_path):
                         print("Folder ยังไม่มี! จะสร้างใหม่ให้...")
-                        os.makedirs(results_path)
+                        os.makedirs(current_directory,results_path)
                     else:
                         print("Folder มีอยู่แล้ว!")
 
