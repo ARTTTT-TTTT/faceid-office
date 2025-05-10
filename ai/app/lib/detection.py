@@ -88,7 +88,8 @@ def tracking_face(video_path):
                 person_distances[person_folder] = (min_name, min_dist)
 
             #best_folder ชื่อคน best_name ชื่อ files ที่อยู่ใน Folder
-            best_folder, (best_distance) = min(person_distances.items(), key=lambda x: x[1][1])
+            best_folder, (best_name, best_distance) = min(person_distances.items(), key=lambda x: x[1][1])
+            # print(best_distance,type(best_distance))
             if best_distance < 0.25:
                 track_current_frame.append(best_folder)
                 
@@ -99,15 +100,11 @@ def tracking_face(video_path):
                 
                 for person in track_old_face:
                     if person["name_person"] == best_folder:
-                        person["life_time"] += 1
-                        found = True
                         break
 
                 if not found:
                     track_old_face.append({
                         "name_person": best_folder,
-                        "time_found": time.time(),
-                        "life_time": 1
                     })
                     
                 results_path = r"results"+f"/{best_folder}"

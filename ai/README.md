@@ -93,10 +93,16 @@ poetry env info --path
 
 ## 🚀 Compile and run 🚀
 
-#### development
+#### 🧪 development
 
 ```bash
-poetry run fastapi dev api.py
+poetry run fastapi dev
+```
+
+#### 🚀 production
+
+```bash
+poetry run fastapi run
 ```
 
 ## 📚 Documentation 📚
