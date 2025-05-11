@@ -7,3 +7,4 @@ db = client[settings.MONGO_DB_NAME]
 
 users_collection = db[settings.MONGO_DB_USERS_COLLECTION]
 user_logs_collection = db[settings.MONGO_DB_USER_LOGS_COLLECTION]
+settings_collection = db[settings.MONGO_DB_SETTING_COLLECTION]

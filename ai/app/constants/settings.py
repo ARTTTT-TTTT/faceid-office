@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     MONGO_DB_NAME: str = "FaceID-Office"
     MONGO_DB_USERS_COLLECTION: str = "users"
     MONGO_DB_USER_LOGS_COLLECTION: str = "user_logs"
+    MONGO_DB_SETTING_COLLECTION: str = "setting"
     
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
