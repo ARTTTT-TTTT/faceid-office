@@ -3,6 +3,12 @@ from app.database.redis import redis_client
 from app.database.mongoDB import user_logs_collection
 from app.models.user_log import UserLogCreate, UserLogStatus
 
+# !FEATURE: 0.STOP TIME AND CLEAR CACHE 
+# !FEATURE: 1.START TIME LOGGING USER 
+# !FEATURE: 2.(OPTIONAL)PAUSE TIME LOGGING USER (ไม่เคลียร์แคช) 
+# !FEATURE: 3.TIMEOUT STOP TIME CLEAR CACHE (NO RESTART) => START TIME LOGGING USER 
+# !FEATURE: 0.STOP TIME AND CLEAR CACHE 
+
 def save_user_log(name: str, status: UserLogStatus) -> bool:
     try:
         log = UserLogCreate(name=name, status=status)
