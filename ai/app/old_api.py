@@ -2,9 +2,9 @@
 from fastapi import FastAPI, HTTPException,Request,UploadFile,File
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from app.lib.detection import load_known_face, tracking_face
+from app.services.detection import load_known_face, tracking_face
 from pydantic import BaseModel
-from app.lib.compress  import compress_all_person,compress_single_image
+from app.services.compress  import compress_all_person,compress_single_image
 from fastapi import FastAPI, UploadFile, File
 import cv2
 from fastapi.responses import JSONResponse
