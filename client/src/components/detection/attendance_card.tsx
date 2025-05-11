@@ -9,12 +9,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-export const AttendanceCard: React.FC<{
+interface AttendanceCardProps {
   name: string;
   image: string;
-  time: string;
+  timestamp: string;
   status: string;
-}> = ({ name, image, time, status }) => {
+}
+
+export const AttendanceCard: React.FC<AttendanceCardProps> = ({
+  name,
+  image,
+  timestamp,
+  status,
+}: AttendanceCardProps) => {
   return (
     <Card>
       <CardContent className='p-4 flex flex-col items-center'>
@@ -28,17 +35,21 @@ export const AttendanceCard: React.FC<{
           />
         </CardHeader>
         <CardTitle className='font-medium text-xl mt-4'>{name}</CardTitle>
-        <CardDescription className='mt-2'>{time}</CardDescription>
+        <CardDescription className='mt-2'>{timestamp}</CardDescription>
         <CardFooter
           className={`${
-            status === 'เข้างาน'
+            status === 'on_time'
               ? 'text-green-600 bg-green-100'
-              : status === 'สาย'
+              : status === 'late'
               ? 'text-yellow-600 bg-yellow-100'
               : 'bg-gray-100'
           } mt-2 px-2 py-1 rounded-xl text-sm`}
         >
-          {status}
+          {status === 'on_time'
+            ? 'เข้างาน'
+            : status === 'late'
+            ? 'สาย'
+            : 'ไม่พบข้อมูล'}
         </CardFooter>
       </CardContent>
     </Card>

@@ -1,22 +1,41 @@
+'use client';
+
+import { useState } from 'react';
+
+import logger from '@/lib/logger';
+
 import { AttendanceCard } from '@/components/detection/attendance_card';
 import { CameraStream } from '@/components/detection/camera_stream';
 
-import log_users from '@/__mocks__/log_users.json';
+import { fetchLatestUserLogs } from '@/app/api/detection/route';
+
+import { UserLog } from '@/types/user-log';
 
 export default function DetectionPage() {
+  const [logUsers, setLogUsers] = useState<UserLog[]>([]);
+
+  const handleUserDetected = async () => {
+    try {
+      const latestUsers = await fetchLatestUserLogs();
+      setLogUsers(latestUsers);
+    } catch (error) {
+      logger(error, '[DetectionPage] handleUserDetected');
+    }
+  };
+  
   return (
     <main className='grid grid-cols-5 grid-rows-[30%_70%] gap-4 p-4 pb-8 bg-gray-200 h-screen'>
-      {log_users.slice(0, 5).map((user) => (
+      {logUsers.slice(0, 5).map((user) => (
         <AttendanceCard
-          key={user.id}
+          key={user.index}
           name={user.name}
           image={user.image}
-          time={user.time}
+          timestamp={user.timestamp}
           status={user.status}
         />
       ))}
 
-      <CameraStream />
+      <CameraStream onUserDetected={handleUserDetected} />
     </main>
   );
 }
