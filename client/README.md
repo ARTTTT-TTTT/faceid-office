@@ -1,38 +1,38 @@
-# Quickstart
+# ✨ Quickstart ✨
 
-## Project setup
+## 🛠️ Project setup 🛠️
 
 ```bash
 pnpm install
 ```
 
-## Compile and run
+## 🚀 Compile and run 🚀
 
-#### development
+#### 🧪 development
 
 ```bash
 pnpm start
 ```
 
-#### watch mode
+#### 🔎 watch
 
 ```bash
 pnpm start:watch
 ```
 
-#### production mode
+#### 🚀 production
 
 ```bash
 pnpm start:prod
 ```
 
-## Delete node_modules
+## 🆑 Delete node_modules 🆑
 
 ```bash
 rm -rf node_modules pnpm-lock.yaml
 ```
 
-## Pre-Commit
+## 📚 Pre-Commit 📚
 
 - please read commitlint.config.js
 
