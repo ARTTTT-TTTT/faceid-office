@@ -1,10 +1,10 @@
 enum UserLogStatus {
-  SUCCESS = 'success',
-  ERROR = 'error',
+  ON_TIME = 'on_time',
+  LATE = 'late',
 }
 
 interface UserLog {
-  index: number;
+  id: string;
   name: string;
   image: string;
   timestamp: string;
@@ -12,3 +12,4 @@ interface UserLog {
 }
 
 export type { UserLog };
+export { UserLogStatus };

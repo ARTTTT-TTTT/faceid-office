@@ -22,18 +22,35 @@ export default function DetectionPage() {
       logger(error, '[DetectionPage] handleUserDetected');
     }
   };
-  
+
   return (
-    <main className='grid grid-cols-5 grid-rows-[30%_70%] gap-4 p-4 pb-8 bg-gray-200 h-screen'>
-      {logUsers.slice(0, 5).map((user) => (
-        <AttendanceCard
-          key={user.index}
-          name={user.name}
-          image={user.image}
-          timestamp={user.timestamp}
-          status={user.status}
-        />
-      ))}
+    <main
+      className={`grid grid-cols-5 gap-4 p-4 bg-gray-200 h-screen ${
+        logUsers.length > 0 && 'grid-rows-[30%_70%] pb-8'
+      }`}
+    >
+      {logUsers
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+        .slice(0, 5)
+        .map((user) => (
+          <AttendanceCard
+            key={user.id}
+            name={user.name}
+            image={user.image}
+            timestamp={new Date(user.timestamp).toLocaleString('th-TH', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })}
+            status={user.status}
+          />
+        ))}
 
       <CameraStream onUserDetected={handleUserDetected} />
     </main>

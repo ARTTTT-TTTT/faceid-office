@@ -9,11 +9,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
+import { UserLogStatus } from '@/types/user-log';
+
 interface AttendanceCardProps {
   name: string;
   image: string;
   timestamp: string;
-  status: string;
+  status: UserLogStatus;
 }
 
 export const AttendanceCard: React.FC<AttendanceCardProps> = ({
@@ -22,12 +24,14 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({
   timestamp,
   status,
 }: AttendanceCardProps) => {
+  image;
+
   return (
     <Card>
       <CardContent className='p-4 flex flex-col items-center'>
         <CardHeader className='w-24 h-24 relative'>
           <Image
-            src={image}
+            src='https://picsum.photos/id/1005/200/300'
             alt='Profile'
             sizes='100%'
             fill
@@ -38,16 +42,16 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({
         <CardDescription className='mt-2'>{timestamp}</CardDescription>
         <CardFooter
           className={`${
-            status === 'on_time'
+            status === UserLogStatus.ON_TIME
               ? 'text-green-600 bg-green-100'
-              : status === 'late'
+              : status === UserLogStatus.LATE
               ? 'text-yellow-600 bg-yellow-100'
               : 'bg-gray-100'
           } mt-2 px-2 py-1 rounded-xl text-sm`}
         >
-          {status === 'on_time'
+          {status === UserLogStatus.ON_TIME
             ? 'เข้างาน'
-            : status === 'late'
+            : status === UserLogStatus.LATE
             ? 'สาย'
             : 'ไม่พบข้อมูล'}
         </CardFooter>
