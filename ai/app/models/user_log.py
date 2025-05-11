@@ -1,15 +1,29 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
+from bson import ObjectId
 from enum import Enum
 
-class Status(str, Enum):
-    on_time = "on_time"
-    late = "late"
-
+class UserLogStatus(str, Enum):
+  ON_TIME = "on_time"
+  LATE = "late"
+  
 class UserLog(BaseModel):
+    id: Optional[str] = Field(default=None, alias="_id")
     name: str
-    status: Status
-    timestamp: datetime = datetime.utcnow()
+    status: UserLogStatus
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
-      from_attributes = True
+        from_attributes = True
+        json_encoders = {ObjectId: str}
+        
+class UserLogCreate(BaseModel):
+    name: str
+    status: UserLogStatus
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        from_attributes = True
+
+

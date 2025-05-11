@@ -10,7 +10,7 @@ from scipy.spatial.distance import cosine
 from facenet_pytorch import InceptionResnetV1
 
 from app.constants.settings import settings
-from app.models.user_log import Status
+from app.models.user_log import UserLogStatus
 from app.services.user_log import save_user_log, should_log_user
 
 # ==== DIRECTORIES ====
@@ -94,7 +94,7 @@ def tracking_face(frame):
         if best_distance < settings.BEST_DISTANCE_THRESHOLD:
             if should_log_user(best_person):
                 now = datetime.now()
-                status = Status.on_time if now.hour < settings.WORK_START_TIME else Status.late
+                status = UserLogStatus.ON_TIME if now.hour < settings.WORK_START_TIME else UserLogStatus.LATE
                 save_user_log(name=best_person, status=status)
 
                 return {
