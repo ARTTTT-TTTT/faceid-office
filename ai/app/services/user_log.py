@@ -1,9 +1,9 @@
 from app.constants.settings import settings
 from app.database.redis import redis_client
 from app.database.mongoDB import user_logs_collection
-from app.models.user_log import UserLog, Status
+from app.models.user_log import UserLog, UserLogStatus
 
-def save_user_log(name: str, status: Status) -> bool:
+def save_user_log(name: str, status: UserLogStatus) -> bool:
     try:
         log = UserLog(name=name, status=status)
 
@@ -14,7 +14,6 @@ def save_user_log(name: str, status: Status) -> bool:
     except Exception as e:
         print(f"Error saving user log: {e}")
         return False
-
 
 def should_log_user(name: str) -> bool:
     key = f"user_logged:{name}"
