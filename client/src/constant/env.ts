@@ -10,11 +10,11 @@ const showLogger = isLocal
 //   : 'http://localhost:5000';
 
 // export const AI_URL = isProd
-//   ? process.env.NEXT_PUBLIC_SERVER_URL
+//   ? process.env.NEXT_PUBLIC_AI_URL
 //   : 'http://localhost:8000/api/ai';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-const AI_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const AI_URL = process.env.NEXT_PUBLIC_AI_URL;
 
 export { AI_URL, isLocal, isProd, SERVER_URL, showLogger };

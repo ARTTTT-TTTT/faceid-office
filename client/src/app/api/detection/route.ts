@@ -14,7 +14,7 @@ export const sendImageForDetection = async (
     const formData = new FormData();
     formData.append('file', imageBlob);
 
-    const response = await fetch(`${AI_URL}/track_faces`, {
+    const response = await fetch(`${AI_URL}/detection/track_faces`, {
       method: 'POST',
       body: formData,
     });
@@ -33,7 +33,7 @@ export const sendImageForDetection = async (
 
 export const fetchLatestUserLogs = async (): Promise<UserLog[]> => {
   try {
-    const response = await fetch(`${AI_URL}/latest_logs`, {
+    const response = await fetch(`${AI_URL}/user_logs/latest`, {
       method: 'GET',
     });
 
