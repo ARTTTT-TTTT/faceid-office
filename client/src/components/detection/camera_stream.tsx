@@ -1,5 +1,3 @@
-'use client';
-
 import { Video, VideoOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -10,7 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 
 import { sendImageForDetection } from '@/app/api/detection/route';
 
-export const CameraStream: React.FC = () => {
+type CameraStreamProps = {
+  onUserDetected: () => void;
+};
+
+export const CameraStream: React.FC<CameraStreamProps> = ({
+  onUserDetected,
+}: CameraStreamProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -82,8 +86,18 @@ export const CameraStream: React.FC = () => {
     }
   };
 
-  const analyzeFace = (imageBlob: Blob) => {
-    sendImageForDetection(imageBlob);
+  const analyzeFace = async (imageBlob: Blob) => {
+    const detectionResult = await sendImageForDetection(imageBlob);
+
+    if (detectionResult) {
+      if (detectionResult.status === 201) {
+        onUserDetected();
+      } else {
+        logger('ℹ️ ตรวจจับได้แต่ไม่บันทึก:', detectionResult.result);
+      }
+    } else {
+      logger('❌ การเรียก API ล้มเหลว');
+    }
   };
 
   useEffect(() => {
