@@ -1,4 +1,4 @@
-from fastapi import APIRouter,HTTPException
+from fastapi import APIRouter, HTTPException
 from typing import List
 
 from app.database.mongoDB import user_logs_collection
@@ -11,7 +11,7 @@ def get_all_user_logs():
     try:
         logs = []
         for log in user_logs_collection.find():
-            log["id"] = str(log.pop("_id"))
+            log["_id"] = str(log["_id"])
             logs.append(UserLog(**log))
         return logs
     except Exception as e:
@@ -22,7 +22,7 @@ def get_latest_user_logs():
     try:
         logs = []
         for log in user_logs_collection.find().sort("timestamp", -1).limit(5):
-            log["id"] = str(log.pop("_id"))
+            log["_id"] = str(log["_id"])
             logs.append(UserLog(**log))
         return logs
     except Exception as e:

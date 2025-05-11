@@ -94,7 +94,7 @@ def tracking_face(frame):
         if best_distance < settings.BEST_DISTANCE_THRESHOLD:
             if should_log_user(best_person):
                 now = datetime.now()
-                status = UserLogStatus.on_time if now.hour < settings.WORK_START_TIME else UserLogStatus.late
+                status = UserLogStatus.ON_TIME if now.hour < settings.WORK_START_TIME else UserLogStatus.LATE
                 save_user_log(name=best_person, status=status)
 
                 return {

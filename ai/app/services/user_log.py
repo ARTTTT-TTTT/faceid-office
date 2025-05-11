@@ -1,11 +1,11 @@
 from app.constants.settings import settings
 from app.database.redis import redis_client
 from app.database.mongoDB import user_logs_collection
-from app.models.user_log import UserLog, UserLogStatus
+from app.models.user_log import UserLogCreate, UserLogStatus
 
 def save_user_log(name: str, status: UserLogStatus) -> bool:
     try:
-        log = UserLog(name=name, status=status)
+        log = UserLogCreate(name=name, status=status)
 
         log_data = log.dict()
 
