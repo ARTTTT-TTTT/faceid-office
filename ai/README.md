@@ -111,6 +111,12 @@ poetry run fastapi run
 docker run -d -p 6379:6379 --name redis redis
 ```
 
+## 🧹 Format document 🧹
+
+```bash
+black .
+```
+
 ## 📚 Documentation 📚
 
 [FastAPI](https://fastapi.tiangolo.com/tutorial/bigger-applications/)
