@@ -80,6 +80,9 @@ class UserLogService:
                     detail=f"No locked users found.",
                 )
             redis_client.delete(*keys)
+
+        except Exception as e:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to unlock users: {str(e)}"
@@ -96,6 +99,9 @@ class UserLogService:
                     status_code=404,
                     detail=f"User '{user_name}' is not locked or key not found.",
                 )
+
+        except Exception as e:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to unlock user: {str(e)}"

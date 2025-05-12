@@ -26,7 +26,9 @@ class DetectionService:
         return f"{cls.admin_prefix}:{admin_id}:{cls.tracking_suffix}"
 
     @classmethod
-    async def track_faces(cls, admin_id: str, file: UploadFile) -> JSONResponse:
+    async def track_faces(
+        cls, admin_id: str, work_start_time: int, file: UploadFile
+    ) -> JSONResponse:
         marker_key = cls.build_marker_key(admin_id)
         if not redis_client.exists(marker_key):
             return JSONResponse(
@@ -46,7 +48,9 @@ class DetectionService:
                     status_code=400, detail="Failed to decode the image."
                 )
 
-            result = DetectionProcessingService.tracking_face(frame, admin_id)
+            result = DetectionProcessingService.tracking_face(
+                frame, admin_id, work_start_time
+            )
 
             if result["status"] == "new_log":
                 return JSONResponse(
@@ -121,7 +125,7 @@ class DetectionProcessingService:
         return frame
 
     @classmethod
-    def tracking_face(cls, frame, admin_id):
+    def tracking_face(cls, frame, admin_id, work_start_time):
         known_faces = cls.load_known_face()
 
         results = cls.model_face_detector.predict(
@@ -155,7 +159,7 @@ class DetectionProcessingService:
                     now = datetime.now()
                     status = (
                         UserLogStatus.ON_TIME
-                        if now.hour < settings.WORK_START_TIME
+                        if now.hour < work_start_time
                         else UserLogStatus.LATE
                     )
                     result = UserLogService.save_user_log(

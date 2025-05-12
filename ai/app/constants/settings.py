@@ -48,9 +48,5 @@ class Settings(BaseSettings):
     USER_PREFIX: str = "user_logged"
     TRACKING_SUFFIX: str = "tracking"
 
-    # ==== SETTINGS ====
-    USER_LOG_EXPIRE_SECONDS: int = 60 * 60 * 2  # 2 ชั่วโมง
-    WORK_START_TIME: int = 23  # 23:00
-
 
 settings = Settings()
