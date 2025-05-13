@@ -2,7 +2,7 @@ from fastapi import Form, File, UploadFile, APIRouter
 
 from app.services.detection import DetectionService
 
-router = APIRouter(prefix="/detection", tags=["Detection"])
+router = APIRouter(prefix="/detections", tags=["Detection"])
 
 
 @router.post("/track_faces")

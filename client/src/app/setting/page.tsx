@@ -149,7 +149,7 @@ export default function SettingPage() {
       }
 
       if (response) {
-        refetchSetting;
+        refetchSetting();
       }
     } catch (error) {
       logger(error, '[SettingPage] onSubmit');

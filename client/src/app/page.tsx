@@ -16,6 +16,8 @@ import {
   Setting,
 } from '@/types/setting';
 
+// !FIX ไม่มีข้อมูลตั้งค่า ลูกศรควรจะแสดง แต่ลูกศรไม่แสดง
+
 export default function HomePage() {
   const { data: settingData, loading: loadingSetting } =
     useFetch<Setting | null>(fetchSetting);
@@ -41,11 +43,9 @@ export default function HomePage() {
       </span>
 
       <div className='flex items-center justify-center gap-4'>
-        {!settingData ||
-          !redisStatusData ||
-          (redisStatusData.status === RedisStatus.END && (
-            <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-12' />
-          ))}
+        {redisStatusData && redisStatusData.status === RedisStatus.END && (
+          <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-12' />
+        )}
         <Link
           href='/setting'
           className='mt-8 inline-block rounded-lg bg-green-500 px-4 py-2 text-white font-semibold hover:bg-green-600 transition duration-200'

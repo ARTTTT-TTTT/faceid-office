@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 
 import logger from '@/lib/logger';
@@ -20,8 +21,11 @@ import {
 } from '@/types/setting';
 import { UserLog } from '@/types/user-log';
 
+// !FIX แสดงผลเวลาผิด
+
 export default function DetectionPage() {
   const [logUsers, setLogUsers] = useState<UserLog[]>([]);
+  const [animationKey, setAnimationKey] = useState<number>(0);
 
   const { data: settingData, loading: loadingSetting } =
     useFetch<Setting | null>(fetchSetting);
@@ -39,6 +43,7 @@ export default function DetectionPage() {
     try {
       const latestUsers = await fetchLatestUserLogs();
       setLogUsers(latestUsers);
+      setAnimationKey((prev) => prev + 1); // เพิ่ม key เพื่อบังคับ remount
     } catch (error) {
       logger(error, '[DetectionPage] handleUserDetected');
     }
@@ -55,9 +60,10 @@ export default function DetectionPage() {
 
   return (
     <main
-      className={`grid grid-cols-5 gap-4 p-4 bg-gray-200 h-screen ${
+      className={`grid grid-cols-5 gap-4 p-4 h-screen bg-gray-200 ${
         logUsers.length > 0 && 'grid-rows-[30%_70%] pb-8'
       }`}
+      dir='rtl'
     >
       {logUsers
         .sort(
@@ -65,22 +71,38 @@ export default function DetectionPage() {
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         )
         .slice(0, 5)
-        .map((user) => (
-          <AttendanceCard
-            key={user._id}
-            name={user.name}
-            image={user.image}
-            timestamp={new Date(user.timestamp).toLocaleString('th-TH', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })}
-            status={user.status}
-          />
-        ))}
+        .map((user, index) => {
+          const card = (
+            <AttendanceCard
+              key={user._id}
+              name={user.name}
+              image={user.image}
+              timestamp={new Date(user.timestamp).toLocaleString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              })}
+              status={user.status}
+            />
+          );
+
+          return index === 0 ? (
+            <motion.div
+              key={animationKey}
+              initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 12,
+              }}
+            >
+              {card}
+            </motion.div>
+          ) : (
+            <div key={user._id}>{card}</div>
+          );
+        })}
 
       <CameraStream
         onUserDetected={handleUserDetected}

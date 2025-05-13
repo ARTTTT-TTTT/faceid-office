@@ -40,7 +40,7 @@ export const sendImageForDetection = async (
 
 export const fetchLatestUserLogs = async (): Promise<UserLog[]> => {
   try {
-    const response = await fetch(`${AI_USER_LOGS}/user_logs/latest`, {
+    const response = await fetch(`${AI_USER_LOGS}/latest`, {
       method: 'GET',
     });
 
