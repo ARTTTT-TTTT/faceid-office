@@ -58,36 +58,38 @@
     <p class="no-camera" style="display: none">ไม่พบอุปกรณ์กล้อง</p>
 
     <script>
-      const videoFeed = document.getElementById("video-feed");
-      const detectionOverlay = document.getElementById("detection-overlay");
-      const noCameraMessage = document.querySelector(".no-camera");
+      const videoFeed = document.getElementById('video-feed');
+      const detectionOverlay = document.getElementById('detection-overlay');
+      const noCameraMessage = document.querySelector('.no-camera');
 
       async function startCamera() {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
           videoFeed.srcObject = stream;
-          noCameraMessage.style.display = "none";
+          noCameraMessage.style.display = 'none';
         } catch (error) {
-          console.error("ไม่สามารถเข้าถึงกล้องได้:", error);
-          noCameraMessage.style.display = "block";
+          console.error('ไม่สามารถเข้าถึงกล้องได้:', error);
+          noCameraMessage.style.display = 'block';
         }
       }
 
       // ฟังก์ชันจำลองการตรวจจับใบหน้า (ในระบบจริงจะต้องใช้ Library เช่น TensorFlow.js หรือ OpenCV.js)
       function simulateFaceDetection() {
         // ล้างกรอบ Detection เก่า
-        detectionOverlay.innerHTML = "";
+        detectionOverlay.innerHTML = '';
 
         // ข้อมูลจำลองตำแหน่งและขนาดของใบหน้า (x, y, width, height)
         const faces = [
-          { x: 100, y: 100, width: 150, height: 150, label: "บุคคล 1" },
-          { x: 350, y: 120, width: 120, height: 160, label: "บุคคล 2" },
-          { x: 40, y: 250, width: 100, height: 130, label: "บุคคล 3" },
+          { x: 100, y: 100, width: 150, height: 150, label: 'บุคคล 1' },
+          { x: 350, y: 120, width: 120, height: 160, label: 'บุคคล 2' },
+          { x: 40, y: 250, width: 100, height: 130, label: 'บุคคล 3' },
         ];
 
         faces.forEach((face) => {
-          const detectionBox = document.createElement("div");
-          detectionBox.classList.add("detection-box");
+          const detectionBox = document.createElement('div');
+          detectionBox.classList.add('detection-box');
           detectionBox.style.left = `${face.x}px`;
           detectionBox.style.top = `${face.y}px`;
           detectionBox.style.width = `${face.width}px`;

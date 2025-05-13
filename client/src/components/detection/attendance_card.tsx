@@ -29,7 +29,7 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({
   return (
     <Card>
       <CardContent className='p-4 flex flex-col items-center'>
-        <CardHeader className='w-24 h-24 relative'>
+        <CardHeader className='size-24 relative'>
           <Image
             src='https://picsum.photos/id/1005/200/300'
             alt='Profile'

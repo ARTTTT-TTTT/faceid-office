@@ -17,4 +17,17 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const AI_URL = process.env.NEXT_PUBLIC_AI_URL;
 
-export { AI_URL, isLocal, isProd, SERVER_URL, showLogger };
+const AI_DETECTIONS = `${AI_URL}${process.env.NEXT_PUBLIC_AI_DETECTIONS_URL}`;
+const AI_USER_LOGS = `${AI_URL}${process.env.NEXT_PUBLIC_AI_USER_LOGS_URL}`;
+const AI_SETTINGS = `${AI_URL}${process.env.NEXT_PUBLIC_AI_SETTINGS_URL}`;
+
+export {
+  AI_DETECTIONS,
+  AI_SETTINGS,
+  AI_URL,
+  AI_USER_LOGS,
+  isLocal,
+  isProd,
+  SERVER_URL,
+  showLogger,
+};

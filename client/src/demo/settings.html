@@ -49,7 +49,7 @@
         color: #555;
         margin-right: 15px;
       }
-      .form-group input[type="time"] {
+      .form-group input[type='time'] {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -80,19 +80,39 @@
         <form id="timeSettingsForm">
           <div class="form-group">
             <label for="work_start_time">เวลาเข้างานหลัก:</label>
-            <input type="time" id="work_start_time" name="work_start_time" value="08:00" />
+            <input
+              type="time"
+              id="work_start_time"
+              name="work_start_time"
+              value="08:00"
+            />
           </div>
           <div class="form-group">
             <label for="break_start_time">เวลาพักเที่ยง:</label>
-            <input type="time" id="break_start_time" name="break_start_time" value="12:00" />
+            <input
+              type="time"
+              id="break_start_time"
+              name="break_start_time"
+              value="12:00"
+            />
           </div>
           <div class="form-group">
             <label for="break_end_time">เวลาสิ้นสุดพักเที่ยง:</label>
-            <input type="time" id="break_end_time" name="break_end_time" value="13:00" />
+            <input
+              type="time"
+              id="break_end_time"
+              name="break_end_time"
+              value="13:00"
+            />
           </div>
           <div class="form-group">
             <label for="work_end_time">เวลาออกงานหลัก:</label>
-            <input type="time" id="work_end_time" name="work_end_time" value="17:00" />
+            <input
+              type="time"
+              id="work_end_time"
+              name="work_end_time"
+              value="17:00"
+            />
           </div>
           <button type="submit">บันทึกการตั้งค่าเวลา</button>
         </form>
@@ -100,14 +120,15 @@
     </div>
 
     <script>
-      const timeSettingsForm = document.getElementById("timeSettingsForm");
+      const timeSettingsForm = document.getElementById('timeSettingsForm');
 
-      timeSettingsForm.addEventListener("submit", function (event) {
+      timeSettingsForm.addEventListener('submit', function (event) {
         event.preventDefault();
-        const workStartTime = document.getElementById("work_start_time").value;
-        const breakStartTime = document.getElementById("break_start_time").value;
-        const breakEndTime = document.getElementById("break_end_time").value;
-        const workEndTime = document.getElementById("work_end_time").value;
+        const workStartTime = document.getElementById('work_start_time').value;
+        const breakStartTime =
+          document.getElementById('break_start_time').value;
+        const breakEndTime = document.getElementById('break_end_time').value;
+        const workEndTime = document.getElementById('work_end_time').value;
 
         // ในระบบจริง: จะมีการส่งข้อมูลการตั้งค่าเวลาไปยัง Backend
         alert(

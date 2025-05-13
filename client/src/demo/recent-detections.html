@@ -82,41 +82,41 @@
     <script>
       const latestCheckIns = [
         {
-          name: "อานนท์ มานะ",
-          time: "08:25",
-          imageUrl: "https://picsum.photos/id/237/200/300",
+          name: 'อานนท์ มานะ',
+          time: '08:25',
+          imageUrl: 'https://picsum.photos/id/237/200/300',
         },
         {
-          name: "สุดา สวยงาม",
-          time: "08:30",
-          imageUrl: "https://picsum.photos/id/40/200/300",
+          name: 'สุดา สวยงาม',
+          time: '08:30',
+          imageUrl: 'https://picsum.photos/id/40/200/300',
         },
         {
-          name: "เดชา กล้าหาญ",
-          time: "08:35",
-          imageUrl: "https://picsum.photos/id/64/200/300",
+          name: 'เดชา กล้าหาญ',
+          time: '08:35',
+          imageUrl: 'https://picsum.photos/id/64/200/300',
         },
         {
-          name: "ลัดดา ว่องไว",
-          time: "08:40",
-          imageUrl: "https://picsum.photos/id/175/200/300",
+          name: 'ลัดดา ว่องไว',
+          time: '08:40',
+          imageUrl: 'https://picsum.photos/id/175/200/300',
         },
         {
-          name: "เอกชัย จริงจัง",
-          time: "08:45",
-          imageUrl: "https://picsum.photos/id/169/200/300",
+          name: 'เอกชัย จริงจัง',
+          time: '08:45',
+          imageUrl: 'https://picsum.photos/id/169/200/300',
         },
       ];
 
-      const cardGrid = document.querySelector(".card-grid");
-      const noDataMessage = document.querySelector(".no-data");
+      const cardGrid = document.querySelector('.card-grid');
+      const noDataMessage = document.querySelector('.no-data');
 
       if (latestCheckIns && latestCheckIns.length > 0) {
-        cardGrid.innerHTML = "";
+        cardGrid.innerHTML = '';
 
         latestCheckIns.forEach((employee) => {
-          const card = document.createElement("div");
-          card.classList.add("attendance-card");
+          const card = document.createElement('div');
+          card.classList.add('attendance-card');
           card.innerHTML = `
                     <img src="${employee.imageUrl}" alt="${employee.name}" class="profile-image">
                     <p class="employee-name">${employee.name}</p>
@@ -125,8 +125,8 @@
           cardGrid.appendChild(card);
         });
       } else {
-        cardGrid.style.display = "none";
-        noDataMessage.style.display = "block";
+        cardGrid.style.display = 'none';
+        noDataMessage.style.display = 'block';
       }
     </script>
   </body>

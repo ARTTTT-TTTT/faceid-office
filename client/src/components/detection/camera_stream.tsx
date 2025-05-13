@@ -8,12 +8,16 @@ import { Card, CardContent } from '@/components/ui/card';
 
 import { sendImageForDetection } from '@/app/api/detection/route';
 
-type CameraStreamProps = {
+interface CameraStreamProps {
   onUserDetected: () => void;
-};
+  admin_id: string;
+  work_start_time: number;
+}
 
 export const CameraStream: React.FC<CameraStreamProps> = ({
   onUserDetected,
+  admin_id,
+  work_start_time,
 }: CameraStreamProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -87,7 +91,11 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
   };
 
   const analyzeFace = async (imageBlob: Blob) => {
-    const detectionResult = await sendImageForDetection(imageBlob);
+    const detectionResult = await sendImageForDetection(
+      imageBlob,
+      admin_id,
+      work_start_time
+    );
 
     if (detectionResult) {
       if (detectionResult.status === 201) {

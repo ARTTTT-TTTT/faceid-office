@@ -34,7 +34,7 @@
         font-weight: bold;
         color: #555;
       }
-      .form-group input[type="date"],
+      .form-group input[type='date'],
       .form-group select,
       .form-group textarea {
         width: calc(100% - 12px);
@@ -47,7 +47,7 @@
       .form-group select {
         height: 40px;
       }
-      button[type="submit"] {
+      button[type='submit'] {
         background-color: #28a745;
         color: white;
         padding: 12px 15px;
@@ -58,7 +58,7 @@
         width: 100%;
         margin-top: 20px;
       }
-      button[type="submit"]:hover {
+      button[type='submit']:hover {
         background-color: #1e7e34;
       }
       .error-message {
@@ -102,58 +102,58 @@
     </div>
 
     <script>
-      const leaveRequestForm = document.getElementById("leaveRequestForm");
-      const leaveTypeSelect = document.getElementById("leave_type");
-      const startDateInput = document.getElementById("start_date");
-      const endDateInput = document.getElementById("end_date");
-      const reasonTextarea = document.getElementById("reason");
-      const leaveTypeError = document.getElementById("leaveTypeError");
-      const startDateError = document.getElementById("startDateError");
-      const endDateError = document.getElementById("endDateError");
-      const reasonError = document.getElementById("reasonError");
+      const leaveRequestForm = document.getElementById('leaveRequestForm');
+      const leaveTypeSelect = document.getElementById('leave_type');
+      const startDateInput = document.getElementById('start_date');
+      const endDateInput = document.getElementById('end_date');
+      const reasonTextarea = document.getElementById('reason');
+      const leaveTypeError = document.getElementById('leaveTypeError');
+      const startDateError = document.getElementById('startDateError');
+      const endDateError = document.getElementById('endDateError');
+      const reasonError = document.getElementById('reasonError');
 
       function validateForm() {
         let isValid = true;
 
-        if (leaveTypeSelect.value === "") {
-          leaveTypeError.textContent = "กรุณาเลือกประเภทการลา";
+        if (leaveTypeSelect.value === '') {
+          leaveTypeError.textContent = 'กรุณาเลือกประเภทการลา';
           isValid = false;
         } else {
-          leaveTypeError.textContent = "";
+          leaveTypeError.textContent = '';
         }
 
-        if (startDateInput.value === "") {
-          startDateError.textContent = "กรุณาเลือกวันที่เริ่มต้น";
+        if (startDateInput.value === '') {
+          startDateError.textContent = 'กรุณาเลือกวันที่เริ่มต้น';
           isValid = false;
         } else {
-          startDateError.textContent = "";
+          startDateError.textContent = '';
         }
 
-        if (endDateInput.value === "") {
-          endDateError.textContent = "กรุณาเลือกวันที่สิ้นสุด";
+        if (endDateInput.value === '') {
+          endDateError.textContent = 'กรุณาเลือกวันที่สิ้นสุด';
           isValid = false;
         } else if (
           startDateInput.value &&
           endDateInput.value &&
           new Date(endDateInput.value) < new Date(startDateInput.value)
         ) {
-          endDateError.textContent = "วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่มต้น";
+          endDateError.textContent = 'วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่มต้น';
           isValid = false;
         } else {
-          endDateError.textContent = "";
+          endDateError.textContent = '';
         }
 
-        if (reasonTextarea.value.trim() === "") {
-          reasonError.textContent = "กรุณากรอกเหตุผลการลา";
+        if (reasonTextarea.value.trim() === '') {
+          reasonError.textContent = 'กรุณากรอกเหตุผลการลา';
           isValid = false;
         } else {
-          reasonError.textContent = "";
+          reasonError.textContent = '';
         }
 
         return isValid;
       }
 
-      leaveRequestForm.addEventListener("submit", function (event) {
+      leaveRequestForm.addEventListener('submit', function (event) {
         event.preventDefault();
         if (validateForm()) {
           const leaveData = {
@@ -163,7 +163,7 @@
             reason: reasonTextarea.value,
           };
           // ในระบบจริง: ส่งข้อมูล leaveData ไปยัง Backend API
-          alert("ส่งคำขอลางานแล้ว (จำลอง):\n" + JSON.stringify(leaveData));
+          alert('ส่งคำขอลางานแล้ว (จำลอง):\n' + JSON.stringify(leaveData));
           leaveRequestForm.reset(); // ล้างฟอร์มหลังจากส่งสำเร็จ (จำลอง)
         }
       });

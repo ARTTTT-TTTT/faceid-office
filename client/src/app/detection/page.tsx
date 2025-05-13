@@ -1,18 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import logger from '@/lib/logger';
+import { useFetch } from '@/hooks/useFetch';
 
 import { AttendanceCard } from '@/components/detection/attendance_card';
 import { CameraStream } from '@/components/detection/camera_stream';
+import SessionEnd from '@/components/detection/session_end';
 
 import { fetchLatestUserLogs } from '@/app/api/detection/route';
+import { fetchRedisStatus, fetchSetting } from '@/app/api/setting/route';
 
+import {
+  RedisStartStatus,
+  RedisStatus,
+  RedisStopStatus,
+  Setting,
+} from '@/types/setting';
 import { UserLog } from '@/types/user-log';
 
 export default function DetectionPage() {
   const [logUsers, setLogUsers] = useState<UserLog[]>([]);
+
+  const { data: settingData, loading: loadingSetting } =
+    useFetch<Setting | null>(fetchSetting);
+
+  const fetchRedis = useCallback(() => {
+    if (!settingData) return Promise.resolve(null);
+    return fetchRedisStatus(settingData._id);
+  }, [settingData]);
+
+  const { data: redisStatusData, loading: loadingRedisStatus } = useFetch<
+    RedisStartStatus | RedisStopStatus | null
+  >(fetchRedis);
 
   const handleUserDetected = async () => {
     try {
@@ -22,6 +43,15 @@ export default function DetectionPage() {
       logger(error, '[DetectionPage] handleUserDetected');
     }
   };
+
+  if (loadingRedisStatus || loadingSetting) return;
+
+  if (
+    !settingData ||
+    !redisStatusData ||
+    redisStatusData.status === RedisStatus.END
+  )
+    return <SessionEnd />;
 
   return (
     <main
@@ -37,7 +67,7 @@ export default function DetectionPage() {
         .slice(0, 5)
         .map((user) => (
           <AttendanceCard
-            key={user.id}
+            key={user._id}
             name={user.name}
             image={user.image}
             timestamp={new Date(user.timestamp).toLocaleString('th-TH', {
@@ -52,7 +82,11 @@ export default function DetectionPage() {
           />
         ))}
 
-      <CameraStream onUserDetected={handleUserDetected} />
+      <CameraStream
+        onUserDetected={handleUserDetected}
+        admin_id={settingData._id}
+        work_start_time={settingData.work_start_time}
+      />
     </main>
   );
 }

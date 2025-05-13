@@ -1,11 +1,13 @@
 import logger from '@/lib/logger';
 
-import { AI_URL } from '@/constant/env';
+import { AI_DETECTIONS, AI_USER_LOGS } from '@/constant/env';
 
 import { UserLog } from '@/types/user-log';
 
 export const sendImageForDetection = async (
-  imageBlob: Blob
+  imageBlob: Blob,
+  admin_id: string,
+  work_start_time: number
 ): Promise<{
   status: number;
   result: string;
@@ -13,14 +15,19 @@ export const sendImageForDetection = async (
   try {
     const formData = new FormData();
     formData.append('file', imageBlob);
+    formData.append('admin_id', admin_id);
+    formData.append('work_start_time', work_start_time.toString());
 
-    const response = await fetch(`${AI_URL}/detection/track_faces`, {
+    const response = await fetch(`${AI_DETECTIONS}/track_faces`, {
       method: 'POST',
       body: formData,
     });
 
-    const result = await response.json();
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
 
+    const result = await response.json();
     return {
       status: response.status,
       result: result.result,
@@ -33,7 +40,7 @@ export const sendImageForDetection = async (
 
 export const fetchLatestUserLogs = async (): Promise<UserLog[]> => {
   try {
-    const response = await fetch(`${AI_URL}/user_logs/latest`, {
+    const response = await fetch(`${AI_USER_LOGS}/user_logs/latest`, {
       method: 'GET',
     });
 

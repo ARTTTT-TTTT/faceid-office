@@ -4,7 +4,7 @@ enum UserLogStatus {
 }
 
 interface UserLog {
-  id: string;
+  _id: string;
   name: string;
   image: string;
   timestamp: string;

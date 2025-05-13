@@ -29,7 +29,7 @@
         font-weight: bold;
         color: #555;
       }
-      .search-container input[type="text"] {
+      .search-container input[type='text'] {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -100,96 +100,96 @@
     </div>
 
     <script>
-      const attendanceTableBody = document.getElementById("attendanceData");
-      const noDataMessage = document.getElementById("noDataMessage");
-      const attendanceTable = document.getElementById("attendanceTable");
-      const searchNameInput = document.getElementById("search_name");
+      const attendanceTableBody = document.getElementById('attendanceData');
+      const noDataMessage = document.getElementById('noDataMessage');
+      const attendanceTable = document.getElementById('attendanceTable');
+      const searchNameInput = document.getElementById('search_name');
 
       // ข้อมูลจำลองการเข้า-ออกงานสำหรับวันนี้ (ในระบบจริงจะดึงจาก Backend)
       const attendanceRecordsToday = [
         {
-          name: "สมชาย ใจดี",
-          checkIn: "08:00",
-          breakStart: "12:00",
-          breakEnd: "13:00",
-          checkOut: "17:00",
-          checkInStatus: "",
-          breakEndStatus: "",
-          breakStartStatus: "",
-          checkOutStatus: "",
+          name: 'สมชาย ใจดี',
+          checkIn: '08:00',
+          breakStart: '12:00',
+          breakEnd: '13:00',
+          checkOut: '17:00',
+          checkInStatus: '',
+          breakEndStatus: '',
+          breakStartStatus: '',
+          checkOutStatus: '',
         },
         {
-          name: "สมหญิง เก่งมาก",
-          checkIn: "08:05",
-          breakStart: "12:15",
-          breakEnd: "13:15",
-          checkOut: "17:05",
-          checkInStatus: "สาย",
-          breakEndStatus: "",
-          breakStartStatus: "",
-          checkOutStatus: "",
+          name: 'สมหญิง เก่งมาก',
+          checkIn: '08:05',
+          breakStart: '12:15',
+          breakEnd: '13:15',
+          checkOut: '17:05',
+          checkInStatus: 'สาย',
+          breakEndStatus: '',
+          breakStartStatus: '',
+          checkOutStatus: '',
         },
         {
-          name: "ธนากร มีชัย",
-          checkIn: "07:55",
-          breakStart: "11:50",
-          breakEnd: "12:50",
-          checkOut: "16:45",
-          checkInStatus: "",
-          breakEndStatus: "",
-          breakStartStatus: "",
-          checkOutStatus: "",
+          name: 'ธนากร มีชัย',
+          checkIn: '07:55',
+          breakStart: '11:50',
+          breakEnd: '12:50',
+          checkOut: '16:45',
+          checkInStatus: '',
+          breakEndStatus: '',
+          breakStartStatus: '',
+          checkOutStatus: '',
         },
         {
-          name: "นารี สุขใจ",
-          checkIn: "-",
-          breakStart: "-",
-          breakEnd: "-",
-          checkOut: "-",
-          checkInStatus: "ลา",
-          breakEndStatus: "ลา",
-          breakStartStatus: "ลา",
-          checkOutStatus: "ลา",
+          name: 'นารี สุขใจ',
+          checkIn: '-',
+          breakStart: '-',
+          breakEnd: '-',
+          checkOut: '-',
+          checkInStatus: 'ลา',
+          breakEndStatus: 'ลา',
+          breakStartStatus: 'ลา',
+          checkOutStatus: 'ลา',
         },
         {
-          name: "พิชิต ฝันดี",
-          checkIn: "08:02",
-          breakStart: "12:00",
-          breakEnd: "13:00",
-          checkOut: "17:30",
-          checkInStatus: "",
-          breakEndStatus: "",
-          breakStartStatus: "",
-          checkOutStatus: "",
+          name: 'พิชิต ฝันดี',
+          checkIn: '08:02',
+          breakStart: '12:00',
+          breakEnd: '13:00',
+          checkOut: '17:30',
+          checkInStatus: '',
+          breakEndStatus: '',
+          breakStartStatus: '',
+          checkOutStatus: '',
         },
         {
-          name: "สุดา สวยงาม",
-          checkIn: "08:00",
-          breakStart: "12:05",
-          breakEnd: "13:05",
-          checkOut: "16:55",
-          checkInStatus: "",
-          breakEndStatus: "",
-          breakStartStatus: "ก่อนเวลา",
-          checkOutStatus: "ก่อนเวลา",
+          name: 'สุดา สวยงาม',
+          checkIn: '08:00',
+          breakStart: '12:05',
+          breakEnd: '13:05',
+          checkOut: '16:55',
+          checkInStatus: '',
+          breakEndStatus: '',
+          breakStartStatus: 'ก่อนเวลา',
+          checkOutStatus: 'ก่อนเวลา',
         },
         {
-          name: "อานนท์ มานะ",
-          checkIn: "09:10",
-          breakStart: "12:00",
-          breakEnd: "13:00",
-          checkOut: "18:00",
-          checkInStatus: "สาย",
-          breakEndStatus: "สาย",
-          breakStartStatus: "",
-          checkOutStatus: "",
+          name: 'อานนท์ มานะ',
+          checkIn: '09:10',
+          breakStart: '12:00',
+          breakEnd: '13:00',
+          checkOut: '18:00',
+          checkInStatus: 'สาย',
+          breakEndStatus: 'สาย',
+          breakStartStatus: '',
+          checkOutStatus: '',
         },
       ];
 
       function loadAttendanceToday() {
-        attendanceTableBody.innerHTML = "";
-        noDataMessage.style.display = "none";
-        attendanceTable.style.display = "table";
+        attendanceTableBody.innerHTML = '';
+        noDataMessage.style.display = 'none';
+        attendanceTable.style.display = 'table';
 
         if (attendanceRecordsToday.length > 0) {
           attendanceRecordsToday.forEach((record) => {
@@ -203,51 +203,55 @@
             nameCell.textContent = record.name;
             checkInCell.textContent = record.checkIn
               ? `${record.checkIn}${
-                  record.checkInStatus === "สาย"
+                  record.checkInStatus === 'สาย'
                     ? ` (สาย)`
-                    : record.checkInStatus === "ก่อนเวลา"
+                    : record.checkInStatus === 'ก่อนเวลา'
                     ? ` (ก่อนเวลา)`
-                    : ""
+                    : ''
                 }`
-              : "-";
+              : '-';
             breakCell.textContent = record.breakStart
-              ? `${record.breakStart}${record.breakStartStatus === "ก่อนเวลา" ? ` (ก่อนเวลา)` : ""}`
-              : "-";
+              ? `${record.breakStart}${
+                  record.breakStartStatus === 'ก่อนเวลา' ? ` (ก่อนเวลา)` : ''
+                }`
+              : '-';
             breakEndCell.textContent = record.breakEnd
               ? `${record.breakEnd}${
-                  record.breakEndStatus === "สาย"
+                  record.breakEndStatus === 'สาย'
                     ? ` (สาย)`
-                    : record.breakEndStatus === "ก่อนเวลา"
+                    : record.breakEndStatus === 'ก่อนเวลา'
                     ? ` (ก่อนเวลา)`
-                    : ""
+                    : ''
                 }`
-              : "-";
+              : '-';
             checkOutCell.textContent = record.checkOut
-              ? `${record.checkOut}${record.checkOutStatus === "ก่อนเวลา" ? ` (ก่อนเวลา)` : ""}`
-              : "-";
+              ? `${record.checkOut}${
+                  record.checkOutStatus === 'ก่อนเวลา' ? ` (ก่อนเวลา)` : ''
+                }`
+              : '-';
           });
         } else {
-          attendanceTable.style.display = "none";
-          noDataMessage.style.display = "block";
+          attendanceTable.style.display = 'none';
+          noDataMessage.style.display = 'block';
         }
 
         // รีเซ็ตช่องค้นหาชื่อเมื่อโหลดข้อมูลใหม่
-        searchNameInput.value = "";
+        searchNameInput.value = '';
         searchByName();
       }
 
       function searchByName() {
         const searchText = searchNameInput.value.toLowerCase();
-        const rows = attendanceTableBody.getElementsByTagName("tr");
+        const rows = attendanceTableBody.getElementsByTagName('tr');
 
         for (let i = 0; i < rows.length; i++) {
-          const nameCell = rows[i].getElementsByTagName("td")[0]; // ช่องชื่อพนักงานคือ index 0
+          const nameCell = rows[i].getElementsByTagName('td')[0]; // ช่องชื่อพนักงานคือ index 0
           if (nameCell) {
             const nameText = nameCell.textContent.toLowerCase();
-            if (searchText === "" || nameText.includes(searchText)) {
-              rows[i].style.display = "";
+            if (searchText === '' || nameText.includes(searchText)) {
+              rows[i].style.display = '';
             } else {
-              rows[i].style.display = "none";
+              rows[i].style.display = 'none';
             }
           }
         }

@@ -62,7 +62,7 @@
         font-weight: bold;
       }
       .filter-options select,
-      .filter-options input[type="date"] {
+      .filter-options input[type='date'] {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -111,7 +111,12 @@
         <h3>การเข้า-ออกงานวันนี้</h3>
         <div class="filter-options">
           <label for="date-filter">เลือกวันที่:</label>
-          <input type="date" id="date-filter" name="date-filter" value="2025-04-30" />
+          <input
+            type="date"
+            id="date-filter"
+            name="date-filter"
+            value="2025-04-30"
+          />
           <button onclick="filterAttendance()">ดู</button>
         </div>
         <table class="attendance-table">
@@ -230,22 +235,38 @@
 
     <script>
       function filterAttendance() {
-        const selectedDate = document.getElementById("date-filter").value;
+        const selectedDate = document.getElementById('date-filter').value;
         // ในระบบจริง ส่วนนี้จะต้องมีการเรียก API ไปยัง Backend
         // เพื่อดึงข้อมูลการเข้า-ออกงานของวันที่ selectedDate
-        const todayAttendanceTableBody = document.getElementById("today-attendance");
+        const todayAttendanceTableBody =
+          document.getElementById('today-attendance');
         todayAttendanceTableBody.innerHTML = `
                 <tr><td colspan="4" style="text-align: center;">กำลังโหลดข้อมูลสำหรับวันที่ ${selectedDate}...</td></tr>
             `;
         // จำลองการโหลดข้อมูล (setTimeout แทนการเรียก API จริง)
         setTimeout(() => {
           const mockData = [
-            { name: "ทดสอบ หนึ่ง", checkin: "08:01", checkout: "17:02", status: "ตรงเวลา" },
-            { name: "ทดสอบ สอง", checkin: "09:00", checkout: "16:55", status: "สาย" },
-            { name: "ทดสอบ สาม", checkin: "08:30", checkout: "-", status: "ยังทำงาน" },
+            {
+              name: 'ทดสอบ หนึ่ง',
+              checkin: '08:01',
+              checkout: '17:02',
+              status: 'ตรงเวลา',
+            },
+            {
+              name: 'ทดสอบ สอง',
+              checkin: '09:00',
+              checkout: '16:55',
+              status: 'สาย',
+            },
+            {
+              name: 'ทดสอบ สาม',
+              checkin: '08:30',
+              checkout: '-',
+              status: 'ยังทำงาน',
+            },
           ];
-          todayAttendanceTableBody.innerHTML = ""; // เคลียร์ข้อมูลโหลด
-          if (selectedDate === "2025-04-30") {
+          todayAttendanceTableBody.innerHTML = ''; // เคลียร์ข้อมูลโหลด
+          if (selectedDate === '2025-04-30') {
             todayAttendanceTableBody.innerHTML = `
                         <tr><td>สมชาย ใจดี</td><td>08:00</td><td>17:00</td><td>ตรงเวลา</td></tr>
                         <tr><td>สมหญิง เก่งมาก</td><td>08:05</td><td>17:05</td><td>ตรงเวลา</td></tr>
@@ -257,7 +278,7 @@
               const row = todayAttendanceTableBody.insertRow();
               row.insertCell().textContent = employee.name;
               row.insertCell().textContent = employee.checkin;
-              row.insertCell().textContent = employee.checkout || "-";
+              row.insertCell().textContent = employee.checkout || '-';
               row.insertCell().textContent = employee.status;
             });
           }

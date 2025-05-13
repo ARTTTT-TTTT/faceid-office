@@ -1,7 +1,35 @@
+'use client';
+
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useCallback } from 'react';
 import '@/lib/env';
 
+import { useFetch } from '@/hooks/useFetch';
+
+import { fetchRedisStatus, fetchSetting } from '@/app/api/setting/route';
+
+import {
+  RedisStartStatus,
+  RedisStatus,
+  RedisStopStatus,
+  Setting,
+} from '@/types/setting';
+
 export default function HomePage() {
+  const { data: settingData, loading: loadingSetting } =
+    useFetch<Setting | null>(fetchSetting);
+
+  const fetchRedis = useCallback(() => {
+    if (!settingData) return Promise.resolve(null);
+    return fetchRedisStatus(settingData._id);
+  }, [settingData]);
+
+  const { data: redisStatusData, loading: loadingRedisStatus } = useFetch<
+    RedisStartStatus | RedisStopStatus | null
+  >(fetchRedis);
+
+  if (loadingRedisStatus || loadingSetting) return;
   return (
     <main className='bg-gradient-to-br from-blue-50 to-white flex min-h-screen flex-col items-center justify-center py-16 px-4 text-center'>
       <h1 className='text-4xl font-extrabold text-gray-800 tracking-tight'>
@@ -12,12 +40,31 @@ export default function HomePage() {
         ระบบตรวจสอบการเข้า-ออกงานของพนักงาน
       </span>
 
-      <Link
-        href='/detection'
-        className='mt-8 inline-block rounded-lg bg-blue-500 px-4 py-2 text-white font-semibold hover:bg-blue-600 transition duration-200'
-      >
-        Detection Page
-      </Link>
+      <div className='flex items-center justify-center gap-4'>
+        {!settingData ||
+          !redisStatusData ||
+          (redisStatusData.status === RedisStatus.END && (
+            <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-12' />
+          ))}
+        <Link
+          href='/setting'
+          className='mt-8 inline-block rounded-lg bg-green-500 px-4 py-2 text-white font-semibold hover:bg-green-600 transition duration-200'
+        >
+          1. Setting Page
+        </Link>
+      </div>
+
+      <div className='flex items-center justify-center gap-4'>
+        {redisStatusData && redisStatusData.status === RedisStatus.START && (
+          <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-8' />
+        )}
+        <Link
+          href='/detection'
+          className='mt-8 inline-block rounded-lg bg-blue-500 px-4 py-2 text-white font-semibold hover:bg-blue-600 transition duration-200'
+        >
+          2. Detection Page
+        </Link>
+      </div>
 
       <footer className='absolute bottom-4 text-base text-gray-500'>
         © {new Date().getFullYear()} by{' '}

@@ -32,13 +32,15 @@ pnpm start:prod
 rm -rf node_modules pnpm-lock.yaml
 ```
 
-## 📚 Pre-Commit 📚
-
-- please read commitlint.config.js
+## 🧹 Clean project 🧹
 
 ```bash
 pnpm lint:fix
 ```
+
+## 📚 Pre-Commit 📚
+
+- please read commitlint.config.js
 
 ## Component Logic Flow
 
