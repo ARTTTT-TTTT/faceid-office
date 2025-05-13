@@ -1,14 +1,13 @@
 from fastapi import APIRouter
 from typing import List
 
-from app.database.redis import redis_client
-from app.models.user_log import UserLog
+from app.models.user_log import UserLog, UserLogUnlockAllUsers, UserLogUnlockUser
 from app.services.user_log import UserLogService
 
 router = APIRouter(prefix="/user_logs", tags=["User Logs"])
 
 
-@router.get("/", response_model=List[UserLog])
+@router.get("", response_model=List[UserLog])
 def get_all_user_logs():
     result = UserLogService.get_all_user_logs()
     return result
@@ -21,12 +20,12 @@ def get_latest_user_logs():
 
 
 @router.post("/unlock_all")
-def unlock_all_users(admin_id: str):
-    UserLogService.unlock_all_users(admin_id)
+def unlock_all_users(payload: UserLogUnlockAllUsers):
+    UserLogService.unlock_all_users(payload)
     return {"message": "All users have been unlocked."}
 
 
 @router.post("/unlock")
-def unlock_user(admin_id: str, username: str):
-    UserLogService.unlock_user(admin_id, username)
-    return {"message": f"User '{username}' has been unlocked."}
+def unlock_user(payload: UserLogUnlockUser):
+    UserLogService.unlock_user(payload)
+    return {"message": f"User '{payload.user_name}' has been unlocked."}

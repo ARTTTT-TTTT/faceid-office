@@ -3,7 +3,13 @@ from fastapi import HTTPException
 from app.constants.settings import settings
 from app.database.redis import redis_client
 from app.database.mongoDB import user_logs_collection
-from app.models.user_log import UserLogCreate, UserLogStatus, UserLog
+from app.models.user_log import (
+    UserLogCreate,
+    UserLogStatus,
+    UserLog,
+    UserLogUnlockAllUsers,
+    UserLogUnlockUser,
+)
 
 
 class UserLogService:
@@ -69,8 +75,8 @@ class UserLogService:
             )
 
     @classmethod
-    def unlock_all_users(cls, admin_id: str):
-        pattern = cls.build_key(admin_id)
+    def unlock_all_users(cls, payload: UserLogUnlockAllUsers):
+        pattern = cls.build_key(payload.admin_id)
 
         try:
             keys = redis_client.keys(pattern)
@@ -89,15 +95,15 @@ class UserLogService:
             )
 
     @classmethod
-    def unlock_user(cls, admin_id: str, user_name: str):
-        pattern = cls.build_key(admin_id, user_name)
+    def unlock_user(cls, payload: UserLogUnlockUser):
+        pattern = cls.build_key(payload.admin_id, payload.user_name)
 
         try:
             deleted = redis_client.delete(pattern)
             if deleted == 0:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"User '{user_name}' is not locked or key not found.",
+                    detail=f"User '{payload.user_name}' is not locked or key not found.",
                 )
 
         except Exception as e:

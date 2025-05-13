@@ -5,6 +5,9 @@ from bson import ObjectId
 from enum import Enum
 
 
+# === RESPONSE ===
+
+
 class UserLogStatus(str, Enum):
     ON_TIME = "on_time"
     LATE = "late"
@@ -28,3 +31,15 @@ class UserLogCreate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# === REQUEST ===
+
+
+class UserLogUnlockAllUsers(BaseModel):
+    admin_id: str
+
+
+class UserLogUnlockUser(BaseModel):
+    admin_id: str
+    user_name: str

@@ -5,7 +5,22 @@ from bson import ObjectId
 from app.constants.settings import settings
 from app.database.redis import redis_client
 from app.database.mongoDB import settings_collection
-from app.models.setting import Setting, SettingCreate, RedisStart, RedisStatus_Status
+from app.models.setting import (
+    Setting,
+    SettingCreate,
+    RedisStart,
+    RedisStatus,
+    RedisStartStatus,
+    RedisStopStatus,
+    RedisStartPayload,
+    RedisStopPayload,
+    SettingCreatePayload,
+    SettingUpdatePayload,
+    SettingUserLogExpireSeconds,
+    SettingWorkStartTime,
+)
+
+# ? ทำไม Redis ใช้ payload: RedisStartPayload => payload.admin_id ไม่ได้
 
 
 class RedisService:
@@ -32,7 +47,7 @@ class RedisService:
         try:
             if not redis_client.exists(marker_key):
                 redis_client.setex(marker_key, ttl_seconds, "1")
-                return {"admin": admin_id, "TTL": f"{ttl_seconds}s"}
+                return RedisStart(admin=admin_id, TTL=f"{ttl_seconds}s")
             else:
                 raise HTTPException(
                     status_code=400,
@@ -74,20 +89,20 @@ class RedisService:
             )
 
     @classmethod
-    def status(cls, admin_id: str):
+    def status(cls, admin_id: str) -> RedisStartStatus | RedisStopStatus:
         marker_key = cls.build_marker_key(admin_id)
 
         try:
             if not redis_client.exists(marker_key):
-                return {"admin": admin_id, "status": RedisStatus_Status.END}
+                return RedisStopStatus(admin=admin_id, status=RedisStatus.END)
 
             ttl_seconds = redis_client.ttl(marker_key)
-            return {
-                "admin": admin_id,
-                "status": RedisStatus_Status.START,
-                "ttl_seconds": ttl_seconds,
-                "ttl_minutes": round(ttl_seconds / 60, 2),
-            }
+            return RedisStartStatus(
+                admin=admin_id,
+                status=RedisStatus.START,
+                ttl_seconds=ttl_seconds,
+                ttl_minutes=round(ttl_seconds / 60, 2),
+            )
 
         except Exception as e:
             raise HTTPException(
@@ -149,14 +164,12 @@ class SettingService:
                 status_code=500, detail=f"Failed to get work start time: {str(e)}"
             )
 
-    @classmethod
-    def create_setting(
-        cls, user_log_expire_seconds: int, work_start_time: int
-    ) -> SettingCreate:
+    @staticmethod
+    def create_setting(payload: SettingCreatePayload) -> SettingCreate:
         try:
             setting = SettingCreate(
-                user_log_expire_seconds=user_log_expire_seconds,
-                work_start_time=work_start_time,
+                user_log_expire_seconds=payload.user_log_expire_seconds,
+                work_start_time=payload.work_start_time,
             )
             setting_data = setting.dict()
             settings_collection.insert_one(setting_data)
@@ -168,11 +181,45 @@ class SettingService:
                 status_code=500, detail=f"Failed to create settings: {str(e)}"
             )
 
+    @staticmethod
+    def update_setting(payload: SettingUpdatePayload) -> Setting:
+        try:
+            setting = Setting(
+                user_log_expire_seconds=payload.user_log_expire_seconds,
+                work_start_time=payload.work_start_time,
+                updated_at=datetime.utcnow(),
+            )
+
+            result = settings_collection.update_one(
+                {"_id": ObjectId(payload.id)}, {"$set": setting.dict(exclude={"id"})}
+            )
+
+            if result.matched_count == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Settings not found for update no changes made",
+                )
+
+            setting_data = payload.dict()
+            setting_data["_id"] = str(payload.id)
+
+            return Setting(**setting_data)
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to update setting: {str(e)}",
+            )
+
     @classmethod
-    def update_user_log_expire_seconds(cls, user_log_expire_seconds: int) -> Setting:
+    def update_user_log_expire_seconds(
+        cls, payload: SettingUserLogExpireSeconds
+    ) -> Setting:
         try:
             setting = cls.get_setting()
-            setting.user_log_expire_seconds = user_log_expire_seconds
+            setting.user_log_expire_seconds = payload.user_log_expire_seconds
             setting.updated_at = datetime.utcnow()
 
             result = settings_collection.update_one(
@@ -198,10 +245,10 @@ class SettingService:
             )
 
     @classmethod
-    def update_work_start_time(cls, work_start_time: int) -> Setting:
+    def update_work_start_time(cls, payload: SettingWorkStartTime) -> Setting:
         try:
             setting = cls.get_setting()
-            setting.work_start_time = work_start_time
+            setting.work_start_time = payload.work_start_time
             setting.updated_at = datetime.utcnow()
 
             result = settings_collection.update_one(
