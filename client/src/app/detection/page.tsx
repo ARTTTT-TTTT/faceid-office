@@ -43,10 +43,21 @@ export default function DetectionPage() {
     try {
       const latestUsers = await fetchLatestUserLogs();
       setLogUsers(latestUsers);
-      setAnimationKey((prev) => prev + 1); // เพิ่ม key เพื่อบังคับ remount
+      setAnimationKey((prev) => prev + 1);
     } catch (error) {
       logger(error, '[DetectionPage] handleUserDetected');
     }
+  };
+
+  const formatBangkokTime = (utcString: string): string => {
+    const date = new Date(utcString);
+    if (isNaN(date.getTime())) return 'Incorrect time';
+
+    const bangkokTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const hours = String(bangkokTime.getHours()).padStart(2, '0');
+    const minutes = String(bangkokTime.getMinutes()).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
   };
 
   if (loadingRedisStatus || loadingSetting) return;
@@ -77,11 +88,7 @@ export default function DetectionPage() {
               key={user._id}
               name={user.name}
               image={user.image}
-              timestamp={new Date(user.timestamp).toLocaleString('th-TH', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              })}
+              timestamp={formatBangkokTime(user.timestamp)}
               status={user.status}
             />
           );
