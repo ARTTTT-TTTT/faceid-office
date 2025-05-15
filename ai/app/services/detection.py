@@ -149,38 +149,37 @@ class DetectionProcessingService:
                 for name_file, known_embedding in person_faces.items():
                     distance = cosine(vector_image, known_embedding)
                     if (
-                        distance < cls.BEST_DISTANCE_THRESHOLD
+                        distance < settings.BEST_DISTANCE_THRESHOLD
                         and distance < best_distance
                     ):
                         matched = True
                         best_distance = distance
                         best_person = person_folder
                 if matched:
-                    break
+                    if UserLogService.should_log_user(
+                        name=best_person, admin_id=admin_id
+                    ):
+                        now = datetime.now()
+                        status = (
+                            UserLogStatus.ON_TIME
+                            if now.hour < work_start_time
+                            else UserLogStatus.LATE
+                        )
+                        result = UserLogService.save_user_log(
+                            name=best_person, status=status
+                        )
 
-            if best_distance < settings.BEST_DISTANCE_THRESHOLD:
-                if UserLogService.should_log_user(name=best_person, admin_id=admin_id):
-                    now = datetime.now()
-                    status = (
-                        UserLogStatus.ON_TIME
-                        if now.hour < work_start_time
-                        else UserLogStatus.LATE
-                    )
-                    result = UserLogService.save_user_log(
-                        name=best_person, status=status
-                    )
+                        if result == False:
+                            return {
+                                "status": "error",
+                                "message": "Failed to save user log.",
+                            }
 
-                    if result == False:
+                        return {"status": "new_log", "message": best_person}
+                    else:
                         return {
-                            "status": "error",
-                            "message": "Failed to save user log.",
+                            "status": "already_logged",
+                            "message": "Already logged in this session.",
                         }
-
-                    return {"status": "new_log", "message": best_person}
-                else:
-                    return {
-                        "status": "already_logged",
-                        "message": "Already logged in this session.",
-                    }
 
         return {"status": "no_match", "message": "No recognized faces."}
