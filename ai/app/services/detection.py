@@ -141,18 +141,22 @@ class DetectionProcessingService:
             cropped = frame[y1:y2, x1:x2]
             vector_image = cls.image_embedding(cropped)
 
-            person_distances = {}
-            for person_folder, person_faces in known_faces.items():
-                distances = []
-                for name, known_embedding in person_faces.items():
-                    distance = cosine(vector_image, known_embedding)
-                    distances.append((name, distance))
-                min_name, min_dist = min(distances, key=lambda x: x[1])
-                person_distances[person_folder] = (min_name, min_dist)
+            matched = False
+            best_distance = float("inf")
+            best_person = None
 
-            best_person, (_, best_distance) = min(
-                person_distances.items(), key=lambda x: x[1][1]
-            )
+            for person_folder, person_faces in known_faces.items():
+                for name_file, known_embedding in person_faces.items():
+                    distance = cosine(vector_image, known_embedding)
+                    if (
+                        distance < cls.BEST_DISTANCE_THRESHOLD
+                        and distance < best_distance
+                    ):
+                        matched = True
+                        best_distance = distance
+                        best_person = person_folder
+                if matched:
+                    break
 
             if best_distance < settings.BEST_DISTANCE_THRESHOLD:
                 if UserLogService.should_log_user(name=best_person, admin_id=admin_id):
