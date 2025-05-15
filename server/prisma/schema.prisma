@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id               String    @id @default(uuid())
+  name            String    @unique
+  email            String    @unique
+  passwordHash     String
+  sessionDuration  Int       @default(3600)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  cameras Camera[]
+  people  Person[]
+}
+
+model Camera {
+  id        String    @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime  @default(now())
+  adminId   String
+
+  admin     Admin     @relation(fields: [adminId], references: [id])
+  sessions  DetectionSession[]
+  logs      DetectionLog[]
+}
+
+model Person {
+  id               String      @id @default(uuid())
+  fullName         String
+  position         String?
+  profileImageUrl  String?
+  createdAt        DateTime    @default(now())
+  adminId          String
+
+  admin     Admin        @relation(fields: [adminId], references: [id])
+  faceImages FaceImage[]
+  logs       DetectionLog[]
+}
+
+model FaceImage {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  vector    Json
+  createdAt DateTime @default(now())
+  personId  String
+
+  person    Person   @relation(fields: [personId], references: [id])
+}
+
+model DetectionSession {
+  id        String   @id @default(uuid())
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  cameraId  String
+
+  camera    Camera   @relation(fields: [cameraId], references: [id])
+  logs      DetectionLog[]
+}
+
+model DetectionLog {
+  id          String   @id @default(uuid())
+  detectedAt  DateTime @default(now())
+  imageUrl    String
+  sessionId   String
+  personId    String
+  cameraId    String
+
+  session     DetectionSession @relation(fields: [sessionId], references: [id])
+  person      Person           @relation(fields: [personId], references: [id])
+  camera      Camera           @relation(fields: [cameraId], references: [id])
+}
