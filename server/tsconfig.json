@@ -14,7 +14,10 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowJs": true,
-    "types": ["node", "jest"] // Removed 'mongoose', 'Multer', and 'form-data' to fix type definition errors
+    "types": ["node", "jest"],
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx", "commitlint.config.js"],
   "exclude": ["node_modules", "dist"]
