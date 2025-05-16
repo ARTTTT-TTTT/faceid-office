@@ -24,6 +24,12 @@ pnpm prisma generate
 pnpm prisma migrate dev --name "init"
 ```
 
+### 🛢 Prisma Studio 🛢
+
+```bash
+pnpm studio
+```
+
 ## 🚀 Compile and run 🚀
 
 ### 🧪 development
