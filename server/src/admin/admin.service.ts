@@ -1,6 +1,7 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AdminProfile } from './admin.interface';
+import { AdminProfile } from './dto/admin-response.dto';
+import { UpdateSessionDurationDto } from './dto/update-session-duration.dto';
 
 @Injectable()
 export class AdminService {
@@ -32,7 +33,7 @@ export class AdminService {
     return admin;
   }
 
-  async updateSessionDuration(adminId: string, sessionDuration: number) {
+  async updateSessionDuration(adminId: string, dto: UpdateSessionDurationDto) {
     console.log('Updating session duration for admin:', adminId);
     const admin = await this.prisma.admin.findUnique({
       where: { id: adminId },
@@ -43,7 +44,7 @@ export class AdminService {
     return this.prisma.admin.update({
       where: { id: adminId },
       data: {
-        sessionDuration,
+        sessionDuration: dto.sessionDuration,
       },
     });
   }
