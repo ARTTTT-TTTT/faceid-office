@@ -15,10 +15,16 @@
     "skipLibCheck": true,
     "allowJs": true,
     "types": ["node", "jest", "multer"],
+    "typeRoots": ["./node_modules/@types", "./src/common/types"],
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "commitlint.config.js"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "commitlint.config.js",
+    "src/common/types/**/*.d.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
