@@ -6,6 +6,24 @@
 pnpm install
 ```
 
+## 🐳 Docker Compose Up 🐳
+
+```bash
+docker compose up -d
+```
+
+### ⚙️ Prisma Generate ⚙️
+
+```bash
+pnpm prisma generate
+```
+
+### 💾 Prisma Migrate Dev (Initial Migration) 💾
+
+```bash
+pnpm prisma migrate dev --name "init"
+```
+
 ## 🚀 Compile and run 🚀
 
 ### 🧪 development
@@ -24,24 +42,6 @@ pnpm start:debug
 
 ```bash
 pnpm start:prod
-```
-
-## 🐳 Docker Compose Up 🐳
-
-```bash
-docker-compose up -d
-```
-
-### ⚙️ Prisma Generate ⚙️
-
-```bash
-pnpm prisma generate
-```
-
-### 💾 Prisma Migrate Dev (Initial Migration) 💾
-
-```bash
-pnpm prisma migrate dev --name "init"
 ```
 
 ## 🧹 Clean project 🧹
