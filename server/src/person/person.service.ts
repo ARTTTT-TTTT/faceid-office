@@ -1,27 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePersonDto } from './dto/create-person.dto';
-import { UpdatePersonDto } from './dto/update-person.dto';
+// import { Injectable } from '@nestjs/common';
+// import { PrismaService } from '../prisma/prisma.service'; // สมมติว่าคุณมี PrismaService อยู่แล้ว
+// import { CreatePersonDto } from './dto/create-person.dto'; // DTO สำหรับสร้าง Person
 
-@Injectable()
-export class PersonService {
-  create(createPersonDto: CreatePersonDto) {
-    // Example usage: return the received DTO
-    return `This action adds a new person: ${JSON.stringify(createPersonDto)}`;
-  }
+// @Injectable()
+// export class PersonService {
+//   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
-    return `This action returns all person`;
-  }
+//   async createPerson(adminId: string, dto: CreatePersonDto) {
+//     try {
+//       const newPerson = await this.prisma.person.create({
+//         data: {
+//           fullName: dto.fullName,
+//           position: dto.position,
+//           admin: {
+//             connect: { id: adminId },
+//           },
+//         },
+//       });
+//       return newPerson;
+//     } catch (error) {
+//       // จัดการ error ที่อาจเกิดขึ้น เช่น adminId ไม่ถูกต้อง
+//       console.error('Error creating person:', error);
+//       throw error;
+//     }
+//   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} person`;
-  }
-
-  update(id: number, updatePersonDto: UpdatePersonDto) {
-    return `This action updates a #${id} person with data: ${JSON.stringify(updatePersonDto)}`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} person`;
-  }
-}
+//   // ฟังก์ชันอื่นๆ ของ PersonService (getPeople, updatePerson, deletePerson, uploadProfileImage) จะอยู่ที่นี่
+// }
