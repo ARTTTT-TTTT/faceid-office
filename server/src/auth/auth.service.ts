@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -28,8 +29,8 @@ export class AuthService {
 
     const admin = await this.prisma.admin.create({
       data: {
-        email,
         name: username,
+        email,
         passwordHash: hashed,
       },
     });
@@ -38,6 +39,9 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
+    }
     const admin: Admin | null = await this.prisma.admin.findUnique({
       where: { email },
     });
