@@ -7,17 +7,16 @@ class Settings {
     'local') as Environment;
   API_STR: string = process.env.API_STR || '/api';
   SECRET_KEY: string = this.generateSecretKey();
-  ACCESS_TOKEN_EXPIRE_MINUTES: number = parseInt(
-    process.env.ACCESS_TOKEN_EXPIRE_MINUTES || '11520',
-    10,
-  );
+  ACCESS_TOKEN_EXPIRE_MINUTES: number =
+    Number(process.env.ACCESS_TOKEN_EXPIRE_MINUTES) || 11520;
   FRONTEND_HOST: string = process.env.FRONTEND_HOST || 'http://localhost:3000';
   BACKEND_CORS_ORIGINS: (URL | string)[] | string =
     process.env.BACKEND_CORS_ORIGINS || [];
 
-  get POSTGRESQL_DATABASE_URI(): string {
-    return process.env.BACKEND_CORS_ORIGINS || '';
-  }
+  POSTGRESQL_URL: string = process.env.POSTGRESQL_URL || '';
+
+  REDIS_HOST: string = process.env.REDIS_HOST || 'localhost';
+  REDIS_PORT: number = Number(process.env.REDIS_PORT) || 6379;
 
   private generateSecretKey(): string {
     const characters =
