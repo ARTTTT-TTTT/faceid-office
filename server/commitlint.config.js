@@ -19,6 +19,7 @@ module.exports = {
     ],
     'scope-enum': [2, 'always', ['server']],
     'subject-case': [2, 'never', ['start-case', 'pascal-case']],
-    'body-max-line-length': [1, 'always', 999],
+    'header-max-length': [0],
+    'body-max-line-length': [0],
   },
 };
