@@ -6,16 +6,26 @@
   "license": "MIT",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint:fix": "eslint src --fix && pnpm format",
+    "lint:strict": "eslint --max-warnings=0 src",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/jest/bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prepare": "cd .. && husky server/.husky"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "cd server && npx --no-install commitlint --edit \"$1\"",
+      "post-merge": "cd server && pnpm install",
+      "pre-commit": "cd server && npx lint-staged"
+    }
   },
   "engines": {
     "npm": ">=10.0.0",
@@ -32,6 +42,8 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -47,7 +59,9 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
     "globals": "^15.14.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "lint-staged": "^16.0.0",
     "prettier": "^3.4.2",
     "prisma": "^6.8.1",
     "source-map-support": "^0.5.21",
@@ -57,7 +71,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.32.1"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -75,6 +89,15 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier -w"
+    ],
+    "**/*.{json,css,scss,md,webmanifest}": [
+      "prettier -w"
+    ]
   },
   "pnpm": {
     "onlyBuiltDependencies": [
