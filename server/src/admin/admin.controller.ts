@@ -1,13 +1,17 @@
-import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Patch, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { UpdateSessionDurationDto } from './dto/update-session-duration.dto';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Patch('session-duration')
   updateSessionDuration(
-    @Param('id') adminId: string,
+    @GetUser('sub') adminId: string,
     @Body() dto: UpdateSessionDurationDto,
   ) {
     return this.adminService.updateSessionDuration(
