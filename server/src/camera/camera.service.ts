@@ -1,24 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CameraResponseDto } from './dto/camera-response.dto';
+import { CreateCameraDto } from './dto/create-camera.dto';
 
 @Injectable()
 export class CameraService {
-  create() {
-    return 'This action adds a new camera';
+  constructor(private prisma: PrismaService) {}
+
+  async createCamera(
+    adminId: string,
+    dto: CreateCameraDto,
+  ): Promise<CameraResponseDto> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: adminId },
+    });
+
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    // Create the camera
+    const camera = await this.prisma.camera.create({
+      data: {
+        name: dto.name,
+        location: dto.location,
+        adminId,
+      },
+    });
+    return {
+      id: camera.id,
+      name: camera.name,
+      location: camera.location,
+      createdAt: camera.createdAt,
+    };
   }
 
-  findAll() {
-    return `This action returns all camera`;
+  async getCameras(adminId: string): Promise<CameraResponseDto[]> {
+    const cameras = await this.prisma.camera.findMany({
+      where: { adminId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return cameras.map(({ id, name, location, createdAt }) => ({
+      id,
+      name,
+      location,
+      createdAt,
+    }));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} camera`;
-  }
+  async getOneCamera(
+    adminId: string,
+    cameraId: string,
+  ): Promise<CameraResponseDto> {
+    const camera = await this.prisma.camera.findFirst({
+      where: {
+        id: cameraId,
+        adminId,
+      },
+    });
 
-  update(id: number) {
-    return `This action updates a #${id} camera`;
-  }
+    if (!camera) {
+      throw new NotFoundException('Camera not found or unauthorized');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} camera`;
+    const { id, name, location, createdAt } = camera;
+    return { id, name, location, createdAt };
   }
 }

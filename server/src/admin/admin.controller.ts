@@ -19,9 +19,6 @@ export class AdminController {
     @GetUser('sub') adminId: string,
     @Body() dto: UpdateSessionDurationDto,
   ) {
-    return this.adminService.updateSessionDuration(
-      adminId,
-      dto.sessionDuration,
-    );
+    return this.adminService.updateSessionDuration(adminId, dto);
   }
 }
