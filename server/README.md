@@ -44,6 +44,38 @@ pnpm start:debug
 pnpm start:prod
 ```
 
+## 🦁 NestJS CLI 🦁
+
+```bash
+pnpm nest
+```
+
+### 🏗️ NestJS Generate 🏗️
+
+- #### Resource
+
+```bash
+pnpm generate [name]
+```
+
+- #### Service
+
+```bash
+pnpm generate:service [name]
+```
+
+- #### Controller
+
+```bash
+pnpm generate:controller [name]
+```
+
+- #### Module
+
+```bash
+pnpm generate:module [name]
+```
+
 ## 🧹 Clean project 🧹
 
 ```bash
