@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
 import { UpdateDetectionLogDto } from './dto/update-detection-log.dto';
 

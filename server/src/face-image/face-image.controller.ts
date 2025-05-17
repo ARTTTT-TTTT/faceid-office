@@ -1,45 +1,57 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { FaceImageService } from './face-image.service';
-import { CreateFaceImageDto } from './dto/create-face-image.dto';
-import { UpdateFaceImageDto } from './dto/update-face-image.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+import { UploadFaceImageDto } from '@/face-image/dto/upload-face-image.dto';
+import { FaceImageService } from '@/face-image/face-image.service';
 
 @Controller('face-image')
 export class FaceImageController {
   constructor(private readonly faceImageService: FaceImageService) {}
 
+  @Get(':personId')
+  async getFaceImages(@Param('personId') personId: string) {
+    return await this.faceImageService.getFaceImages(personId);
+  }
+
   @Post()
-  create(@Body() createFaceImageDto: CreateFaceImageDto) {
-    return this.faceImageService.create(createFaceImageDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.faceImageService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.faceImageService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateFaceImageDto: UpdateFaceImageDto,
+  @UseInterceptors(
+    FileInterceptor('image', {
+      fileFilter: (req, file, callback) => {
+        if (file.mimetype !== 'image/jpeg') {
+          return callback(
+            new BadRequestException('Only JPG files are allowed!'),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 1024 * 1024 * 5,
+      },
+    }),
+  )
+  async uploadFaceImage(
+    @Body() uploadFaceImageDto: UploadFaceImageDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.faceImageService.update(+id, updateFaceImageDto);
+    return await this.faceImageService.uploadFaceImage(
+      file,
+      uploadFaceImageDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.faceImageService.remove(+id);
+  async deleteFaceImage(@Param('id') faceImageId: string) {
+    return await this.faceImageService.deleteFaceImage(faceImageId);
   }
 }

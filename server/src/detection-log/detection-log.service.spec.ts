@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { DetectionLogService } from './detection-log.service';
 
 describe('DetectionLogService', () => {
