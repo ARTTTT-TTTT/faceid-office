@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "typeRoots": ["./node_modules/@types", "./src/common/types"],
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "multer"],
     "paths": {
       "@/*": ["src/*"]
     }
