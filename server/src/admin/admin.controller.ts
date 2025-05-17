@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+
+import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+
 import { AdminService } from './admin.service';
 import { UpdateSessionDurationDto } from './dto/update-session-duration.dto';
-import { GetUser } from '@/common/decorators/get-user.decorator';
-import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('admin')
