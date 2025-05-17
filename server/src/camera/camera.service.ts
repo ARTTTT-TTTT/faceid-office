@@ -17,7 +17,6 @@ export class CameraService {
 
     if (!admin) throw new NotFoundException('Admin not found');
 
-    // Create the camera
     const camera = await this.prisma.camera.create({
       data: {
         name: dto.name,
@@ -34,6 +33,13 @@ export class CameraService {
   }
 
   async getCameras(adminId: string): Promise<CameraResponseDto[]> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: adminId },
+    });
+    if (!admin) {
+      throw new NotFoundException('Admin not found');
+    }
+
     const cameras = await this.prisma.camera.findMany({
       where: { adminId },
       orderBy: { createdAt: 'desc' },
