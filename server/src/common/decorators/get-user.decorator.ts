@@ -5,7 +5,6 @@ interface JwtPayload {
   sub: string;
   email: string;
   name: string;
-  // add more fields if needed
 }
 
 export const GetUser = createParamDecorator(
