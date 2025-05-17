@@ -91,7 +91,7 @@ importers:
         specifier: ^1.10.8
         version: 1.11.24
       '@types/express':
-        specifier: ^5.0.2
+        specifier: ^5.0.0
         version: 5.0.2
       '@types/jest':
         specifier: ^29.5.14
@@ -117,12 +117,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.2.3
         version: 5.4.0(@types/eslint@9.6.1)(eslint-config-prettier@10.1.5(eslint@9.27.0(jiti@2.4.2)))(eslint@9.27.0(jiti@2.4.2))(prettier@3.5.3)
-      eslint-plugin-simple-import-sort:
-        specifier: ^12.1.1
-        version: 12.1.1(eslint@9.27.0(jiti@2.4.2))
-      eslint-plugin-unused-imports:
-        specifier: ^4.1.4
-        version: 4.1.4(@typescript-eslint/eslint-plugin@8.32.1(@typescript-eslint/parser@8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2))
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -1222,9 +1216,6 @@ packages:
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
-
-  '@types/multer@1.4.12':
-    resolution: {integrity: sha512-pQ2hoqvXiJt2FP9WQVLPRO+AmiIm/ZYkavPlIQnx282u4ZrVdztx0pkh3jjpQt0Kz+YI0YhSG264y08UJKoUQg==}
 
   '@types/node@22.15.18':
     resolution: {integrity: sha512-v1DKRfUdyW+jJhZNEI1PYy29S2YRxMV5AOO/x/SjKmW0acCIOqmbj6Haf9eHAhsPmrhlHSxEhv/1WszcLWV4cg==}
@@ -5230,10 +5221,6 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/multer@1.4.12':
-    dependencies:
-      '@types/express': 5.0.2
-
   '@types/node@22.15.18':
     dependencies:
       undici-types: 6.21.0
@@ -6122,16 +6109,6 @@ snapshots:
     optionalDependencies:
       '@types/eslint': 9.6.1
       eslint-config-prettier: 10.1.5(eslint@9.27.0(jiti@2.4.2))
-
-  eslint-plugin-simple-import-sort@12.1.1(eslint@9.27.0(jiti@2.4.2)):
-    dependencies:
-      eslint: 9.27.0(jiti@2.4.2)
-
-  eslint-plugin-unused-imports@4.1.4(@typescript-eslint/eslint-plugin@8.32.1(@typescript-eslint/parser@8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2)):
-    dependencies:
-      eslint: 9.27.0(jiti@2.4.2)
-    optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 8.32.1(@typescript-eslint/parser@8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
 
   eslint-scope@5.1.1:
     dependencies:

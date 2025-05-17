@@ -65,7 +65,7 @@ export class CameraService {
     });
 
     if (!camera) {
-      throw new NotFoundException('Camera not found or unauthorized');
+      throw new NotFoundException('Camera not found');
     }
 
     const { id, name, location, createdAt } = camera;
