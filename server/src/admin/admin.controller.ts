@@ -11,6 +11,7 @@ export class AdminController {
 
   @Get('profile')
   async getProfile(@GetUser('sub') adminId: string) {
+    console.log('Fetching profile for admin:', adminId);
     return this.adminService.getProfile(adminId);
   }
 
