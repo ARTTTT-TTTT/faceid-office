@@ -1,4 +1,3 @@
-import { JwtPayload } from '@/auth/auth.interface';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   CanActivate,
@@ -9,13 +8,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-
-interface CustomRequest extends Request {
-  params: Record<string, string | undefined>;
-  body: Record<string, string | number | boolean | object | undefined>;
-  query: Record<string, string | string[] | undefined>;
-  user?: JwtPayload;
-}
+import { AuthRequest } from '../interfaces/auth-request.interface';
+import { ResourceType } from '../interfaces/resource-owner.interface';
+import { SourceType } from '../types/source.type';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
@@ -25,7 +20,7 @@ export class OwnershipGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<CustomRequest>();
+    const request = context.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
 
     const adminId = user?.sub;
@@ -36,11 +31,9 @@ export class OwnershipGuard implements CanActivate {
     );
     const idKey =
       this.reflector.get<string>('idKey', context.getHandler()) || 'id';
-    const source: 'params' | 'body' | 'query' =
-      this.reflector.get<'params' | 'body' | 'query'>(
-        'source',
-        context.getHandler(),
-      ) || 'params';
+    const source: SourceType =
+      this.reflector.get<SourceType>('source', context.getHandler()) ||
+      'params';
 
     let idValue: string | number | boolean | object | undefined;
 
@@ -50,13 +43,6 @@ export class OwnershipGuard implements CanActivate {
       idValue = request.body[idKey];
     } else if (source === 'query') {
       idValue = request.query[idKey];
-
-      console.log('Resource Type:', resourceType);
-      console.log('ID Key:', idKey);
-      console.log('Source:', source);
-      console.log('ID Value:', idValue);
-      console.log('Admin ID (from user):', adminId);
-      console.log('Request Params:', request.params);
     }
 
     if (!resourceType || !idValue) {
@@ -67,11 +53,7 @@ export class OwnershipGuard implements CanActivate {
 
     const resourceId = idValue as string; // Assuming ID is a string for Prisma
 
-    let resource:
-      | { id: string; adminId: string }
-      | { id: string; person: { adminId: string } }
-      | { id: string; camera: { adminId: string } }
-      | null;
+    let resource: ResourceType;
 
     let isOwner = false; // Flag to track ownership
 
