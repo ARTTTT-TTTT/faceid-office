@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { CameraService } from './camera.service';
-import { CameraController } from './camera.controller';
+
 import { PrismaModule } from '@/prisma/prisma.module';
+
+import { CameraController } from './camera.controller';
+import { CameraService } from './camera.service';
 
 @Module({
   imports: [PrismaModule],

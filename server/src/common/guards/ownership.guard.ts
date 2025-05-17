@@ -1,13 +1,15 @@
-import { PrismaService } from '@/prisma/prisma.service';
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+
+import { PrismaService } from '@/prisma/prisma.service';
+
 import { AuthRequest } from '../interfaces/auth-request.interface';
 import { ResourceType } from '../interfaces/resource-owner.interface';
 import { SourceType } from '../types/source.type';

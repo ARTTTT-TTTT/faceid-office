@@ -1,4 +1,5 @@
 import { Request } from 'express';
+
 import { JwtPayload } from '@/auth/auth.interface';
 
 export interface AuthRequest extends Request {

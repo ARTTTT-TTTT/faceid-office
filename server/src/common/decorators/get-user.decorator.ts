@@ -1,6 +1,7 @@
-import { JwtPayload } from '@/auth/auth.interface';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
+
+import { JwtPayload } from '@/auth/auth.interface';
 
 export const GetUser = createParamDecorator(
   <T extends keyof JwtPayload | undefined>(

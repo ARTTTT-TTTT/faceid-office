@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { CameraService } from './camera.service';
-import { CreateCameraDto } from './dto/create-camera.dto';
-import { GetUser } from '@/common/decorators/get-user.decorator';
+
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+
+import { CameraService } from './camera.service';
+import { CreateCameraDto } from './dto/create-camera.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('camera')
 export class CameraController {
@@ -19,7 +21,6 @@ export class CameraController {
 
   @Get()
   async getCameras(@GetUser('sub') adminId: string) {
-    console.log('Fetching cameras for admin:', adminId);
     return this.cameraService.getCameras(adminId);
   }
 
