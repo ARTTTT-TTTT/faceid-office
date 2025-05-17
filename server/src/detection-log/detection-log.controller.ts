@@ -1,12 +1,13 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
+
 import { DetectionLogService } from './detection-log.service';
 import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
 import { UpdateDetectionLogDto } from './dto/update-detection-log.dto';

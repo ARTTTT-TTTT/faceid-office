@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // สมมติว่าคุณมี PrismaService อยู่แล้ว
+import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { CreatePersonDto } from './dto/create-person.dto'; // DTO สำหรับสร้าง Person
+import { PrismaService } from '../prisma/prisma.service'; // สมมติว่าคุณมี PrismaService อยู่แล้ว
 
 @Injectable()
 export class PersonService {
@@ -19,8 +20,7 @@ export class PersonService {
       });
       return newPerson;
     } catch (error) {
-      console.error('Error creating person:', error);
-      throw error;
+      throw new BadRequestException(error);
     }
   }
 }
