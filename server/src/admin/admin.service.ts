@@ -1,5 +1,7 @@
-import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { PrismaService } from '@/prisma/prisma.service';
+
 import { AdminProfile } from './admin.interface';
 
 @Injectable()
@@ -33,7 +35,6 @@ export class AdminService {
   }
 
   async updateSessionDuration(adminId: string, sessionDuration: number) {
-    console.log('Updating session duration for admin:', adminId);
     const admin = await this.prisma.admin.findUnique({
       where: { id: adminId },
     });

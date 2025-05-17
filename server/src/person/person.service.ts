@@ -1,0 +1,26 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { CreatePersonDto } from './dto/create-person.dto'; // DTO สำหรับสร้าง Person
+import { PrismaService } from '../prisma/prisma.service'; // สมมติว่าคุณมี PrismaService อยู่แล้ว
+
+@Injectable()
+export class PersonService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async createPerson(adminId: string, dto: CreatePersonDto) {
+    try {
+      const newPerson = await this.prisma.person.create({
+        data: {
+          fullName: dto.fullName,
+          position: dto.position,
+          admin: {
+            connect: { id: adminId },
+          },
+        },
+      });
+      return newPerson;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+}

@@ -48,7 +48,7 @@ model Person {
 model FaceImage {
   id        String   @id @default(uuid())
   imageUrl  String
-  vector    Json
+  vectorUrl String
   createdAt DateTime @default(now())
   personId  String
 
