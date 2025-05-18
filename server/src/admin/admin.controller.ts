@@ -16,6 +16,11 @@ export class AdminController {
     return this.adminService.getProfile(adminId);
   }
 
+  @Get('session-duration')
+  async getSessionDuration(@GetUser('sub') adminId: string): Promise<number> {
+    return this.adminService.getSessionDuration(adminId);
+  }
+
   @Patch('session-duration')
   updateSessionDuration(
     @GetUser('sub') adminId: string,
