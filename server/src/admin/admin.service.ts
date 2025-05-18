@@ -48,4 +48,17 @@ export class AdminService {
       },
     });
   }
+
+  async getSessionDuration(adminId: string): Promise<number> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: adminId },
+      select: {
+        sessionDuration: true,
+      },
+    });
+
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    return admin.sessionDuration;
+  }
 }
