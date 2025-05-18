@@ -86,4 +86,16 @@ export class CameraService {
       data: dto,
     });
   }
+
+  async delete(cameraId: string) {
+    const camera = await this.prisma.camera.findUnique({
+      where: { id: cameraId },
+    });
+    if (!camera) {
+      throw new NotFoundException('Camera not found');
+    }
+
+    await this.prisma.camera.delete({ where: { id: cameraId } });
+    return { message: 'Camera deleted successfully' };
+  }
 }

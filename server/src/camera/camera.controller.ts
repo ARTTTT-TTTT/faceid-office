@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -49,5 +50,11 @@ export class CameraController {
     @Body() dto: UpdateCameraDto,
   ) {
     return this.cameraService.updateCamera(cameraId, dto);
+  }
+
+  @CheckOwnership('camera', 'cameraId')
+  @Delete(':cameraId')
+  async deleteCamera(@Param('cameraId') cameraId: string) {
+    return this.cameraService.delete(cameraId);
   }
 }
