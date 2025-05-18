@@ -4,6 +4,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 import { CameraResponseDto } from './dto/camera-response.dto';
 import { CreateCameraDto } from './dto/create-camera.dto';
+import { UpdateCameraDto } from './dto/update-camera.dto';
 
 @Injectable()
 export class CameraService {
@@ -72,5 +73,17 @@ export class CameraService {
 
     const { id, name, location, createdAt } = camera;
     return { id, name, location, createdAt };
+  }
+
+  async updateCamera(cameraId: string, dto: UpdateCameraDto) {
+    const existing = await this.prisma.camera.findUnique({
+      where: { id: cameraId },
+    });
+    if (!existing) throw new NotFoundException('Camera not found');
+
+    return this.prisma.camera.update({
+      where: { id: cameraId },
+      data: dto,
+    });
   }
 }
