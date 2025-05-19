@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { AdminService } from '@/admin/admin.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
-import { StartSessionDto } from '@/session/dto/start-session.dto';
-import { RedisStart } from '@/session/redis.interface';
 
 @Injectable()
 export class SessionService {
@@ -27,69 +25,104 @@ export class SessionService {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.trackingSuffix}`;
   }
 
-  async startSession(startSessionDto: StartSessionDto): Promise<RedisStart> {
-    // !TEST start session, end session
-    // !FEATURE เพิ่ม getSessionDuration
-    // const ttlSeconds = await this.adminService.getSessionDuration();
-    const adminProfile = await this.adminService.getProfile(
-      startSessionDto.adminId,
-    );
-    const markerKey = this.buildMarkerKey(
-      startSessionDto.adminId,
-      startSessionDto.cameraId,
-    );
+  async startSession(adminId: string) {
+    const adminProfile = await this.adminService.getProfile(adminId);
 
-    const markerExists = await this.redisService.exists(markerKey);
-    if (markerExists) {
-      await this.stopExistingSession(
-        startSessionDto.adminId,
-        startSessionDto.cameraId,
-      );
+    const results: { cameraId: string; TTL: string }[] = [];
+    const createdKeys: string[] = [];
+    const failedCameras: { cameraId: string; markerKey: string }[] = [];
+
+    for (const camera of adminProfile.cameras) {
+      const cameraId = camera.id;
+      const markerKey = this.buildMarkerKey(adminId, cameraId);
+
+      const markerExists = await this.redisService.exists(markerKey);
+      if (markerExists) {
+        await this.stopExistingSession(adminId, cameraId);
+        results.push({
+          cameraId,
+          TTL: `Failed to start session (marker still exists)`,
+        });
+      } else {
+        await this.redisService.setex(
+          markerKey,
+          adminProfile.sessionDuration,
+          '1',
+        );
+        const ttl: number = await this.redisService.ttl(markerKey);
+
+        if (ttl > 0) {
+          createdKeys.push(markerKey);
+          results.push({
+            cameraId,
+            TTL: `Session started with TTL: ${ttl}s`,
+          });
+        } else {
+          failedCameras.push({ cameraId, markerKey });
+          results.push({
+            cameraId,
+            TTL: `Failed to verify TTL after setting`,
+          });
+        }
+      }
     }
 
-    const markerExistsAfterCheck = await this.redisService.exists(markerKey);
-    if (!markerExistsAfterCheck) {
+    // ❗ Retry logic for failed keys
+    for (const { cameraId, markerKey } of failedCameras) {
       await this.redisService.setex(
         markerKey,
         adminProfile.sessionDuration,
         '1',
       );
+      const retryTtl: number = await this.redisService.ttl(markerKey);
 
-      // const newSession = await this.prisma.detectionSession.create({
-      //   data: {
-      //     cameraId: startSessionDto.cameraId,
-      //   },
-      // });
-      //console.log('markerExistsAfterCheck');
-
-      return {
-        cameraId: startSessionDto.cameraId,
-        sessionDuration: `${adminProfile.sessionDuration}s`,
-      };
+      if (retryTtl > 0) {
+        createdKeys.push(markerKey);
+        results.push({
+          cameraId,
+          TTL: `Retry success: Session started with TTL: ${retryTtl}s`,
+        });
+      } else {
+        results.push({
+          cameraId,
+          TTL: `Retry failed again`,
+        });
+      }
     }
-    //console.log('last return');
+
+    const totalExpected = adminProfile.cameras.length;
+    const totalCreated = createdKeys.length;
+    const success = totalCreated === totalExpected;
+
     return {
-      cameraId: startSessionDto.cameraId,
-      sessionDuration: `${adminProfile.sessionDuration}s`,
+      results,
+      summary: {
+        success,
+        totalExpected,
+        totalCreated,
+        failed: totalExpected - totalCreated,
+      },
     };
   }
 
-  async endSession(sessionId: string): Promise<void> {
-    const session = await this.prisma.detectionSession.findUnique({
-      where: { id: sessionId },
-    });
+  async endSession(adminId: string): Promise<void> {
+    const adminProfile = await this.adminService.getProfile(adminId);
 
-    if (session) {
-      await this.prisma.detectionSession.update({
-        where: { id: sessionId },
+    for (const camera of adminProfile.cameras) {
+      const cameraId = camera.id;
+
+      // End all active sessions for this camera
+      await this.prisma.detectionSession.updateMany({
+        where: {
+          cameraId: cameraId,
+          endedAt: null,
+        },
         data: {
           endedAt: new Date(),
         },
       });
 
-      // ลบ Marker Key ที่เกี่ยวข้อง (ถ้ามี logic การใช้ Marker Key ต่อเนื่อง)
-      const adminId = session.cameraId;
-      const cameraId = session.cameraId;
+      // Delete Redis marker key
       const markerKey = this.buildMarkerKey(adminId, cameraId);
       await this.redisService.del(markerKey);
     }
@@ -126,5 +159,41 @@ export class SessionService {
         endedAt: new Date(),
       },
     });
+  }
+
+  async getSessionStatus(
+    adminId: string,
+  ): Promise<
+    { cameraId: string; status: 'start' | 'end'; TTL: number | null }[]
+  > {
+    const adminProfile = await this.adminService.getProfile(adminId);
+    const results: {
+      cameraId: string;
+      status: 'start' | 'end';
+      TTL: number | null;
+    }[] = [];
+
+    for (const camera of adminProfile.cameras) {
+      const cameraId = camera.id;
+      const markerKey = this.buildMarkerKey(adminId, cameraId);
+      const exists = await this.redisService.exists(markerKey);
+
+      if (exists) {
+        const ttl: number = await this.redisService.ttl(markerKey);
+        results.push({
+          cameraId,
+          status: 'start',
+          TTL: ttl,
+        });
+      } else {
+        results.push({
+          cameraId,
+          status: 'end',
+          TTL: null,
+        });
+      }
+    }
+
+    return results;
   }
 }
