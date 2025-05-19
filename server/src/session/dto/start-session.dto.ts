@@ -2,12 +2,12 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 // !FEATURE IsYouUUID
 
-export class UploadFaceImageDto {
+export class StartSessionDto {
   @IsNotEmpty()
   @IsString()
   adminId: string;
 
   @IsNotEmpty()
   @IsString()
-  personId: string;
+  cameraId: string;
 }

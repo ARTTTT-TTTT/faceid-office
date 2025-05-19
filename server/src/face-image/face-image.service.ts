@@ -17,9 +17,9 @@ export class FaceImageService {
 
   async getFaceImages(personId: string) {
     try {
-      const faceImages = await this.prisma.faceImage.findMany({
+      const faceImages = await this.prisma.person.findMany({
         where: {
-          personId: personId,
+          id: personId,
         },
       });
 
@@ -29,10 +29,9 @@ export class FaceImageService {
         );
       }
 
-      const images = faceImages.map(({ id, imageUrl, vectorUrl }) => ({
+      const images = faceImages.map(({ id, faceImageUrl }) => ({
         id,
-        imageUrl,
-        vectorUrl,
+        faceImageUrl,
       }));
       return images;
     } catch (error) {
@@ -66,7 +65,6 @@ export class FaceImageService {
         data: {
           personId: dto.personId,
           imageUrl: imagePath,
-          vectorUrl: imagePath,
         },
       });
 
