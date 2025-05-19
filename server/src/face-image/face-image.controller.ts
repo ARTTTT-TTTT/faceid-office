@@ -14,7 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadFaceImageDto } from '@/face-image/dto/upload-face-image.dto';
 import { FaceImageService } from '@/face-image/face-image.service';
 
-@Controller('face-image')
+@Controller('face-images')
 export class FaceImageController {
   constructor(private readonly faceImageService: FaceImageService) {}
 
@@ -50,8 +50,8 @@ export class FaceImageController {
     );
   }
 
-  @Delete(':id')
-  async deleteFaceImage(@Param('id') faceImageId: string) {
+  @Delete(':faceImageId')
+  async deleteFaceImage(@Param('faceImageId') faceImageId: string) {
     return await this.faceImageService.deleteFaceImage(faceImageId);
   }
 }
