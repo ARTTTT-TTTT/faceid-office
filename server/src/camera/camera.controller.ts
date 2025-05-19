@@ -35,7 +35,6 @@ export class CameraController {
     return this.cameraService.getCameras(adminId);
   }
 
-  @CheckOwnership('camera', 'cameraId')
   @Get(':cameraId')
   async getOneCamera(
     @GetUser('sub') adminId: string,
