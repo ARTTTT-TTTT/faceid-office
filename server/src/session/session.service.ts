@@ -60,14 +60,14 @@ export class SessionService {
       //     cameraId: startSessionDto.cameraId,
       //   },
       // });
-      console.log('markerExistsAfterCheck');
+      //console.log('markerExistsAfterCheck');
 
       return {
         cameraId: startSessionDto.cameraId,
         sessionDuration: `${adminProfile.sessionDuration}s`,
       };
     }
-    console.log('last return');
+    //console.log('last return');
     return {
       cameraId: startSessionDto.cameraId,
       sessionDuration: `${adminProfile.sessionDuration}s`,

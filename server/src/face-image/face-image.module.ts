@@ -10,5 +10,6 @@ import { FaceImageService } from './face-image.service';
   imports: [PrismaModule, MulterModule],
   controllers: [FaceImageController],
   providers: [FaceImageService],
+  exports: [FaceImageService],
 })
 export class FaceImageModule {}

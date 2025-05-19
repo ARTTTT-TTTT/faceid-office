@@ -36,7 +36,8 @@ model Person {
   id               String   @id @default(uuid())
   fullName         String
   position         String?
-  profileImageUrls String[]
+  profileImageUrl  String?   // !FEATURE in the future, must have this fill
+  faceImageUrls    String[] 
   createdAt        DateTime @default(now())
   adminId          String
 
