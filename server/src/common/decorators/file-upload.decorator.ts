@@ -3,12 +3,12 @@ import {
   BadRequestException,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
-export function UploadImageFile(fieldName: string = 'image') {
+export function UploadImageFiles(fieldName: string = 'images', maxCount = 5) {
   return applyDecorators(
     UseInterceptors(
-      FileInterceptor(fieldName, {
+      FilesInterceptor(fieldName, maxCount, {
         fileFilter: (_req, file, callback) => {
           if (!['image/jpeg'].includes(file.mimetype)) {
             return callback(
@@ -19,7 +19,7 @@ export function UploadImageFile(fieldName: string = 'image') {
           callback(null, true);
         },
         limits: {
-          fileSize: 1024 * 1024 * 5, // 5MB
+          fileSize: 1024 * 1024 * 5, // 5MB per file
         },
       }),
     ),

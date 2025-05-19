@@ -1,15 +1,19 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
+  Get,
   Param,
   ParseUUIDPipe,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
-import { UploadImageFile } from '@/common/decorators/file-upload.decorator';
+import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
+import { UploadImageFiles } from '@/common/decorators/file-upload.decorator';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { FaceImageService } from '@/face-image/face-image.service';
 
@@ -33,12 +37,38 @@ export class PersonController {
   }
 
   @Post(':personId/face-image')
-  @UploadImageFile()
-  async uploadFaceImage(
+  @CheckOwnership('person', 'personId')
+  @UploadImageFiles('images') // Accepts up to 5 images
+  async uploadFaceImages(
     @GetUser('sub') adminId: string,
     @Param('personId', ParseUUIDPipe) personId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return await this.faceImageService.uploadFaceImage(file, adminId, personId);
+    return await this.faceImageService.uploadMultipleFaceImages(
+      files,
+      adminId,
+      personId,
+    );
+  }
+
+  @Get(':personId/face-image')
+  async getFaceImages(
+    @GetUser('sub') adminId: string,
+    @Param('personId', ParseUUIDPipe) personId: string,
+  ) {
+    return this.faceImageService.getFaceImages(adminId, personId);
+  }
+
+  @Delete(':personId/face-image')
+  async deleteFaceImage(
+    @GetUser('sub') adminId: string,
+    @Param('personId', ParseUUIDPipe) personId: string,
+    @Body('faceImageUrl') imageUrl: string,
+  ) {
+    if (!imageUrl) {
+      throw new BadRequestException('imageUrl is required in the request body');
+    }
+
+    return this.faceImageService.deleteFaceImage(adminId, personId, imageUrl);
   }
 }
