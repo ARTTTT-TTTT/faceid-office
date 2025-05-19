@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -9,19 +9,16 @@ export class PersonService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createPerson(adminId: string, dto: CreatePersonDto) {
-    try {
-      const newPerson = await this.prisma.person.create({
-        data: {
-          fullName: dto.fullName,
-          position: dto.position,
-          admin: {
-            connect: { id: adminId },
-          },
+    const newPerson = await this.prisma.person.create({
+      data: {
+        fullName: dto.fullName,
+        position: dto.position,
+        profileImageUrl: dto.profileImageUrl, // Ensure this field is included
+        admin: {
+          connect: { id: adminId },
         },
-      });
-      return newPerson;
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
+      },
+    });
+    return newPerson;
   }
 }

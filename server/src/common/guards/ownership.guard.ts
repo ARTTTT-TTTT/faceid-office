@@ -76,15 +76,6 @@ export class OwnershipGuard implements CanActivate {
           isOwner = true;
         }
         break;
-      case 'faceImage':
-        resource = await this.prisma.faceImage.findFirst({
-          where: { id: resourceId },
-          include: { person: true },
-        });
-        if (resource?.person?.adminId === adminId) {
-          isOwner = true;
-        }
-        break;
       case 'session':
         resource = await this.prisma.detectionSession.findFirst({
           where: { id: resourceId },

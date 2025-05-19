@@ -8,7 +8,6 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-import { UploadFaceImageDto } from '@/face-image/dto/upload-face-image.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -29,11 +28,11 @@ export class FaceImageService {
         );
       }
 
-      const images = faceImages.map(({ id, faceImageUrl }) => ({
-        id,
-        faceImageUrl,
-      }));
-      return images;
+      // const images = faceImages.map(({ id, faceImageUrl }) => ({
+      //   id,
+      //   faceImageUrl,
+      // }));
+      return;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -42,35 +41,40 @@ export class FaceImageService {
     }
   }
 
-  async uploadFaceImage(file: Express.Multer.File, dto: UploadFaceImageDto) {
+  async uploadFaceImage(
+    file: Express.Multer.File,
+    adminId: string,
+    personId: string,
+  ) {
     if (!file) {
       throw new BadRequestException('Please upload a photo of your face.');
     }
 
-    // !ERROR กรณี personId ไม่มีตรงกับ person ใน database
+    // Check if the person exists
+    const person = await this.prisma.person.findUnique({
+      where: { id: personId },
+    });
 
-    const imagePath = await this.saveImageToFileSystem(
-      dto.adminId,
-      dto.personId,
-      file,
-    );
+    if (!person) {
+      throw new NotFoundException('Person not found.');
+    }
 
-    // ?FEATURE ปรับปรุงให้รับรูปภาพได้หลายรูป
-
-    // !FEATURE เรียกใช้ api/ai (adminId, personId, imagePath) สำหรับเปลี่ยนภาพเป็น vector
-    // !FEATURE ผลลัพธ์จาก api/ai จะได้ vectorPath ถ้าไม่ได้ throw error
+    const imagePath = await this.saveImageToFileSystem(adminId, personId, file);
 
     try {
-      const faceImage = await this.prisma.faceImage.create({
+      await this.prisma.person.update({
+        where: { id: personId },
         data: {
-          personId: dto.personId,
-          imageUrl: imagePath,
+          faceImageUrls: {
+            push: imagePath,
+          },
         },
       });
-
-      return faceImage;
+      return { message: 'Success', imageUrl: imagePath };
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException(
+        'Failed to update image :' + error,
+      );
     }
   }
 
@@ -110,7 +114,7 @@ export class FaceImageService {
 
   async deleteFaceImage(faceImageId: string) {
     try {
-      const faceImage = await this.prisma.faceImage.findUnique({
+      const faceImage = await this.prisma.person.findUnique({
         where: {
           id: faceImageId,
         },
@@ -122,20 +126,13 @@ export class FaceImageService {
         );
       }
 
-      await this.prisma.faceImage.delete({
+      await this.prisma.person.delete({
         where: {
           id: faceImageId,
         },
       });
 
-      const imagePath = path.join(
-        __dirname,
-        '..',
-        '..',
-        '..',
-        '..',
-        faceImage.imageUrl,
-      );
+      const imagePath = path.join(__dirname, '..', '..', '..', '..', 'storage');
       await fs.unlink(imagePath);
 
       // const vectorPath = path.join(
