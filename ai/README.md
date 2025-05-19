@@ -105,12 +105,6 @@ poetry run fastapi dev
 poetry run fastapi run
 ```
 
-## 🛢 Running Redis on Docker 🛢
-
-```bash
-docker run -d -p 6379:6379 --name redis redis
-```
-
 ## 🧹 Format document 🧹
 
 ```bash
