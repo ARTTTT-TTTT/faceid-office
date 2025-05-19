@@ -1,24 +1,38 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 
-import { StartSessionDto } from '@/session/dto/start-session.dto';
+import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
+import { GetUser } from '@/common/decorators/get-user.decorator';
 import { SessionService } from '@/session/session.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post('start')
-  async startSession(@Body() startSessionDto: StartSessionDto): Promise<any> {
-    return this.sessionService.startSession(startSessionDto);
+  async startSession(@GetUser('sub') adminId: string): Promise<any> {
+    return this.sessionService.startSession(adminId);
   }
 
-  @Delete('end/:sessionId')
-  async endSession(@Param('sessionId') sessionId: string) {
-    return this.sessionService.endSession(sessionId);
+  @Delete('end')
+  async endSession(@GetUser('sub') adminId: string) {
+    return this.sessionService.endSession(adminId);
   }
 
   @Get()
   async getAll(@Param('cameraId') cameraId: string) {
     return this.sessionService.getSessions(cameraId);
+  }
+  @Get('status')
+  async getSessionStatus(@GetUser('sub') adminId: string) {
+    return this.sessionService.getSessionStatus(adminId);
   }
 }

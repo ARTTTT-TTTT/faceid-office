@@ -63,4 +63,8 @@ export class RedisService {
   async decr(key: string): Promise<number> {
     return this.redisClient.decr(key);
   }
+
+  async ttl(key: string): Promise<number> {
+    return this.redisClient.ttl(key);
+  }
 }
