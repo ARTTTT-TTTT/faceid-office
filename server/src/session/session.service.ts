@@ -19,7 +19,7 @@ export class SessionService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private buildKey(adminId: string, cameraId: string, personId: string = '*') {
+  private buildKey(adminId: string, cameraId: string, personId: string) {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.personPrefix}:${personId}`;
   }
 
@@ -29,6 +29,7 @@ export class SessionService {
 
   async startSession(adminId: string) {
     const adminProfile = await this.adminService.getProfile(adminId);
+    const sessionDuration = adminProfile.sessionDuration;
 
     const results: { cameraId: string; TTL: string }[] = [];
     const createdKeys: string[] = [];
@@ -36,76 +37,116 @@ export class SessionService {
 
     for (const camera of adminProfile.cameras) {
       const cameraId = camera.id;
-      const markerKey = this.buildMarkerKey(adminId, cameraId);
+      const result = await this.handleSingleCameraSession(
+        adminId,
+        cameraId,
+        sessionDuration,
+      );
 
-      const markerExists = await this.redisService.exists(markerKey);
-      if (markerExists) {
-        await this.stopExistingSession(adminId, cameraId);
-        results.push({
-          cameraId,
-          TTL: `Failed to start session (marker still exists)`,
-        });
+      results.push({ cameraId: result.cameraId, TTL: result.TTL });
+
+      if (result.success) {
+        createdKeys.push(result.markerKey);
       } else {
-        await this.redisService.setex(
-          markerKey,
-          adminProfile.sessionDuration,
-          '1',
-        );
-        const ttl: number = await this.redisService.ttl(markerKey);
-
-        if (ttl > 0) {
-          createdKeys.push(markerKey);
-          await this.detectionSessionService.createSession(cameraId);
-          results.push({
-            cameraId,
-            TTL: `Session started with TTL: ${ttl}s`,
-          });
-        } else {
-          failedCameras.push({ cameraId, markerKey });
-          results.push({
-            cameraId,
-            TTL: `Failed to verify TTL after setting`,
-          });
-        }
+        failedCameras.push({
+          cameraId: result.cameraId,
+          markerKey: result.markerKey,
+        });
       }
     }
 
-    // ❗ Retry logic for failed keys
-    for (const { cameraId, markerKey } of failedCameras) {
-      await this.redisService.setex(
+    const retry = await this.retryFailedCameras(failedCameras, sessionDuration);
+    results.push(...retry.results);
+    createdKeys.push(...retry.createdKeys);
+
+    const totalExpected = adminProfile.cameras.length;
+    const totalCreated = createdKeys.length;
+
+    return {
+      results,
+      summary: {
+        success: totalCreated === totalExpected,
+        totalExpected,
+        totalCreated,
+        failed: totalExpected - totalCreated,
+      },
+    };
+  }
+
+  private async handleSingleCameraSession(
+    adminId: string,
+    cameraId: string,
+    sessionDuration: number,
+  ): Promise<{
+    cameraId: string;
+    TTL: string;
+    success: boolean;
+    markerKey: string;
+  }> {
+    const markerKey = this.buildMarkerKey(adminId, cameraId);
+    const markerExists = await this.redisService.exists(markerKey);
+
+    if (markerExists) {
+      await this.stopExistingSession(adminId, cameraId);
+      return {
+        cameraId,
+        TTL: 'Failed to start session (marker still exists)',
+        success: false,
         markerKey,
-        adminProfile.sessionDuration,
-        '1',
-      );
-      const retryTtl: number = await this.redisService.ttl(markerKey);
+      };
+    }
+
+    await this.redisService.setex(markerKey, sessionDuration, '1');
+    const ttl = await this.redisService.ttl(markerKey);
+
+    if (ttl > 0) {
+      await this.detectionSessionService.createSession(cameraId);
+      return {
+        cameraId,
+        TTL: `Session started with TTL: ${ttl}s`,
+        success: true,
+        markerKey,
+      };
+    }
+
+    return {
+      cameraId,
+      TTL: 'Failed to verify TTL after setting',
+      success: false,
+      markerKey,
+    };
+  }
+
+  private async retryFailedCameras(
+    failedCameras: { cameraId: string; markerKey: string }[],
+    sessionDuration: number,
+  ): Promise<{
+    results: { cameraId: string; TTL: string }[];
+    createdKeys: string[];
+  }> {
+    const retryResults: { cameraId: string; TTL: string }[] = [];
+    const createdKeys: string[] = [];
+
+    for (const { cameraId, markerKey } of failedCameras) {
+      await this.redisService.setex(markerKey, sessionDuration, '1');
+      const retryTtl = await this.redisService.ttl(markerKey);
 
       if (retryTtl > 0) {
         createdKeys.push(markerKey);
-        results.push({
+        await this.detectionSessionService.createSession(cameraId);
+        retryResults.push({
           cameraId,
           TTL: `Retry success: Session started with TTL: ${retryTtl}s`,
         });
       } else {
-        results.push({
+        retryResults.push({
           cameraId,
           TTL: `Retry failed again`,
         });
       }
     }
 
-    const totalExpected = adminProfile.cameras.length;
-    const totalCreated = createdKeys.length;
-    const success = totalCreated === totalExpected;
-
-    return {
-      results,
-      summary: {
-        success,
-        totalExpected,
-        totalCreated,
-        failed: totalExpected - totalCreated,
-      },
-    };
+    return { results: retryResults, createdKeys };
   }
 
   async endSession(adminId: string): Promise<void> {
@@ -114,16 +155,7 @@ export class SessionService {
     for (const camera of adminProfile.cameras) {
       const cameraId = camera.id;
 
-      // End all active sessions for this camera
-      await this.prisma.detectionSession.updateMany({
-        where: {
-          cameraId: cameraId,
-          endedAt: null,
-        },
-        data: {
-          endedAt: new Date(),
-        },
-      });
+      await this.detectionSessionService.endSessionsByCameraId(cameraId);
 
       // Delete Redis marker key
       const markerKey = this.buildMarkerKey(adminId, cameraId);

@@ -15,4 +15,16 @@ export class DetectionSessionService {
     });
     return session;
   }
+
+  async endSessionsByCameraId(cameraId: string): Promise<void> {
+    await this.prisma.detectionSession.updateMany({
+      where: {
+        cameraId,
+        endedAt: null,
+      },
+      data: {
+        endedAt: new Date(),
+      },
+    });
+  }
 }
