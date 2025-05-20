@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { AdminService } from '@/admin/admin.service';
+import { DetectionSessionService } from '@/detection-session/detection-session.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 
@@ -14,6 +15,7 @@ export class SessionService {
   constructor(
     private readonly redisService: RedisService,
     private readonly adminService: AdminService,
+    private readonly detectionSessionService: DetectionSessionService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -53,6 +55,7 @@ export class SessionService {
 
         if (ttl > 0) {
           createdKeys.push(markerKey);
+          await this.detectionSessionService.createSession(cameraId);
           results.push({
             cameraId,
             TTL: `Session started with TTL: ${ttl}s`,

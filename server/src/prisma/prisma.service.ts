@@ -14,5 +14,6 @@ export class PrismaService
 
   async onModuleDestroy() {
     await this.$disconnect();
+    console.log('🚀 Disconnected to PostgreSQL');
   }
 }

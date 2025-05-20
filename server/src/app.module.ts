@@ -11,8 +11,6 @@ import { DetectionLogModule } from './detection-log/detection-log.module';
 import { DetectionSessionModule } from './detection-session/detection-session.module';
 import { FaceImageModule } from './face-image/face-image.module';
 import { PersonModule } from './person/person.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { RedisModule } from './redis/redis.module';
 import { SessionModule } from './session/session.module';
 
 @Module({
@@ -20,13 +18,11 @@ import { SessionModule } from './session/session.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    PrismaModule,
     AuthModule,
     PersonModule,
     FaceImageModule,
     SessionModule,
     DetectionLogModule,
-    RedisModule,
     AdminModule,
     CameraModule,
     CommonModule,
