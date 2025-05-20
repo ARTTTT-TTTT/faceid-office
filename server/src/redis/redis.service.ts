@@ -14,18 +14,27 @@ import { RedisExpiryMode, RedisSet } from '@/redis/redis.interface';
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(@Inject(Redis) private readonly redisClient: Redis) {}
 
-  onModuleInit() {
-    this.redisClient.on('connect', () => {
-      // Log Redis connection success
-      console.log('🚀 Connected to Redis');
+  async onModuleInit() {
+    this.redisClient.on('error', (error) => {
+      console.error('❌ Redis connection error:', error);
     });
+
+    try {
+      await this.redisClient.ping();
+      console.log('🚀 Connected to Redis ');
+    } catch (err) {
+      console.error('❌ Redis ping failed:', err);
+      throw err; // Prevent app from starting if needed
+    }
   }
 
-  onModuleDestroy() {
-    this.redisClient.on('error', (error: Error) => {
-      // Log Redis connection error
-      console.log('❌ Redis connection error:', error);
-    });
+  async onModuleDestroy() {
+    try {
+      await this.redisClient.quit();
+    } catch (error) {
+      // Log Redis disconnection error
+      console.log('❌ Redis disconnection error:', error);
+    }
   }
 
   async exists(key: string): Promise<boolean> {
