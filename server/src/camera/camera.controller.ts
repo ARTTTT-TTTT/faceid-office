@@ -31,7 +31,6 @@ export class CameraController {
 
   @Get()
   async getCameras(@GetUser('sub') adminId: string) {
-    console.log('Fetching cameras for admin:', adminId);
     return this.cameraService.getCameras(adminId);
   }
 
