@@ -1,27 +1,19 @@
 from fastapi import Form, File, UploadFile, APIRouter, HTTPException
 
 from app.services.detection import DetectionService
-from app.services.compress import compress_all_person
-from app.models.detection import CompressPayload
 
 
 router = APIRouter(prefix="/detections", tags=["Detection"])
 
 
-@router.post("/track_faces")
-async def track_faces(
+@router.post("/face-identification")
+async def face_identification(
     admin_id: str = Form(...),
-    work_start_time: int = Form(...),
+    camera_id: str = Form(...),
+    session_id: str = Form(...),
     file: UploadFile = File(...),
 ):
-    result = await DetectionService.track_faces(admin_id, work_start_time, file)
+    result = await DetectionService.face_identification(
+        admin_id, camera_id, session_id, file
+    )
     return result
-
-
-@router.post("/compress")
-def compress_images(payload: CompressPayload):
-    try:
-        compress_all_person(payload.input_image_dir, payload.output_npy_dir)
-        return {"message": "Compression completed."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
