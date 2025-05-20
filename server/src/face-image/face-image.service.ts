@@ -2,74 +2,70 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+import { DeleteFaceImageDto } from '@/face-image/dto/delete-face-image.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class FaceImageService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getFaceImages(adminId: string, personId: string) {
-    const person = await this.prisma.person.findFirst({
-      where: {
-        id: personId,
-        adminId, // Ensure the admin is authorized to view this person
-      },
-      select: {
-        faceImageUrls: true,
-      },
-    });
+  async getFaceImages(personId: string) {
+    try {
+      const person = await this.prisma.person.findFirst({
+        where: {
+          id: personId,
+        },
+        select: {
+          faceImageUrls: true,
+        },
+      });
 
-    if (!person) {
-      throw new NotFoundException('Person not found');
+      return { faceImageUrls: person.faceImageUrls };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to upload images: ' + error,
+      );
     }
-
-    return person.faceImageUrls;
   }
 
   async uploadMultipleFaceImages(
-    files: Express.Multer.File[],
+    faceImages: Express.Multer.File[],
     adminId: string,
     personId: string,
   ) {
-    if (!files || files.length === 0) {
+    if (!faceImages || faceImages.length === 0) {
       throw new BadRequestException('Please upload at least one photo.');
     }
 
-    const imagePaths: string[] = [];
-
-    for (const file of files) {
-      const imagePath = await this.saveImageToFileSystem(
-        adminId,
-        personId,
-        file,
-      );
-      imagePaths.push(imagePath);
-    }
-
     try {
+      const faceImagePaths = await Promise.all(
+        faceImages.map((image) =>
+          this.saveImageToFileSystem(adminId, personId, image),
+        ),
+      );
+
       await this.prisma.person.update({
         where: { id: personId },
         data: {
           faceImageUrls: {
-            push: imagePaths, // push array of new images
+            push: faceImagePaths,
           },
         },
       });
 
       return {
         message: 'Success',
-        uploaded: imagePaths.length,
-        imageUrls: imagePaths,
+        faceImageUrls: faceImagePaths,
       };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException(
-        'Failed to update images: ' + error,
+        'Failed to upload images: ' + error,
       );
     }
   }
@@ -78,7 +74,7 @@ export class FaceImageService {
     adminId: string,
     personId: string,
     file: Express.Multer.File,
-  ): Promise<string | null> {
+  ): Promise<string> {
     try {
       const storageDir = path.join(
         __dirname,
@@ -100,48 +96,56 @@ export class FaceImageService {
 
       await fs.writeFile(filePath, file.buffer);
 
-      const imageUrl = `storage/face_images/${adminId}/${personId}/${newFilename}`;
-
-      return imageUrl;
+      return `storage/face_images/${adminId}/${personId}/${newFilename}`;
     } catch (error) {
-      throw new BadRequestException(error);
+      throw new InternalServerErrorException(
+        'Failed to save image in file system: ' + error,
+      );
     }
   }
 
-  async deleteFaceImage(adminId: string, personId: string, imageUrl: string) {
-    const person = await this.prisma.person.findFirst({
-      where: {
-        id: personId,
-        adminId,
-      },
-    });
-
-    if (!person) {
-      throw new NotFoundException('Person not found');
-    }
-
-    const updatedUrls = person.faceImageUrls.filter((url) => url !== imageUrl);
-
-    if (updatedUrls.length === person.faceImageUrls.length) {
-      throw new BadRequestException('Image URL not found in person records');
-    }
-
-    await this.prisma.person.update({
-      where: { id: personId },
-      data: {
-        faceImageUrls: updatedUrls,
-      },
-    });
-
-    // Try to delete the image from filesystem
+  async deleteFaceImages(
+    personId: string,
+    deleteFaceImageDto: DeleteFaceImageDto,
+  ) {
     try {
-      const imagePath = path.join(__dirname, '..', '..', '..', imageUrl);
+      await this.prisma.person.update({
+        where: { id: personId },
+        data: {
+          faceImageUrls: deleteFaceImageDto.faceImageUrls,
+        },
+      });
+
+      await Promise.all(
+        deleteFaceImageDto.faceImageUrls.map((url) =>
+          this.deleteImageFromFileSystem(url),
+        ),
+      );
+
+      return { message: 'Success' };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException(
+        'Failed to delete images: ' + error,
+      );
+    }
+  }
+
+  private async deleteImageFromFileSystem(faceImageUrl: string) {
+    try {
+      const imagePath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        '..',
+        faceImageUrl,
+      );
       await fs.unlink(imagePath);
     } catch (error) {
-      throw new InternalServerErrorException(error);
-      // Do not block the operation if file deletion fails
+      throw new InternalServerErrorException(
+        'Failed to delete image in file system: ' + error,
+      );
     }
-
-    return { message: 'Image deleted successfully' };
   }
 }

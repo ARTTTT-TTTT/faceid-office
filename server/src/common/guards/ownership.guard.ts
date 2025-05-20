@@ -8,11 +8,9 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
+import { AuthRequest } from '@/common/interfaces/auth-request.interface';
+import { SourceType } from '@/common/types/source.type';
 import { PrismaService } from '@/prisma/prisma.service';
-
-import { AuthRequest } from '../interfaces/auth-request.interface';
-import { ResourceType } from '../interfaces/resource-owner.interface';
-import { SourceType } from '../types/source.type';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
@@ -24,7 +22,6 @@ export class OwnershipGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
-
     const adminId = user?.sub;
 
     const resourceType = this.reflector.get<string>(
@@ -37,79 +34,95 @@ export class OwnershipGuard implements CanActivate {
       this.reflector.get<SourceType>('source', context.getHandler()) ||
       'params';
 
-    let idValue: string | number | boolean | object | undefined;
+    const idValue = this.extractIdFromRequest(request, source, idKey);
 
-    if (source === 'params') {
-      idValue = request.params[idKey];
-    } else if (source === 'body') {
-      idValue = request.body[idKey];
-    } else if (source === 'query') {
-      idValue = request.query[idKey];
-    }
-
-    if (!resourceType || !idValue) {
+    if (!resourceType || typeof idValue !== 'string') {
       throw new ForbiddenException(
-        'Invalid ownership check configuration: Missing resource type or ID key metadata.',
+        'Invalid ownership check configuration: Missing or invalid resource type or ID.',
       );
     }
 
-    const resourceId = idValue as string; // Assuming ID is a string for Prisma
+    const resourceId = idValue;
+    const isOwner = await this.verifyOwnership(
+      resourceType,
+      resourceId,
+      adminId,
+    );
 
-    let resource: ResourceType;
-
-    let isOwner = false; // Flag to track ownership
-
-    switch (resourceType) {
-      case 'camera':
-        resource = await this.prisma.camera.findFirst({
-          where: { id: resourceId },
-        });
-        if (resource?.adminId === adminId) {
-          isOwner = true;
-        }
-        break;
-      case 'person':
-        resource = await this.prisma.person.findFirst({
-          where: { id: resourceId },
-        });
-        if (resource?.adminId === adminId) {
-          isOwner = true;
-        }
-        break;
-      case 'session':
-        resource = await this.prisma.detectionSession.findFirst({
-          where: { id: resourceId },
-          include: { camera: true },
-        });
-        if (resource?.camera?.adminId === adminId) {
-          isOwner = true;
-        }
-        break;
-      case 'log':
-        resource = await this.prisma.detectionLog.findFirst({
-          where: { id: resourceId },
-          include: { camera: true },
-        });
-        if (resource?.camera?.adminId === adminId) {
-          isOwner = true;
-        }
-        break;
-      default:
-        throw new ForbiddenException(
-          `Unsupported resource type: ${resourceType}`,
-        );
-    }
-
-    if (!resource) {
+    if (!isOwner.found) {
       throw new NotFoundException(`${resourceType} not found`);
     }
 
-    if (!isOwner) {
+    if (!isOwner.ok) {
       throw new ForbiddenException(
         `Unauthorized to access this ${resourceType}`,
       );
     }
 
     return true;
+  }
+
+  private extractIdFromRequest(
+    request: Request,
+    source: SourceType,
+    idKey: string,
+  ): string | undefined {
+    if (source === 'params') return request.params[idKey];
+    if (source === 'body') {
+      const value = (request.body as Record<string, unknown>)[idKey];
+      return typeof value === 'string' ? value : undefined;
+    }
+    if (source === 'query') {
+      const value = request.query[idKey];
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
+      return undefined;
+    }
+    return undefined;
+  }
+
+  private async verifyOwnership(
+    resourceType: string,
+    resourceId: string,
+    adminId: string,
+  ): Promise<{ ok: boolean; found: boolean }> {
+    switch (resourceType) {
+      case 'camera': {
+        const camera = await this.prisma.camera.findFirst({
+          where: { id: resourceId, adminId },
+        });
+        return { ok: !!camera, found: !!camera };
+      }
+      case 'person': {
+        const person = await this.prisma.person.findFirst({
+          where: { id: resourceId, adminId },
+        });
+        return { ok: !!person, found: !!person };
+      }
+      case 'session': {
+        const session = await this.prisma.detectionSession.findFirst({
+          where: { id: resourceId },
+          include: { camera: true },
+        });
+        return {
+          ok: session?.camera?.adminId === adminId,
+          found: !!session,
+        };
+      }
+      case 'log': {
+        const log = await this.prisma.detectionLog.findFirst({
+          where: { id: resourceId },
+          include: { camera: true },
+        });
+        return {
+          ok: log?.camera?.adminId === adminId,
+          found: !!log,
+        };
+      }
+      default:
+        throw new ForbiddenException(
+          `Unsupported resource type: ${resourceType}`,
+        );
+    }
   }
 }
