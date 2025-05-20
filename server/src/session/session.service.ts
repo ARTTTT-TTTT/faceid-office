@@ -127,7 +127,7 @@ export class SessionService {
     failedCameras: { cameraId: string; markerKey: string }[],
     sessionDuration: number,
   ): Promise<RetryResult> {
-    const retryResults: { cameraId: string; TTL: string }[] = [];
+    const retryResults: ResultEntry[] = [];
     const createdKeys: string[] = [];
 
     for (const { cameraId, markerKey } of failedCameras) {
@@ -153,9 +153,9 @@ export class SessionService {
   }
 
   async endSession(adminId: string): Promise<void> {
-    const adminProfile = await this.adminService.getProfile(adminId);
+    const cameras = await this.cameraService.getCameras(adminId);
 
-    for (const camera of adminProfile.cameras) {
+    for (const camera of cameras) {
       const cameraId = camera.id;
 
       await this.detectionSessionService.endSessionsByCameraId(cameraId);
@@ -213,7 +213,7 @@ export class SessionService {
       const exists = await this.redisService.exists(markerKey);
 
       if (exists) {
-        const ttl: number = await this.redisService.ttl(markerKey);
+        const ttl = await this.redisService.ttl(markerKey);
         results.push({
           cameraId,
           status: 'start',

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
@@ -86,6 +87,15 @@ export class OwnershipGuard implements CanActivate {
     resourceId: string,
     adminId: string,
   ): Promise<{ ok: boolean; found: boolean }> {
+    const isUUID = (value: string): boolean =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value,
+      );
+
+    // ✅ Early return if resourceId is not a valid UUID
+    if (!isUUID(resourceId)) {
+      throw new BadRequestException(`${resourceType}Id must be UUID,`);
+    }
     switch (resourceType) {
       case 'camera': {
         const camera = await this.prisma.camera.findFirst({

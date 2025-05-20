@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   UploadedFiles,
@@ -36,7 +35,7 @@ export class PersonController {
 
   @Get(':personId')
   @CheckOwnership('person', 'personId')
-  async getPerson(@Param('personId', ParseUUIDPipe) personId: string) {
+  async getPerson(@Param('personId') personId: string) {
     return this.personService.getPerson(personId);
   }
 
@@ -51,7 +50,7 @@ export class PersonController {
   @Patch(':personId')
   @CheckOwnership('person', 'personId')
   async updatePerson(
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @Body() updatePersonDto: UpdatePersonDto,
   ) {
     return this.personService.updatePerson(personId, updatePersonDto);
@@ -59,13 +58,13 @@ export class PersonController {
 
   @Delete(':personId')
   @CheckOwnership('person', 'personId')
-  async deletePerson(@Param('personId', ParseUUIDPipe) personId: string) {
+  async deletePerson(@Param('personId') personId: string) {
     return this.personService.deletePerson(personId);
   }
 
   @Get(':personId/face-images')
   @CheckOwnership('person', 'personId')
-  async getFaceImages(@Param('personId', ParseUUIDPipe) personId: string) {
+  async getFaceImages(@Param('personId') personId: string) {
     return this.faceImageService.getFaceImages(personId);
   }
 
@@ -74,7 +73,7 @@ export class PersonController {
   @UploadImageFiles('faceImages')
   async uploadFaceImages(
     @GetUser('sub') adminId: string,
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @UploadedFiles() faceImages: Express.Multer.File[],
   ) {
     return this.faceImageService.uploadMultipleFaceImages(
@@ -87,7 +86,7 @@ export class PersonController {
   @Delete(':personId/face-images')
   @CheckOwnership('person', 'personId')
   async deleteFaceImages(
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @Body() deleteFaceImageDto: DeleteFaceImageDto,
   ) {
     return this.faceImageService.deleteFaceImages(personId, deleteFaceImageDto);
