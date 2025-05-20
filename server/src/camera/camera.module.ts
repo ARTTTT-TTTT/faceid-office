@@ -4,6 +4,7 @@ import { CameraController } from './camera.controller';
 import { CameraService } from './camera.service';
 
 @Module({
+  exports: [CameraService],
   controllers: [CameraController],
   providers: [CameraService],
 })

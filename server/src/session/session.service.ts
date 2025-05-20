@@ -1,9 +1,19 @@
 import { Injectable } from '@nestjs/common';
 
 import { AdminService } from '@/admin/admin.service';
+import { CameraService } from '@/camera/camera.service';
 import { DetectionSessionService } from '@/detection-session/detection-session.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
+
+import {
+  FailedCamera,
+  HandleCameraResult,
+  ResultEntry,
+  RetryResult,
+  SessionStatus,
+  StartSessionResult,
+} from './session.interface';
 
 @Injectable()
 export class SessionService {
@@ -15,6 +25,7 @@ export class SessionService {
   constructor(
     private readonly redisService: RedisService,
     private readonly adminService: AdminService,
+    private readonly cameraService: CameraService,
     private readonly detectionSessionService: DetectionSessionService,
     private readonly prisma: PrismaService,
   ) {}
@@ -27,15 +38,15 @@ export class SessionService {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.trackingSuffix}`;
   }
 
-  async startSession(adminId: string) {
-    const adminProfile = await this.adminService.getProfile(adminId);
-    const sessionDuration = adminProfile.sessionDuration;
+  async startSession(adminId: string): Promise<StartSessionResult> {
+    const cameras = await this.cameraService.getCameras(adminId);
+    const sessionDuration = await this.adminService.getSessionDuration(adminId);
 
-    const results: { cameraId: string; TTL: string }[] = [];
+    const results: ResultEntry[] = [];
     const createdKeys: string[] = [];
-    const failedCameras: { cameraId: string; markerKey: string }[] = [];
+    const failedCameras: FailedCamera[] = [];
 
-    for (const camera of adminProfile.cameras) {
+    for (const camera of cameras) {
       const cameraId = camera.id;
       const result = await this.handleSingleCameraSession(
         adminId,
@@ -59,7 +70,7 @@ export class SessionService {
     results.push(...retry.results);
     createdKeys.push(...retry.createdKeys);
 
-    const totalExpected = adminProfile.cameras.length;
+    const totalExpected = cameras.length;
     const totalCreated = createdKeys.length;
 
     return {
@@ -77,12 +88,7 @@ export class SessionService {
     adminId: string,
     cameraId: string,
     sessionDuration: number,
-  ): Promise<{
-    cameraId: string;
-    TTL: string;
-    success: boolean;
-    markerKey: string;
-  }> {
+  ): Promise<HandleCameraResult> {
     const markerKey = this.buildMarkerKey(adminId, cameraId);
     const markerExists = await this.redisService.exists(markerKey);
 
@@ -120,10 +126,7 @@ export class SessionService {
   private async retryFailedCameras(
     failedCameras: { cameraId: string; markerKey: string }[],
     sessionDuration: number,
-  ): Promise<{
-    results: { cameraId: string; TTL: string }[];
-    createdKeys: string[];
-  }> {
+  ): Promise<RetryResult> {
     const retryResults: { cameraId: string; TTL: string }[] = [];
     const createdKeys: string[] = [];
 
@@ -196,19 +199,15 @@ export class SessionService {
     });
   }
 
-  async getSessionStatus(
-    adminId: string,
-  ): Promise<
-    { cameraId: string; status: 'start' | 'end'; TTL: number | null }[]
-  > {
-    const adminProfile = await this.adminService.getProfile(adminId);
+  async getSessionStatus(adminId: string): Promise<SessionStatus[]> {
+    const cameras = await this.cameraService.getCameras(adminId);
     const results: {
       cameraId: string;
       status: 'start' | 'end';
       TTL: number | null;
     }[] = [];
 
-    for (const camera of adminProfile.cameras) {
+    for (const camera of cameras) {
       const cameraId = camera.id;
       const markerKey = this.buildMarkerKey(adminId, cameraId);
       const exists = await this.redisService.exists(markerKey);
