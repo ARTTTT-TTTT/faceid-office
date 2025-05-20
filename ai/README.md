@@ -54,14 +54,7 @@ pipx install poetry
 poetry config virtualenvs.in-project true
 ```
 
-### Install dependencies
-
-```bash
-cd ai
-poetry install
-```
-
-### 🔧 Create and Set the Virtual Environment 🔧
+### 🔧 ! If you encounter issues because you are not using Python 3.11 as your main version, create and set the virtual environment 🔧
 
 - #### MacOS
 
@@ -77,6 +70,13 @@ py -3.11 -c "import sys; print(sys.executable)"
 
 ```bash
 poetry env use [full path\Python\Python311\python.exe]
+```
+
+### Install dependencies
+
+```bash
+cd ai
+poetry install
 ```
 
 ### 🔧 Setting Up Virtual Environment in VS Code 🔧
@@ -96,13 +96,13 @@ poetry env info --path
 #### 🧪 development
 
 ```bash
-poetry run fastapi dev
+fastapi dev
 ```
 
 #### 🚀 production
 
 ```bash
-poetry run fastapi run
+fastapi run
 ```
 
 ## 🧹 Format document 🧹
