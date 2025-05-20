@@ -1,7 +1,8 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsString } from 'class-validator';
 
 export class DeleteFaceImageDto {
-  @IsNotEmpty()
-  @IsString()
-  faceImageId: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  faceImageUrls: string[];
 }

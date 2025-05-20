@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-export function UploadImageFiles(fieldName: string = 'images', maxCount = 5) {
+export function UploadImageFiles(
+  fieldName: string = 'faceImages',
+  maxCount = 5,
+) {
   return applyDecorators(
     UseInterceptors(
       FilesInterceptor(fieldName, maxCount, {
