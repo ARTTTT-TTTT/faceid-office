@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -9,26 +9,20 @@ export class DetectionLogService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createDetectionLog(dto: CreateDetectionLogDto) {
-    try {
-      return await this.prisma.detectionLog.create({
-        data: {
-          detectedAt: new Date(),
-          imageUrl: dto.imageUrl,
-          session: {
-            connect: { id: dto.sessionId },
-          },
-          person: {
-            connect: { id: dto.personId },
-          },
-          camera: {
-            connect: { id: dto.cameraId },
-          },
+    return await this.prisma.detectionLog.create({
+      data: {
+        detectedAt: new Date(),
+        imageUrl: dto.imageUrl,
+        session: {
+          connect: { id: dto.sessionId },
         },
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to create detection log:' + error,
-      );
-    }
+        person: {
+          connect: { id: dto.personId },
+        },
+        camera: {
+          connect: { id: dto.cameraId },
+        },
+      },
+    });
   }
 }

@@ -9,7 +9,7 @@ datasource db {
 
 model Admin {
   id              String   @id @default(uuid())
-  name            String   @unique
+  name            String   
   email           String   @unique
   passwordHash    String
   sessionDuration Int      @default(3600)
