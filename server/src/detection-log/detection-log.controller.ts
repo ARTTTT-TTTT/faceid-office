@@ -6,6 +6,7 @@ import { DetectionLogService } from './detection-log.service';
 import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
 import { DetectionLogResponse } from './dto/detection-log-response.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('detection-log')
 export class DetectionLogController {
   constructor(private readonly detectionLogService: DetectionLogService) {}
