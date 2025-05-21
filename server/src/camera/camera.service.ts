@@ -87,6 +87,7 @@ export class CameraService {
     });
   }
 
+  // !FEATURE: Delete camera but still keep the logs
   async delete(cameraId: string) {
     const camera = await this.prisma.camera.findUnique({
       where: { id: cameraId },

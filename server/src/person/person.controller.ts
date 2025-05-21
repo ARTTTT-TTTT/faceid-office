@@ -28,6 +28,15 @@ export class PersonController {
     private readonly faceImageService: FaceImageService,
   ) {}
 
+  //Person Management
+  @Post()
+  async create(
+    @GetUser('sub') adminId: string,
+    @Body() createPersonDto: CreatePersonDto,
+  ) {
+    return this.personService.createPerson(adminId, createPersonDto);
+  }
+
   @Get()
   async getPeople(@GetUser('sub') adminId: string) {
     return this.personService.getPeople(adminId);
@@ -37,14 +46,6 @@ export class PersonController {
   @CheckOwnership('person', 'personId')
   async getPerson(@Param('personId') personId: string) {
     return this.personService.getPerson(personId);
-  }
-
-  @Post()
-  async create(
-    @GetUser('sub') adminId: string,
-    @Body() createPersonDto: CreatePersonDto,
-  ) {
-    return this.personService.createPerson(adminId, createPersonDto);
   }
 
   @Patch(':personId')
@@ -62,12 +63,7 @@ export class PersonController {
     return this.personService.deletePerson(personId);
   }
 
-  @Get(':personId/face-images')
-  @CheckOwnership('person', 'personId')
-  async getFaceImages(@Param('personId') personId: string) {
-    return this.faceImageService.getFaceImages(personId);
-  }
-
+  //Face Image Management
   @Post(':personId/face-images')
   @CheckOwnership('person', 'personId')
   @UploadImageFiles('faceImages')
@@ -81,6 +77,11 @@ export class PersonController {
       adminId,
       personId,
     );
+  }
+  @Get(':personId/face-images')
+  @CheckOwnership('person', 'personId')
+  async getFaceImages(@Param('personId') personId: string) {
+    return this.faceImageService.getFaceImages(personId);
   }
 
   @Delete(':personId/face-images')

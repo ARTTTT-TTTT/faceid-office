@@ -1,6 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-
-// !FEATURE IsYouUUID
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class UploadFaceImageDto {
   @IsNotEmpty()
@@ -9,5 +7,6 @@ export class UploadFaceImageDto {
 
   @IsNotEmpty()
   @IsString()
+  @IsUUID()
   personId: string;
 }
