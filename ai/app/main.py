@@ -3,7 +3,7 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api import api_router
-from app.constants.config import settings
+from app.constants.app_config import settings
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

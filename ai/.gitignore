@@ -125,3 +125,5 @@ dmypy.json
 
 # result of a coverage run
 /results
+
+vector
