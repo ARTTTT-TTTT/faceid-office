@@ -94,7 +94,7 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
     const detectionResult = await sendImageForDetection(
       imageBlob,
       admin_id,
-      work_start_time
+      work_start_time,
     );
 
     if (detectionResult) {

@@ -55,14 +55,14 @@ export const stopRedis = async (admin_id: string) => {
 };
 
 export const fetchRedisStatus = async (
-  admin_id: string
+  admin_id: string,
 ): Promise<RedisStartStatus | RedisStopStatus | null> => {
   try {
     const response = await fetch(
       `${AI_SETTINGS}/redis/status?admin_id=${admin_id}`,
       {
         method: 'GET',
-      }
+      },
     );
 
     if (!response.ok) {

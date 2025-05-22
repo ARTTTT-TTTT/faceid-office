@@ -7,7 +7,7 @@ import { UserLog } from '@/types/user-log';
 export const sendImageForDetection = async (
   imageBlob: Blob,
   admin_id: string,
-  work_start_time: number
+  work_start_time: number,
 ): Promise<{
   status: number;
   result: string;
