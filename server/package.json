@@ -1,9 +1,9 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "server",
   "private": true,
   "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
-  "license": "MIT",
+  "description": "Server",
+  "license": "CHANOM",
   "scripts": {
     "build": "nest build",
     "start": "nest start --watch",
@@ -11,7 +11,7 @@
     "start:prod": "node dist/main",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "lint:fix": "eslint src --fix && pnpm format",
     "lint:strict": "eslint --max-warnings=0 src",
     "studio": "prisma studio",
@@ -25,15 +25,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/jest/bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepare": "cd .. && husky server/.husky"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "cd server && npx --no-install commitlint --edit \"$1\"",
-      "post-merge": "cd server && pnpm install",
-      "pre-commit": "cd server && npx lint-staged"
-    }
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "engines": {
     "npm": ">=10.0.0",
@@ -115,20 +107,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
-      "prettier -w"
-    ],
-    "**/*.{json,css,scss,md,webmanifest}": [
-      "prettier -w"
-    ]
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@swc/core"
-    ]
   }
 }

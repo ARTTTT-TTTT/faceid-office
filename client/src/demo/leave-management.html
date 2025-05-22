@@ -103,7 +103,7 @@
       const leaveRequestsTableBody = document.getElementById('leaveRequests');
       const noDataMessage = document.getElementById('noDataMessage');
       const leaveManagementTable = document.getElementById(
-        'leaveManagementTable'
+        'leaveManagementTable',
       );
 
       // ข้อมูลจำลองคำขอลางาน (ในระบบจริงจะดึงจาก Backend)
@@ -177,7 +177,7 @@
               const approveButton = document.createElement('button');
               approveButton.textContent = 'อนุมัติ';
               approveButton.addEventListener('click', () =>
-                approveLeaveRequest(request.id)
+                approveLeaveRequest(request.id),
               );
               actionsDiv.appendChild(approveButton);
 
@@ -185,7 +185,7 @@
               rejectButton.textContent = 'ไม่อนุมัติ';
               rejectButton.classList.add('reject');
               rejectButton.addEventListener('click', () =>
-                rejectLeaveRequest(request.id)
+                rejectLeaveRequest(request.id),
               );
               actionsDiv.appendChild(rejectButton);
             } else {

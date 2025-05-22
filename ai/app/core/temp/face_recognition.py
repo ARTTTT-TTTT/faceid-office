@@ -13,7 +13,7 @@ from langchain_community.vectorstores import FAISS
 
 
 from app.utils.transform_factory import face_transform
-from app.core.face_embedding import DummyEmbeddings
+from app.core.temp.face_embedding import DummyEmbeddings
 
 
 class FaceRecognizer:

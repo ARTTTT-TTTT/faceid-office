@@ -11,28 +11,6 @@ from langchain.vectorstores import FAISS
 from facenet_pytorch import InceptionResnetV1
 from langchain.embeddings.base import Embeddings
 
-"""
-ตั้งค่าตัวแปรแวดล้อม (environment variable) เพื่อหลีกเลี่ยงปัญหาเกี่ยวกับ OpenMP library ที่อาจเกิดขึ้นเมื่อใช้งานไลบรารีที่เกี่ยวข้องกับการประมวลผลแบบขนาน 
-เช่น NumPy, PyTorch, TensorFlow, หรือ scikit-learn บนบางระบบ (เช่น macOS หรือ Windows)
-
-
-💥 ปัญหาที่มักเกิด:
-คุณอาจเจอ error เช่นนี้:
-
-OMP: Error #15: Initializing libiomp5md.dll, but found libiomp5md.dll already initialized.
-หรือ
-
-OMP: Hint This means that multiple copies of the OpenMP runtime have been linked into the program.
-ซึ่งบอกว่า OpenMP (ตัวจัดการ multi-threading) ถูกโหลดซ้ำจากหลายที่ เช่นจาก PyTorch และ NumPy พร้อมกัน
-
-การใช้ KMP_DUPLICATE_LIB_OK = "TRUE"
-การตั้ง os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE" จะ:
-
-บอกให้ระบบ ยอมให้มีการโหลดไลบรารี OpenMP ซ้ำได้
-
-หลีกเลี่ยง crash หรือ error โดยไม่ต้องแก้ library
-"""
-
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 

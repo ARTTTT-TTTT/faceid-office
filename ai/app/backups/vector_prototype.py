@@ -92,9 +92,7 @@ class FaceVectorDatabase:
                 """
 
                 # Detect face YOLO
-                results = self.model_YOLO.predict(
-                    source=img, conf=0.8, verbose=False
-                )
+                results = self.model_YOLO.predict(source=img, conf=0.8, verbose=False)
                 detections = results[0]
 
                 if not detections.boxes or len(detections.boxes) == 0:
@@ -117,8 +115,6 @@ class FaceVectorDatabase:
                         )
                     )
         return vectors, docs
-
-
 
     def create_empty_faiss(self):
         """

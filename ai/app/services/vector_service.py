@@ -4,6 +4,7 @@ from app.constants.core_config import CoreConfig
 
 # !FEATURE HANDLE RESPONSE
 
+
 class VectorService:
     def __init__(self):
         self.config = CoreConfig()

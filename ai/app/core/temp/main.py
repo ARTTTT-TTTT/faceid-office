@@ -9,6 +9,7 @@ from app.core.face_detection import FaceDetector
 from app.core.face_recognition import FaceRecognizer
 from app.core.face_tracking import FaceTracker
 
+
 def main():
     config = CoreConfig()
     detector = FaceDetector(config)

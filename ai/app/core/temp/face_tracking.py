@@ -4,7 +4,7 @@
 """
 import cv2
 
-from app.core.face_blob import FaceBlob
+from app.core.temp.face_blob import FaceBlob
 
 
 class FaceTracker:

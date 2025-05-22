@@ -17,7 +17,9 @@ module.exports = {
         'revert', // (Revert) การย้อนกลับการเปลี่ยนแปลงที่ทำไปก่อนหน้านี้ เช่น การยกเลิก commit ที่ทำให้เกิดปัญหาหรือบั๊ก
       ],
     ],
-    'scope-enum': [2, 'always', ['client']],
+    'scope-enum': [2, 'always', ['root', 'server', 'client', 'ai']],
     'subject-case': [2, 'never', ['start-case', 'pascal-case']],
+    'header-max-length': [0],
+    'body-max-line-length': [0],
   },
 };
