@@ -438,6 +438,7 @@ class FaceBlob:
 """
 import cv2
 
+
 class FaceTracker:
     def __init__(self, config):
         """

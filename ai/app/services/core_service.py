@@ -1,25 +1,20 @@
-import os
 import cv2
 import numpy as np
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.constants.app_config import settings
-
-from app.services.redis_service import RedisService
-
 from app.constants.core_config import CoreConfig
-from app.core.face_detection import FaceDetector
-from app.core.face_recognition import FaceRecognizer
-from app.core.face_tracking import FaceTracker
+from app.core.temp.face_detection import FaceDetector
+from app.core.temp.face_recognition import FaceRecognizer
+from app.core.temp.face_tracking import FaceTracker
 
 
 class CoreService:
-    config = CoreConfig()
-    detector = FaceDetector(config)
-    recognizer = FaceRecognizer(config)
-    tracker = FaceTracker(config)
+    core_config = CoreConfig()
+    detector = FaceDetector(core_config)
+    recognizer = FaceRecognizer(core_config)
+    tracker = FaceTracker(core_config)
 
     @classmethod
     async def face_identification(cls, file: UploadFile) -> JSONResponse:

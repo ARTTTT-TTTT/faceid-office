@@ -2,6 +2,7 @@ import os
 import torch
 import pathlib
 
+
 class CoreConfig:
     def __init__(self):
 

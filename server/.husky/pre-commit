@@ -1,2 +1,0 @@
-cd server
-npx lint-staged

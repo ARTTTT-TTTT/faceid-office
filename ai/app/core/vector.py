@@ -16,7 +16,7 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 
 
 from app.utils.transform_factory import face_transform
-from app.core.face_embedding import DummyEmbeddings
+from app.core.temp.face_embedding import DummyEmbeddings
 from app.constants.core_config import CoreConfig
 
 
@@ -243,7 +243,7 @@ class Vector:
 
         vectors, docs = self.extract_face_vectors(self.face_images_path)
         if not vectors:
-            # !FEATURE เรียกใช้ create_empty_vectors 
+            # !FEATURE เรียกใช้ create_empty_vectors
             print("[❗] No face vectors extracted.")
             return
 
