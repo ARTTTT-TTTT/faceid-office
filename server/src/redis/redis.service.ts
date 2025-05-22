@@ -1,8 +1,7 @@
-/* eslint-disable no-console */
-
 import {
   Inject,
   Injectable,
+  Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
@@ -12,18 +11,19 @@ import { RedisExpiryMode, RedisSet } from '@/redis/redis.interface';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(RedisService.name);
   constructor(@Inject(Redis) private readonly redisClient: Redis) {}
 
   async onModuleInit() {
     this.redisClient.on('error', (error) => {
-      console.error('❌ Redis connection error:', error);
+      this.logger.error('❌ Redis connection error', error.stack || error);
     });
 
     try {
       await this.redisClient.ping();
-      console.log('🚀 Connected to Redis ');
+      this.logger.log('🚀 Connected to Redis');
     } catch (err) {
-      console.error('❌ Redis ping failed:', err);
+      this.logger.error('❌ Redis ping failed', err || err);
       throw err; // Prevent app from starting if needed
     }
   }
@@ -31,9 +31,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     try {
       await this.redisClient.quit();
+      this.logger.log('Redis connection closed');
     } catch (error) {
-      // Log Redis disconnection error
-      console.log('❌ Redis disconnection error:', error);
+      this.logger.error('❌ Redis disconnection error', error || error);
     }
   }
 

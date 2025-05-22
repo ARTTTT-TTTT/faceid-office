@@ -1,9 +1,10 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 
 import { DetectionLogService } from './detection-log.service';
 import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
+import { DetectionLogResponse } from './dto/detection-log-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('detection-log')
@@ -11,11 +12,17 @@ export class DetectionLogController {
   constructor(private readonly detectionLogService: DetectionLogService) {}
 
   // !FEATURE getDetectionLog (pagination)
-  // !FEATURE createDetectionLog request from ai
-  // !FEATURE getLastDetectionLog
 
   @Post()
   async createDetectionLog(@Body() dto: CreateDetectionLogDto) {
     return this.detectionLogService.createDetectionLog(dto);
+  }
+
+  @Get('latest')
+  async getLatestLogs(
+    @Query('limit') limit: string,
+  ): Promise<DetectionLogResponse[]> {
+    const parsedLimit = parseInt(limit, 10) || 5;
+    return this.detectionLogService.getLatestDetectionLogs(parsedLimit);
   }
 }

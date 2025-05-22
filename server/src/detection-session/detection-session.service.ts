@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { DetectionSession } from '@prisma/client';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -7,13 +6,12 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class DetectionSessionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createSession(cameraId: string): Promise<DetectionSession> {
-    const session = await this.prisma.detectionSession.create({
+  async createSession(cameraId: string): Promise<void> {
+    await this.prisma.detectionSession.create({
       data: {
         cameraId,
       },
     });
-    return session;
   }
 
   async endSessionsByCameraId(cameraId: string): Promise<void> {
