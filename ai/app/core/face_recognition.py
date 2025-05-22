@@ -41,7 +41,6 @@ class FaceRecognizer:
         """
         โหลดฐานข้อมูลใบหน้าจาก FAISS
         """
-        # โหลด FAISS จาก langchain
         self.faiss_db = FAISS.load_local(
             self.config.vector_path,
             embeddings=DummyEmbeddings(),
@@ -49,15 +48,9 @@ class FaceRecognizer:
         )
         self.index = faiss.read_index(self.config.faiss_path)
 
-        # สร้าง index ใหม่สำหรับการค้นหาแบบ ID ที่ชัดเจน
-        dimension = self.index.d
-        new_index = faiss.IndexFlatL2(dimension)
-
-        # เพิ่มเวกเตอร์กลับเข้าไปใน index ใหม่
-        self.index_ivf = faiss.IndexIDMap(new_index)
-        vectors = self.index.reconstruct_n(0, self.index.ntotal)
-        ids = np.array(range(self.index.ntotal), dtype=np.int64)
-        self.index_ivf.add_with_ids(vectors, ids)
+        # ไม่ต้อง reconstruct vectors ถ้า index ไม่รองรับ
+        # ให้ใช้ index ต้นฉบับเลย
+        self.index_ivf = self.index  # ใช้ index เดิมเลย
 
         # สร้าง dictionary mapping ID → Name
         self.id_to_name = {}
@@ -66,7 +59,7 @@ class FaceRecognizer:
             try:
                 name = value.metadata.get("name", "Unknown")
                 self.id_to_name[int(idx)] = name
-            except:
+            except Exception:
                 continue
 
     def extract_embedding(self, face_image):
