@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
@@ -23,6 +24,7 @@ export class OwnershipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
     const adminId = user?.sub;
+    //console.log('adminId', adminId);
 
     const resourceType = this.reflector.get<string>(
       'resource',
@@ -67,6 +69,7 @@ export class OwnershipGuard implements CanActivate {
     source: SourceType,
     idKey: string,
   ): string | undefined {
+    //console.log('extractIdFromRequest', source, idKey);
     if (source === 'params') return request.params[idKey];
     if (source === 'body') {
       const value = (request.body as Record<string, unknown>)[idKey];
@@ -75,6 +78,7 @@ export class OwnershipGuard implements CanActivate {
     if (source === 'query') {
       const value = request.query[idKey];
       if (typeof value === 'string') return value;
+      //console.log('value', value);
       if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
       return undefined;
     }
@@ -86,6 +90,15 @@ export class OwnershipGuard implements CanActivate {
     resourceId: string,
     adminId: string,
   ): Promise<{ ok: boolean; found: boolean }> {
+    const isUUID = (value: string): boolean =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value,
+      );
+
+    // ✅ Early return if resourceId is not a valid UUID
+    if (!isUUID(resourceId)) {
+      throw new BadRequestException(`${resourceType}Id must be UUID,`);
+    }
     switch (resourceType) {
       case 'camera': {
         const camera = await this.prisma.camera.findFirst({
@@ -104,6 +117,9 @@ export class OwnershipGuard implements CanActivate {
           where: { id: resourceId },
           include: { camera: true },
         });
+        //console.log('session', session);
+        //console.log('adminId', adminId);
+        //console.log('session?.camera?.adminId', session?.camera?.adminId);
         return {
           ok: session?.camera?.adminId === adminId,
           found: !!session,

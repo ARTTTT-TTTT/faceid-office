@@ -12,13 +12,17 @@ import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { SessionService } from '@/session/session.service';
 
+import { StartSessionResult } from './session.interface';
+
 @UseGuards(JwtAuthGuard)
 @Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post('start')
-  async startSession(@GetUser('sub') adminId: string): Promise<any> {
+  async startSession(
+    @GetUser('sub') adminId: string,
+  ): Promise<StartSessionResult> {
     return this.sessionService.startSession(adminId);
   }
 

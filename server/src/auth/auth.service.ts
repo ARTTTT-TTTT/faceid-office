@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -18,12 +17,12 @@ export class AuthService {
   ) {}
 
   async register(email: string, username: string, password: string) {
-    const existingUser = await this.prisma.admin.findUnique({
+    const existingEmail = await this.prisma.admin.findUnique({
       where: { email },
     });
 
-    if (existingUser) {
-      throw new ConflictException('Username is already taken');
+    if (existingEmail) {
+      throw new ConflictException('Email is already taken');
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -36,13 +35,14 @@ export class AuthService {
       },
     });
 
-    return admin;
+    return {
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+    };
   }
 
   async login(email: string, password: string) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password are required');
-    }
     const admin: Admin | null = await this.prisma.admin.findUnique({
       where: { email },
     });

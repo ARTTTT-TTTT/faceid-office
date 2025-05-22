@@ -1,11 +1,41 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 
 import { RedisExpiryMode, RedisSet } from '@/redis/redis.interface';
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(RedisService.name);
   constructor(@Inject(Redis) private readonly redisClient: Redis) {}
+
+  async onModuleInit() {
+    this.redisClient.on('error', (error) => {
+      this.logger.error('❌ Redis connection error', error.stack || error);
+    });
+
+    try {
+      await this.redisClient.ping();
+      this.logger.log('🚀 Connected to Redis');
+    } catch (err) {
+      this.logger.error('❌ Redis ping failed', err || err);
+      throw err; // Prevent app from starting if needed
+    }
+  }
+
+  async onModuleDestroy() {
+    try {
+      await this.redisClient.quit();
+      this.logger.log('Redis connection closed');
+    } catch (error) {
+      this.logger.error('❌ Redis disconnection error', error || error);
+    }
+  }
 
   async exists(key: string): Promise<boolean> {
     const result = await this.redisClient.exists(key);

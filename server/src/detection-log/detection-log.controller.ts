@@ -1,46 +1,33 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+
+import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
 
 import { DetectionLogService } from './detection-log.service';
 import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
-import { UpdateDetectionLogDto } from './dto/update-detection-log.dto';
+import { DetectionLogResponse } from './dto/detection-log-response.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('detection-log')
 export class DetectionLogController {
   constructor(private readonly detectionLogService: DetectionLogService) {}
 
+  // !FEATURE getDetectionLog (pagination)
+
   @Post()
-  create(@Body() createDetectionLogDto: CreateDetectionLogDto) {
-    return this.detectionLogService.create(createDetectionLogDto);
+  async createDetectionLog(@Body() dto: CreateDetectionLogDto) {
+    return this.detectionLogService.createDetectionLog(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.detectionLogService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.detectionLogService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateDetectionLogDto: UpdateDetectionLogDto,
-  ) {
-    return this.detectionLogService.update(+id, updateDetectionLogDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.detectionLogService.remove(+id);
+  @CheckOwnership('session', 'sessionId', 'query')
+  @Get('latest')
+  async getLatestLogs(
+    @Query('sessionId') sessionId: string,
+    @Query('limit') limit: string,
+  ): Promise<DetectionLogResponse[]> {
+    const parsedLimit = parseInt(limit, 10) || 5;
+    return this.detectionLogService.getLatestDetectionLogs(
+      sessionId,
+      parsedLimit,
+    );
   }
 }

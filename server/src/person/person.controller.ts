@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   UploadedFiles,
@@ -29,17 +28,7 @@ export class PersonController {
     private readonly faceImageService: FaceImageService,
   ) {}
 
-  @Get()
-  async getPeople(@GetUser('sub') adminId: string) {
-    return this.personService.getPeople(adminId);
-  }
-
-  @Get(':personId')
-  @CheckOwnership('person', 'personId')
-  async getPerson(@Param('personId', ParseUUIDPipe) personId: string) {
-    return this.personService.getPerson(personId);
-  }
-
+  //Person Management
   @Post()
   async create(
     @GetUser('sub') adminId: string,
@@ -48,10 +37,21 @@ export class PersonController {
     return this.personService.createPerson(adminId, createPersonDto);
   }
 
+  @Get()
+  async getPeople(@GetUser('sub') adminId: string) {
+    return this.personService.getPeople(adminId);
+  }
+
+  @Get(':personId')
+  @CheckOwnership('person', 'personId')
+  async getPerson(@Param('personId') personId: string) {
+    return this.personService.getPerson(personId);
+  }
+
   @Patch(':personId')
   @CheckOwnership('person', 'personId')
   async updatePerson(
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @Body() updatePersonDto: UpdatePersonDto,
   ) {
     return this.personService.updatePerson(personId, updatePersonDto);
@@ -59,22 +59,17 @@ export class PersonController {
 
   @Delete(':personId')
   @CheckOwnership('person', 'personId')
-  async deletePerson(@Param('personId', ParseUUIDPipe) personId: string) {
+  async deletePerson(@Param('personId') personId: string) {
     return this.personService.deletePerson(personId);
   }
 
-  @Get(':personId/face-images')
-  @CheckOwnership('person', 'personId')
-  async getFaceImages(@Param('personId', ParseUUIDPipe) personId: string) {
-    return this.faceImageService.getFaceImages(personId);
-  }
-
+  //Face Image Management
   @Post(':personId/face-images')
   @CheckOwnership('person', 'personId')
   @UploadImageFiles('faceImages')
   async uploadFaceImages(
     @GetUser('sub') adminId: string,
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @UploadedFiles() faceImages: Express.Multer.File[],
   ) {
     return this.faceImageService.uploadMultipleFaceImages(
@@ -83,11 +78,16 @@ export class PersonController {
       personId,
     );
   }
+  @Get(':personId/face-images')
+  @CheckOwnership('person', 'personId')
+  async getFaceImages(@Param('personId') personId: string) {
+    return this.faceImageService.getFaceImages(personId);
+  }
 
   @Delete(':personId/face-images')
   @CheckOwnership('person', 'personId')
   async deleteFaceImages(
-    @Param('personId', ParseUUIDPipe) personId: string,
+    @Param('personId') personId: string,
     @Body() deleteFaceImageDto: DeleteFaceImageDto,
   ) {
     return this.faceImageService.deleteFaceImages(personId, deleteFaceImageDto);

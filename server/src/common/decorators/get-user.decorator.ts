@@ -10,6 +10,7 @@ export const GetUser = createParamDecorator(
   ): T extends keyof JwtPayload ? JwtPayload[T] : JwtPayload => {
     const request = ctx.switchToHttp().getRequest<Request>();
     const user = request.user as JwtPayload;
+    //console.log('user', user);
 
     if (data) {
       return user[data] as T extends keyof JwtPayload

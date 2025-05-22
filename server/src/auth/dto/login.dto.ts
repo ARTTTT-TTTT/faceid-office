@@ -2,6 +2,7 @@ import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @Matches(/^\S*$/, {

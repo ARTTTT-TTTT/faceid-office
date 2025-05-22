@@ -42,12 +42,19 @@ export class AdminService {
 
     if (!admin) throw new NotFoundException('Admin not found');
 
-    return this.prisma.admin.update({
+    const updatedAdmin = await this.prisma.admin.update({
       where: { id: adminId },
       data: {
         sessionDuration: dto.sessionDuration,
       },
     });
+
+    return {
+      id: updatedAdmin.id,
+      name: updatedAdmin.name,
+      email: updatedAdmin.email,
+      sessionDuration: updatedAdmin.sessionDuration, // optional
+    };
   }
 
   async getSessionDuration(adminId: string): Promise<number> {

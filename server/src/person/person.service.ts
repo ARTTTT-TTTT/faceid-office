@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { CreatePersonDto } from '@/person/dto/create-person.dto';
 import { UpdatePersonDto } from '@/person/dto/update-person.dto';
@@ -9,81 +9,55 @@ export class PersonService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getPeople(adminId: string) {
-    try {
-      const people = await this.prisma.person.findMany({
-        where: {
-          adminId,
-        },
-      });
-      return people;
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to get people: ' + error);
-    }
+    const people = await this.prisma.person.findMany({
+      where: {
+        adminId,
+      },
+    });
+    return people;
   }
 
   async getPerson(personId: string) {
-    try {
-      const person = await this.prisma.person.findFirst({
-        where: {
-          id: personId,
-        },
-      });
+    const person = await this.prisma.person.findFirst({
+      where: {
+        id: personId,
+      },
+    });
 
-      return person;
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to get person: ' + error);
-    }
+    return person;
   }
 
   async createPerson(adminId: string, dto: CreatePersonDto) {
-    try {
-      const newPerson = await this.prisma.person.create({
-        data: {
-          fullName: dto.fullName,
-          position: dto.position,
-          profileImageUrl: dto.profileImageUrl,
-          admin: {
-            connect: { id: adminId },
-          },
+    const newPerson = await this.prisma.person.create({
+      data: {
+        fullName: dto.fullName,
+        position: dto.position,
+        profileImageUrl: dto.profileImageUrl,
+        admin: {
+          connect: { id: adminId },
         },
-      });
-      return newPerson;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to create person: ' + error,
-      );
-    }
+      },
+    });
+    return newPerson;
   }
 
   async updatePerson(personId: string, dto: UpdatePersonDto) {
-    try {
-      const person = await this.prisma.person.update({
-        where: { id: personId },
-        data: {
-          fullName: dto.fullName,
-          position: dto.position,
-        },
-      });
+    const person = await this.prisma.person.update({
+      where: { id: personId },
+      data: {
+        fullName: dto.fullName,
+        position: dto.position,
+      },
+    });
 
-      return person;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to update person: ' + error,
-      );
-    }
+    return person;
   }
 
   async deletePerson(personId: string) {
-    try {
-      await this.prisma.person.delete({
-        where: { id: personId },
-      });
+    await this.prisma.person.delete({
+      where: { id: personId },
+    });
 
-      return { message: 'Success' };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to delete person: ' + error,
-      );
-    }
+    return { message: 'Delete success' };
   }
 }

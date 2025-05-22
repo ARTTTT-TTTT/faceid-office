@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 
-import { PrismaModule } from '@/prisma/prisma.module';
-
 import { FaceImageService } from './face-image.service';
 
 @Module({
-  imports: [PrismaModule, MulterModule],
+  imports: [MulterModule],
   providers: [FaceImageService],
   exports: [FaceImageService],
 })

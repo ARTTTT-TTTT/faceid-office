@@ -14,12 +14,6 @@ export class CameraService {
     adminId: string,
     dto: CreateCameraDto,
   ): Promise<CameraResponseDto> {
-    const admin = await this.prisma.admin.findUnique({
-      where: { id: adminId },
-    });
-
-    if (!admin) throw new NotFoundException('Admin not found');
-
     const camera = await this.prisma.camera.create({
       data: {
         name: dto.name,
@@ -87,6 +81,7 @@ export class CameraService {
     });
   }
 
+  // !FEATURE: Delete camera but still keep the logs
   async delete(cameraId: string) {
     const camera = await this.prisma.camera.findUnique({
       where: { id: cameraId },
