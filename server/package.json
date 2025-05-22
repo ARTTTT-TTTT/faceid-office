@@ -6,6 +6,7 @@
   "license": "CHANOM",
   "scripts": {
     "build": "nest build",
+    "dev": "concurrently \"nest start --watch\" \"prisma studio\"",
     "start": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -14,9 +15,6 @@
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "lint:fix": "eslint src --fix && pnpm format",
     "lint:strict": "eslint --max-warnings=0 src",
-    "studio": "prisma studio",
-    "dev": "concurrently \"nest start --watch\" \"prisma studio\"",
-    "nest": "nest",
     "generate": "nest generate resource",
     "generate:service": "nest generate service",
     "generate:controller": "nest generate controller",

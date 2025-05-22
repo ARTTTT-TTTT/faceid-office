@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 
+import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
 
 import { DetectionLogService } from './detection-log.service';

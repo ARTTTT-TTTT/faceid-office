@@ -38,10 +38,6 @@ rm -rf node_modules pnpm-lock.yaml
 pnpm lint:fix
 ```
 
-## 📚 Pre-Commit 📚
-
-- please read commitlint.config.js
-
 ## Component Logic Flow
 
 **Router**  

@@ -27,7 +27,7 @@ pnpm prisma generate
 ### 💾 Prisma Migrate Dev (Initial Migration) 💾
 
 ```bash
-pnpm prisma migrate dev --name "init"
+pnpm prisma migrate dev --name "dev"
 ```
 
 ### 🛢 Prisma Studio 🛢
