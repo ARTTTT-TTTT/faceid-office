@@ -37,3 +37,10 @@ export interface SessionStatus {
   status: 'start' | 'end';
   TTL: number | null;
 }
+
+export interface DetectionSession {
+  id: string;
+  cameraId: string;
+  startedAt: Date;
+  endedAt: Date;
+}

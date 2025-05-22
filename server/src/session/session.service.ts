@@ -7,6 +7,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 
 import {
+  DetectionSession,
   FailedCamera,
   HandleCameraResult,
   ResultEntry,
@@ -166,7 +167,7 @@ export class SessionService {
     }
   }
 
-  async getSessions(cameraId: string): Promise<any[]> {
+  async getSessions(cameraId: string): Promise<DetectionSession[]> {
     return this.prisma.detectionSession.findMany({
       where: { cameraId: cameraId },
     });

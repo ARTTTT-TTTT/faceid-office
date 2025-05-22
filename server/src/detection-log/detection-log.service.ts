@@ -27,9 +27,17 @@ export class DetectionLogService {
     });
   }
 
-  async getLatestDetectionLogs(limit: number): Promise<DetectionLogResponse[]> {
+  async getLatestDetectionLogs(
+    sessionId: string,
+    limit: number,
+  ): Promise<DetectionLogResponse[]> {
     const logs = await this.prisma.detectionLog.findMany({
-      orderBy: { detectedAt: 'desc' },
+      where: {
+        sessionId: sessionId, // filter logs by session
+      },
+      orderBy: {
+        detectedAt: 'desc',
+      },
       take: limit,
       include: {
         camera: true,

@@ -1,5 +1,7 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 
+import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
+
 import { OwnershipGuard } from '../guards/ownership.guard';
 import { SourceType } from '../types/source.type';
 
@@ -12,6 +14,6 @@ export function CheckOwnership(
     SetMetadata('resource', resource),
     SetMetadata('idKey', idKey),
     SetMetadata('source', source),
-    UseGuards(OwnershipGuard),
+    UseGuards(JwtAuthGuard, OwnershipGuard),
   );
 }

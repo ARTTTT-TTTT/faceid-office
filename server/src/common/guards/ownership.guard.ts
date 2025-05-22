@@ -24,6 +24,7 @@ export class OwnershipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
     const adminId = user?.sub;
+    //console.log('adminId', adminId);
 
     const resourceType = this.reflector.get<string>(
       'resource',
@@ -68,6 +69,7 @@ export class OwnershipGuard implements CanActivate {
     source: SourceType,
     idKey: string,
   ): string | undefined {
+    //console.log('extractIdFromRequest', source, idKey);
     if (source === 'params') return request.params[idKey];
     if (source === 'body') {
       const value = (request.body as Record<string, unknown>)[idKey];
@@ -76,6 +78,7 @@ export class OwnershipGuard implements CanActivate {
     if (source === 'query') {
       const value = request.query[idKey];
       if (typeof value === 'string') return value;
+      //console.log('value', value);
       if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
       return undefined;
     }
@@ -114,6 +117,9 @@ export class OwnershipGuard implements CanActivate {
           where: { id: resourceId },
           include: { camera: true },
         });
+        //console.log('session', session);
+        //console.log('adminId', adminId);
+        //console.log('session?.camera?.adminId', session?.camera?.adminId);
         return {
           ok: session?.camera?.adminId === adminId,
           found: !!session,
