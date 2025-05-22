@@ -1,5 +1,5 @@
 import redis
-from app.constants.config import settings
+from app.constants.app_config import settings
 
 try:
     redis_client = redis.Redis(
