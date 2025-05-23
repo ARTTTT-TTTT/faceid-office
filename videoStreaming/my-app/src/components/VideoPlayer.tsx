@@ -15,6 +15,7 @@ export default function VideoPlayer({
         .getUserMedia({ video: true, audio: false })
         .then((stream) => {
           if (videoRef.current) {
+            console.log('🔧 Stream started', stream);
             videoRef.current.srcObject = stream;
             videoRef.current.play();
           }
