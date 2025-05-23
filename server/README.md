@@ -41,6 +41,10 @@ pnpm studio
 ### 🧪 development
 
 ```bash
+pnpm dev
+```
+
+```bash
 pnpm start
 ```
 
