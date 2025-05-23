@@ -5,16 +5,10 @@ from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from app.constants.core_config import CoreConfig
-from app.core.temp.face_detection import FaceDetector
-from app.core.temp.face_recognition import FaceRecognizer
-from app.core.temp.face_tracking import FaceTracker
 
 
 class CoreService:
     core_config = CoreConfig()
-    detector = FaceDetector(core_config)
-    recognizer = FaceRecognizer(core_config)
-    tracker = FaceTracker(core_config)
 
     @classmethod
     async def face_identification(cls, file: UploadFile) -> JSONResponse:

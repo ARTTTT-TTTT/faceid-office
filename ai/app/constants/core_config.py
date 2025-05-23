@@ -34,6 +34,8 @@ class CoreConfig:
         self.face_images_path = os.path.join(self.project_dir, "storage/face-images")
 
         # BLOB MATCHING
+        self.sure_know = 5
+        self.sure_unknown = 5
         self.blob_life_time = 5
         self.blob_distance_threshold = 250
 

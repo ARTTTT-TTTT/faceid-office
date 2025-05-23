@@ -21,6 +21,11 @@ def get_total_vectors():
     return vector_service.get_total_vectors()
 
 
+@router.post("/build/empty")
+def build_empty_vectors():
+    return vector_service.build_empty_vectors()
+
+
 @router.post("/build")
 def build_vectors():
     return vector_service.build_vectors()
