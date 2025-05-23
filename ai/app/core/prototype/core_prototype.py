@@ -137,19 +137,26 @@ class DetectionProcessingService:
             allow_dangerous_deserialization=True,
         )
 
-        # โหลด index เดิมจากไฟล์โดยไม่ reconstruct vectors
+        # โหลด index จากไฟล์
         self.index = faiss.read_index(self.config.faiss_path)
+
+        # ตรวจสอบว่า index ต้องเป็น IndexIDMap เท่านั้น
+        if not isinstance(self.index, faiss.IndexIDMap):
+            raise ValueError("Loaded index must be IndexIDMap")
+
         self.index_ivf = self.index  # ใช้ index เดิมเลย ไม่ต้องแปลง
 
-        # สร้าง dictionary mapping ID → Name
-        self.id_to_name = {}
-        docstore = self.faiss_db.docstore._dict
-        for idx, value in docstore.items():
-            try:
-                name = value.metadata.get("name", "Unknown")
-                self.id_to_name[int(idx)] = name
-            except Exception:
-                continue
+        # สร้าง dictionary mapping ID → Name จาก index_to_docstore_id
+        docstore_dict = self.faiss_db.docstore._dict
+        index_to_docstore_id = self.faiss_db.index_to_docstore_id
+
+        self.id_to_name = {
+            faiss_idx: docstore_dict[doc_id].metadata.get("name", "Unknown")
+            for faiss_idx, doc_id in index_to_docstore_id.items()
+            if doc_id in docstore_dict
+        }
+
+        print("[✅] FAISS index and mappings loaded successfully.")
 
     def detect_faces(self, frame):
         results = self.model_YOLO.predict(
