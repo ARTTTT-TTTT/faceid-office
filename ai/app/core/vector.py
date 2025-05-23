@@ -16,7 +16,7 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 
 
 from app.utils.transform_factory import face_transform
-from app.core.temp.face_embedding import DummyEmbeddings
+from app.core.dummy_embedding import DummyEmbeddings
 from app.constants.core_config import CoreConfig
 
 

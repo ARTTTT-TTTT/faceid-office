@@ -13,20 +13,20 @@ from langchain_community.vectorstores import FAISS
 from app.constants.core_config import CoreConfig
 from app.utils.transform_factory import face_transform
 
-# !FEATURE โชว์เฟรมคอนเฟิร์ม
-
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 class FaceBlob:
     def __init__(self, id, position, image=None):
-        self.id = id
         self.config = CoreConfig()
-        self.position = position
+        self.id = id
         self.image = image
+        self.position = position
         self.life = self.config.blob_life_time
+
         self.matched_person_name = None
         self.match_history = {}
+
         self.kalman = cv2.KalmanFilter(4, 2)
         self.kalman.measurementMatrix = np.array(
             [[1, 0, 0, 0], [0, 1, 0, 0]], np.float32
@@ -48,7 +48,6 @@ class FaceBlob:
     def update(self, position, image, matched_person_name):
         self.position = position
         self.image = image
-        self.life = self.config.blob_life_time
 
         self.kalman.correct(np.array([[position[0]], [position[1]]], dtype=np.float32))
 
@@ -58,13 +57,11 @@ class FaceBlob:
         )
 
     def get_match_summary(self):
-        SURE_KNOW = 5
-        SURE_UNKNOWN = 5
         summary = ", ".join(f"{k}: {v}" for k, v in self.match_history.items())
         valid_named = {
             name: count
             for name, count in self.match_history.items()
-            if name != "Unknown" and count >= SURE_KNOW
+            if name != "Unknown" and count >= self.config.sure_know
         }
 
         best_match_name, best_match_count = (None, 0)
@@ -75,13 +72,13 @@ class FaceBlob:
 
         unknown_count = self.match_history.get("Unknown", 0)
 
-        if unknown_count >= max(SURE_UNKNOWN, best_match_count * 2):
+        if unknown_count >= max(self.config.sure_unknown, best_match_count * 2):
             return "Unknown", summary, self.image
 
         if (
             best_match_name
             and unknown_count <= best_match_count * 2
-            and unknown_count >= SURE_UNKNOWN
+            and unknown_count >= self.config.sure_unknown
         ):
             return best_match_name, summary, self.image
 
@@ -99,30 +96,17 @@ class DummyEmbeddings(Embeddings):
 class DetectionProcessingService:
 
     def __init__(self):
-        """
-        Service สำหรับตรวจจับและรู้จำใบหน้า
-        """
         self.config = CoreConfig()
-
-        # Load YOLO
         self.model_YOLO = YOLO(self.config.yolo_model_path)
-
-        # Load FaceNet
-        self.model_Facenet = InceptionResnetV1(
-            pretrained=self.config.face_embedder_model
-        ).eval()
-
-        # Thresholds
-        self.YOLO_THRESHOLD = self.config.yolo_threshold
-        self.FACENET_THRESHOLD = self.config.facenet_threshold
-
-        # Tracking / Matching
-        self.LIFE_TIME = self.config.blob_life_time
-        self.ID_FACE = 0
-        self.BLOBS = []
-
-        # Transform for FaceNet
+        self.model_Facenet = (
+            InceptionResnetV1(pretrained=self.config.face_embedder_model)
+            .to(self.config.default_device)
+            .eval()
+        )
         self.transform = face_transform()
+
+        self.id_face = 0
+        self.blobs = []
 
         # FAISS Index placeholder
         self.index = None
@@ -130,26 +114,19 @@ class DetectionProcessingService:
         self.id_to_name = {}
 
     def load_faiss_index(self):
-        """
-        โหลดฐานข้อมูล FAISS และสร้าง mapping ID → Name
-        """
-        # โหลด FAISS local database (docstore, index, etc.)
         self.faiss_db = FAISS.load_local(
             self.config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
 
-        # โหลด index จากไฟล์
         self.index = faiss.read_index(self.config.faiss_path)
 
-        # ตรวจสอบว่า index ต้องเป็น IndexIDMap เท่านั้น
         if not isinstance(self.index, faiss.IndexIDMap):
             raise ValueError("Loaded index must be IndexIDMap")
 
-        self.index_ivf = self.index  # ใช้ index เดิมเลย ไม่ต้องแปลง
+        self.index_ivf = self.index
 
-        # สร้าง dictionary mapping ID → Name จาก index_to_docstore_id
         docstore_dict = self.faiss_db.docstore._dict
         index_to_docstore_id = self.faiss_db.index_to_docstore_id
 
@@ -177,14 +154,17 @@ class DetectionProcessingService:
 
     def image_embedding(self, cropped_image):
         pil_img = Image.fromarray(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
-        tensor = self.transform(pil_img).unsqueeze(0)
-        return self.model_Facenet(tensor).detach().cpu().numpy()[0]
+        tensor = self.transform(pil_img).unsqueeze(0).to(self.config.default_device)
+        embedding = self.model_Facenet(tensor).detach().cpu().numpy()[0]
+        return embedding
 
     def find_best_match(self, embedding):
         if self.index is None:
             raise ValueError("FAISS index not loaded.")
         embedding = embedding / np.linalg.norm(embedding)
-        distances, indices = self.index_ivf.search(np.array([embedding]), k=3)
+        distances, indices = self.index_ivf.search(
+            np.array([embedding]), k=self.config.recognition_k_neighbors
+        )
         matched_names = [self.id_to_name.get(int(i), "Unknown") for i in indices[0]]
         name_counter = Counter(matched_names)
         if not name_counter:
@@ -197,7 +177,7 @@ class DetectionProcessingService:
             return "Unknown"
 
     def match_or_create_blob(self, pos, face, person, matched_ids):
-        for blob in self.BLOBS:
+        for blob in self.blobs:
             if self.is_near(blob.predict_position(), pos):
                 blob.update(
                     position=pos,
@@ -207,19 +187,20 @@ class DetectionProcessingService:
                 matched_ids.add(blob.id)
                 return
 
-        blob_id = f"face_{self.ID_FACE}"
-        self.ID_FACE += 1
+        blob_id = f"face_{self.id_face}"
+        self.id_face += 1
         new_blob = FaceBlob(id=blob_id, position=pos, image=face)
         new_blob.matched_person_name = person
-        self.BLOBS.append(new_blob)
+        self.blobs.append(new_blob)
 
-    @staticmethod
-    def is_near(pos1, pos2, threshold=250):
-        return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2 < threshold**2
+    def is_near(self, pos1, pos2):
+        return (pos1[0] - pos2[0]) ** 2 + (
+            pos1[1] - pos2[1]
+        ) ** 2 < self.config.blob_distance_threshold**2
 
     def decrease_life_and_remove(self, matched_ids=set()):
         to_remove = []
-        for blob in self.BLOBS:
+        for blob in self.blobs:
             if blob.id not in matched_ids:
                 blob.life -= 1
                 if blob.life <= 0:
@@ -235,7 +216,7 @@ class DetectionProcessingService:
             print(
                 f"[REMOVE] {blob.id} → Most likely matched: {name} Sumarize: {summary}]"
             )
-            self.BLOBS.remove(blob)
+            self.blobs.remove(blob)
 
     def tracking_face(self, frame):
         detections = self.detect_faces(frame)
@@ -243,7 +224,7 @@ class DetectionProcessingService:
 
         if not detections.boxes:
             self.decrease_life_and_remove()
-            return annotated_frame, self.BLOBS
+            return annotated_frame, self.blobs
 
         positions, faces = self.extract_faces_and_positions(frame, detections)
         matched = set()
@@ -254,7 +235,7 @@ class DetectionProcessingService:
             self.match_or_create_blob(pos, face, person, matched)
 
         self.decrease_life_and_remove(matched_ids=matched)
-        return annotated_frame, self.BLOBS
+        return annotated_frame, self.blobs
 
 
 if __name__ == "__main__":
