@@ -3,6 +3,7 @@ from app.core.vector import Vector
 from app.constants.core_config import CoreConfig
 
 # !FEATURE HANDLE RESPONSE
+# !FEATURE build_empty_vectors
 
 
 class VectorService:
@@ -34,6 +35,15 @@ class VectorService:
         try:
             result = self.vector.get_total_vectors()
             return {"succes": result}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def build_empty_vectors(self) -> dict:
+        if not os.path.exists(self.config.face_images_path):
+            return {"success": False, "error": "Data path does not exist."}
+        try:
+            result = self.vector.build_empty_vectors()
+            return {"success": result}
         except Exception as e:
             return {"success": False, "error": str(e)}
 

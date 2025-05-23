@@ -205,7 +205,7 @@ class Vector:
         print(f"[📊] Total face vectors in FAISS: {total_count}")
         return total_count
 
-    def create_empty_vectors(self):
+    def build_empty_vectors(self):
         """
         index    : สร้าง vector ขนาด 512
         docstore : สร้าง ที่ว่าง ๆ ที่เก็บ metadata เช่น ชื่อบุคคลและชื่อไฟล์
@@ -243,7 +243,6 @@ class Vector:
 
         vectors, docs = self.extract_face_vectors(self.face_images_path)
         if not vectors:
-            # !FEATURE เรียกใช้ create_empty_vectors
             print("[❗] No face vectors extracted.")
             return
 
@@ -269,6 +268,7 @@ class Vector:
         )
         db.save_local(self.vector_path)
         print("[✅] FAISS database built with IndexIDMap and saved.")
+        return True
 
     def update_person_vectors(self, person_id: str):
         """
@@ -293,6 +293,7 @@ class Vector:
 
         new_vectors, new_docs = self.extract_face_vectors_single(person_folder)
         if not new_vectors:
+            
             print("[❗] No new faces to add.")
             return
 
