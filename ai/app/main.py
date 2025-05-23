@@ -1,3 +1,5 @@
+import socketio
+
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
@@ -10,15 +12,17 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
-app = FastAPI(
+fastapi_app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_AI_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
 
-# !DEV
+sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+app = socketio.ASGIApp(sio, fastapi_app)
+
 if settings.all_cors_origins:
-    app.add_middleware(
+    fastapi_app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.all_cors_origins,
         allow_credentials=True,
@@ -26,4 +30,4 @@ if settings.all_cors_origins:
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=settings.API_AI_STR)
+fastapi_app.include_router(api_router, prefix=settings.API_AI_STR)

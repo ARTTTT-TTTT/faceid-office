@@ -12,6 +12,7 @@ import SessionEnd from '@/components/detection/session_end';
 
 import { fetchLatestUserLogs } from '@/app/api/detection/route';
 import { fetchRedisStatus, fetchSetting } from '@/app/api/setting/route';
+import { formatTime } from '@/utils/format-time';
 
 import {
   RedisStartStatus,
@@ -49,18 +50,7 @@ export default function DetectionPage() {
     }
   };
 
-  const formatBangkokTime = (utcString: string): string => {
-    const date = new Date(utcString);
-    if (isNaN(date.getTime())) return 'Incorrect time';
-
-    const bangkokTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
-    const hours = String(bangkokTime.getHours()).padStart(2, '0');
-    const minutes = String(bangkokTime.getMinutes()).padStart(2, '0');
-
-    return `${hours}:${minutes}`;
-  };
-
-  if (loadingRedisStatus || loadingSetting) return;
+  if (loadingRedisStatus || loadingSetting) return <div> loading </div>;
 
   if (
     !settingData ||
@@ -88,7 +78,7 @@ export default function DetectionPage() {
               key={user._id}
               name={user.name}
               image={user.image}
-              timestamp={formatBangkokTime(user.timestamp)}
+              timestamp={formatTime(user.timestamp)}
               status={user.status}
             />
           );
