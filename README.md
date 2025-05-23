@@ -22,6 +22,74 @@ pnpm install
 | PostgreSQL | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white) |
 | Redis      | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)                |
 
-### 📚 Pre-Commit 📚
+## 📚 Pre-Commit 📚
 
-please read commitlint.config.js
+- please read commitlint.config.js
+
+## 🌿 Branch Workflow
+
+- ทุกฟีเจอร์ใหม่ ให้แตก branch จาก `dev` โดยใช้รูปแบบ:
+
+**🌿 Feature**
+
+```bash
+feature/<module>/<task-name>
+```
+
+**ตัวอย่าง:**
+
+- `feature/ai/api-auth`
+- `feature/server/session-storage`
+- `feature/client/navbar`
+
+---
+
+**🛠️ Fix Branch**
+
+```bash
+fix/<module>/<description>
+```
+
+**ตัวอย่าง:**
+
+- `fix/server/login-token`
+- `fix/client/form-validation`
+
+---
+
+**🚑 Hotfix Branch**
+
+```bash
+hotfix/<module>/<critical-issue>
+```
+
+**ตัวอย่าง:**
+
+- `hotfix/main/crash-on-login`
+- `hotfix/server/invalid-response-500`
+
+---
+
+**🔄 Refactor Branch**
+
+```bash
+refactor/<module>/<description>
+```
+
+**ตัวอย่าง:**
+
+- `refactor/ai/clean-face-detection-logic`
+- `refactor/server/optimize-db-query`
+
+---
+
+**⚙️ CI Branch**
+
+```bash
+ci/<system>/<task>
+```
+
+**ตัวอย่าง:**
+
+- `ci/github/setup-actions`
+- `ci/dockerfile/update-base-image`
