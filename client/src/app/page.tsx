@@ -71,10 +71,10 @@ export default function HomePage() {
           <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-8' />
         )}
         <Link
-          href='/video-stream'
+          href='/video-stream-v1'
           className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
         >
-          Video Stream
+          Video Stream V1
         </Link>
       </div>
 
