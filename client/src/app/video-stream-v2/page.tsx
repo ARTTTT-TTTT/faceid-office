@@ -9,27 +9,59 @@ import { Card } from '@/components/ui/card';
 
 export default function VideoStreamV2() {
   const [token, setToken] = useState<string | null>(null);
+  const [turnCreds, setTurnCreds] = useState<{
+    username: string;
+    credential: string;
+  } | null>(null);
 
   useEffect(() => {
     const join = async () => {
       const res = await fetch(
-        `http://localhost:8000/api/ai/video-stream-v2/get_token?identity=${crypto.randomUUID()}&room=myroom`,
+        `http://localhost:8000/api/ai/video-stream-v2/token?identity=${crypto.randomUUID()}&room=myroom`,
       );
       const data = await res.json();
       setToken(data.token);
+
+      const turnRes = await fetch(
+        'http://localhost:8000/api/ai/video-stream-v2/turn_credentials',
+      );
+      const turnData = await turnRes.json();
+      setTurnCreds(turnData);
     };
     join();
   }, []);
 
-  if (!token) return <div className='text-center p-4'>Loading...</div>;
+  if (!token || !turnCreds)
+    return <div className='text-center p-4'>Loading...</div>;
 
   return (
     <LiveKitRoom
       token={token}
-      serverUrl='ws://localhost:7880'
-      connect
-      video
-      audio
+      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || 'ws://localhost:7880'}
+      connect={true}
+      video={true}
+      audio={false}
+      connectOptions={{
+        autoSubscribe: true,
+        rtcConfig: {
+          iceTransportPolicy: 'all',
+          iceServers: [
+            {
+              urls: ['stun:localhost:3478'],
+            },
+            {
+              urls: ['turn:localhost:3478?transport=udp'],
+              username: turnCreds.username,
+              credential: turnCreds.credential,
+            },
+            {
+              urls: ['turn:localhost:3478?transport=tcp'],
+              username: turnCreds.username,
+              credential: turnCreds.credential,
+            },
+          ],
+        },
+      }}
     >
       <VideoGrid />
     </LiveKitRoom>

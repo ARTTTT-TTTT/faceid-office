@@ -13,7 +13,8 @@ import { RedisService } from './redis.service';
         const redisConfig: RedisOptions = {
           host: configService.get<string>('REDIS_HOST') || 'localhost',
           port: configService.get<number>('REDIS_PORT') || 6379,
-          password: configService.get<string>('REDIS_PASSWORD') || undefined,
+          password:
+            configService.get<string>('REDIS_PASSWORD') || 'redis_secret',
         };
         const redisClient = new Redis(redisConfig);
         return redisClient;

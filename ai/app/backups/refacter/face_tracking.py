@@ -75,9 +75,7 @@ class FaceTracking:
             self.decrease_life_and_remove()
             return annotated_frame, self.blobs
 
-        positions, faces = self.detection.extract_faces_and_positions(
-            frame, detections
-        )
+        positions, faces = self.detection.extract_faces_and_positions(frame, detections)
         matched = set()
 
         for pos, face in zip(positions, faces):

@@ -1,15 +1,23 @@
 rtc:
   udp_port: 7881
   enable_tcp: true
+
   port_range_start: 50000
   port_range_end: 60000
 
   stun_servers:
-    - stun:coturn:3478
+    - stun:${STUN_DOMAIN}:3478
+    # e.g. STUN_DOMAIN=localhost [DEV], stun.yourdomain.com [PROD]
 
   turn:
     enabled: true
-    tls_port: 5349
     udp_port: 3478
-    user_name: ${TURN_USERNAME}
-    password: ${TURN_SECRET}
+    tls_port: 5349
+    static_auth_secret: ${TURN_SECRET}
+
+    domain: ${TURN_DOMAIN}
+    # e.g. TURN_DOMAIN=localhost [DEV], turn.yourdomain.com [PROD]
+
+    servers:
+      - ${TURN_DOMAIN}:3478
+      # e.g. TURN_SERVERS=localhost [DEV], turn.yourdomain.com [PROD]

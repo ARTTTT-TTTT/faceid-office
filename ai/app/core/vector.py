@@ -293,7 +293,7 @@ class Vector:
 
         new_vectors, new_docs = self.extract_face_vectors_single(person_folder)
         if not new_vectors:
-            
+
             print("[❗] No new faces to add.")
             return
 

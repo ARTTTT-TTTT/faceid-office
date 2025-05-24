@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:latest
@@ -7,11 +5,21 @@ services:
     restart: always
     ports:
       - '6379:6379'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ['redis-server', '--requirepass', '${REDIS_PASSWORD}']
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - faceid_network
 
   postgres:
     image: postgres:15
-    restart: always
     container_name: postgres
+    restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -20,6 +28,33 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - faceid_network
+
+  coturn:
+    image: instrumentisto/coturn
+    platform: linux/amd64
+    container_name: coturn
+    restart: always
+    ports:
+      - '3478:3478'
+      - '3478:3478/udp'
+      - '5349:5349'
+      - '5349:5349/tcp'
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z localhost 3478 || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - faceid_network
 
   livekit:
     image: livekit/livekit-server:latest
@@ -37,19 +72,22 @@ services:
       - redis
       - postgres
       - coturn
-
-  coturn:
-    image: instrumentisto/coturn
-    platform: linux/amd64
-    restart: always
-    container_name: coturn
-    ports:
-      - '3478:3478'
-      - '3478:3478/udp'
-      - '5349:5349'
-      - '5349:5349/tcp'
-    volumes:
-      - ./turnserver.conf:/etc/coturn/turnserver.conf
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7880']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+    networks:
+      - faceid_network
 
 volumes:
   postgres_data:
+
+networks:
+  faceid_network:
+    driver: bridge
