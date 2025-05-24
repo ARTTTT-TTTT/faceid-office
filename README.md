@@ -10,6 +10,16 @@
 pnpm install
 ```
 
+#### 🐳 Docker Compose Up 🐳
+
+```bash
+./scripts/generate-config.sh
+```
+
+```bash
+docker compose up -d
+```
+
 ## Tech Stack 🚀
 
 | Technology | Icon                                                                                                              |
@@ -21,6 +31,8 @@ pnpm install
 | FastAPI    | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)          |
 | PostgreSQL | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white) |
 | Redis      | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)                |
+| LiveKit    | ![LiveKit](https://img.shields.io/badge/LiveKit-000000?style=for-the-badge&logo=livekit&logoColor=white)          |
+| Coturn     | ![Coturn](https://img.shields.io/badge/Coturn-4676C8?style=for-the-badge&logo=coturn&logoColor=white)             |
 
 ## 📚 Pre-Commit 📚
 
@@ -30,19 +42,11 @@ pnpm install
 
 - ทุกฟีเจอร์ใหม่ ให้แตก branch จาก `dev` โดยใช้รูปแบบ:
 
-**🌿 Feature**
+**🌿 Feature Branch**
 
 ```bash
 feature/<module>/<task-name>
 ```
-
-**ตัวอย่าง:**
-
-- `feature/ai/api-auth`
-- `feature/server/session-storage`
-- `feature/client/navbar`
-
----
 
 **🛠️ Fix Branch**
 
@@ -50,25 +54,11 @@ feature/<module>/<task-name>
 fix/<module>/<description>
 ```
 
-**ตัวอย่าง:**
-
-- `fix/server/login-token`
-- `fix/client/form-validation`
-
----
-
 **🚑 Hotfix Branch**
 
 ```bash
 hotfix/<module>/<critical-issue>
 ```
-
-**ตัวอย่าง:**
-
-- `hotfix/main/crash-on-login`
-- `hotfix/server/invalid-response-500`
-
----
 
 **🔄 Refactor Branch**
 
@@ -76,20 +66,8 @@ hotfix/<module>/<critical-issue>
 refactor/<module>/<description>
 ```
 
-**ตัวอย่าง:**
-
-- `refactor/ai/clean-face-detection-logic`
-- `refactor/server/optimize-db-query`
-
----
-
 **⚙️ CI Branch**
 
 ```bash
 ci/<system>/<task>
 ```
-
-**ตัวอย่าง:**
-
-- `ci/github/setup-actions`
-- `ci/dockerfile/update-base-image`

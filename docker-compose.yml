@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+
+  postgres:
+    image: postgres:15
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit
+    restart: always
+    ports:
+      - '7880:7880'
+      - '7881:7881/udp'
+    environment:
+      LIVEKIT_CONFIG_FILE: /etc/livekit/livekit.yaml
+      LIVEKIT_KEYS: '${LIVEKIT_KEY}: ${LIVEKIT_SECRET}'
+    volumes:
+      - ./livekit.yaml:/etc/livekit/livekit.yaml
+    depends_on:
+      - redis
+      - postgres
+      - coturn
+
+  coturn:
+    image: instrumentisto/coturn
+    platform: linux/amd64
+    restart: always
+    container_name: coturn
+    ports:
+      - '3478:3478'
+      - '3478:3478/udp'
+      - '5349:5349'
+      - '5349:5349/tcp'
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf
+
+volumes:
+  postgres_data:

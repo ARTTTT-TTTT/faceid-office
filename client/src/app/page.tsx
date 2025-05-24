@@ -66,17 +66,19 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <div className='flex items-center justify-center gap-4'>
-        {redisStatusData && redisStatusData.status === RedisStatus.START && (
-          <ArrowRight className='mt-8 size-8 animate-bounce text-blue-500 -ml-8' />
-        )}
-        <Link
-          href='/video-stream-v1'
-          className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
-        >
-          Video Stream V1
-        </Link>
-      </div>
+      <Link
+        href='/video-stream-v1'
+        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
+      >
+        Video Stream V1
+      </Link>
+
+      <Link
+        href='/video-stream-v2'
+        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
+      >
+        Video Stream V2
+      </Link>
 
       <footer className='absolute bottom-4 text-base text-gray-500'>
         © {new Date().getFullYear()} by{' '}

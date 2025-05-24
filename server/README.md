@@ -6,18 +6,6 @@
 pnpm install
 ```
 
-## 🛢 Running Redis on Docker 🛢
-
-```bash
-docker run -d -p 6379:6379 --name redis redis
-```
-
-## 🐳 Docker Compose Up 🐳
-
-```bash
-docker compose up -d
-```
-
 ### ⚙️ Prisma Generate ⚙️
 
 ```bash
@@ -58,12 +46,6 @@ pnpm start:debug
 
 ```bash
 pnpm start:prod
-```
-
-## 🦁 NestJS CLI 🦁
-
-```bash
-pnpm nest
 ```
 
 ### 🏗️ NestJS Generate 🏗️

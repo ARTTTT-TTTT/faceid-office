@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# * chmod +x clean_branches.sh
-# * ./clean_branches.sh 
+# * chmod +x scripts/clean_branches.sh
+# * ./scripts/clean_branches.sh 
 
 git remote prune origin
 

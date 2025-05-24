@@ -1,0 +1,15 @@
+rtc:
+  udp_port: 7881
+  enable_tcp: true
+  port_range_start: 50000
+  port_range_end: 60000
+
+  stun_servers:
+    - stun:coturn:3478
+
+  turn:
+    enabled: true
+    tls_port: 5349
+    udp_port: 3478
+    user_name: ${TURN_USERNAME}
+    password: ${TURN_SECRET}
