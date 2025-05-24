@@ -1,53 +1,66 @@
 import cv2
 import numpy as np
 from typing import Dict
-
-_opencv_windows_status: Dict[str, bool] = {}
-
-
-async def process_video_frame(user_id: str, data: bytes):
-    """
-    ประมวลผลเฟรมวิดีโอที่ได้รับ
-
-    Parameters:
-    - user_id: รหัสของผู้ใช้ที่ส่งเฟรมมา
-    - data: ข้อมูลไบต์ของเฟรมวิดีโอ
-    """
-    nparr = np.frombuffer(data, np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    if frame is not None:
-        window_name = f"User {user_id} Video Stream"
-        cv2.imshow(window_name, frame)
-
-        _opencv_windows_status[user_id] = True
-
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            print(f"User {user_id} pressed 'q'. Closing OpenCV window.")
-            _opencv_windows_status[user_id] = False
-            cv2.destroyWindow(window_name)
-    else:
-        print(
-            f"Could not decode frame for user: {user_id}. Data length: {len(data)} bytes"
-        )
+from fastapi import WebSocket
 
 
-def should_close_opencv_window(user_id: str) -> bool:
-    """
-    ตรวจสอบว่าหน้าต่าง OpenCV สำหรับผู้ใช้รายนี้ควรปิดหรือไม่
-    """
-    return _opencv_windows_status.get(user_id, False) == False
+class VideoStreamV1Service:
+    _active_connections: Dict[str, WebSocket] = {}
+
+    async def websocket_connection(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self._active_connections[user_id] = websocket
+        print(f"WebSocket connection established for user: {user_id}")
+
+        try:
+            while True:
+                data = await websocket.receive_bytes()
+                processed_frame_bytes = self.process_video_frame(user_id, data)
+
+                if processed_frame_bytes:
+                    await websocket.send_bytes(processed_frame_bytes)
+
+        except Exception as e:
+            print(f"An error occurred for user {user_id}: {e}")
+        finally:
+            print(f"WebSocket connection disconnected or error for user: {user_id}")
+            self.cleanup_user_connection(user_id)
+            if user_id in self._active_connections:
+                del self._active_connections[user_id]
+
+    def process_video_frame(self, user_id: str, data: bytes) -> bytes | None:
+        """
+        ประมวลผลเฟรมวิดีโอที่ได้รับและเข้ารหัสกลับเป็นไบต์ (เช่น JPEG)
+        """
+        nparr = np.frombuffer(data, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if frame is not None:
+            text = f"User: {user_id}"
+            cv2.putText(
+                frame,
+                text,
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (0, 255, 0),
+                2,
+                cv2.LINE_AA,
+            )
+
+            _, encoded_image = cv2.imencode(".jpg", frame)
+            return encoded_image.tobytes()
+        else:
+            print(
+                f"Could not decode frame for user: {user_id}. Data length: {len(data)} bytes"
+            )
+            return None
+
+    def cleanup_user_connection(self, user_id: str):
+        """
+        ทำความสะอาดทรัพยากรเมื่อผู้ใช้ตัดการเชื่อมต่อ (ในกรณีนี้ไม่มี Window ให้ปิด)
+        """
+        print(f"Cleaning up resources for user: {user_id}")
 
 
-def cleanup_user_connection(user_id: str):
-    """
-    ทำความสะอาดทรัพยากรเมื่อผู้ใช้ตัดการเชื่อมต่อ
-
-    Parameters:
-    - user_id: รหัสของผู้ใช้ที่ตัดการเชื่อมต่อ
-    """
-    print(f"Cleaning up resources for user: {user_id}")
-    if user_id in _opencv_windows_status:
-        window_name = f"User {user_id} Video Stream"
-        cv2.destroyWindow(window_name)
-        del _opencv_windows_status[user_id]
+video_stream_service = VideoStreamV1Service()

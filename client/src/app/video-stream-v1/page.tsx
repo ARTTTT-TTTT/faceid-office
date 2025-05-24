@@ -2,75 +2,146 @@
 
 import React, { useEffect, useRef } from 'react';
 
+import logger from '@/lib/logger';
+
 export default function VideoStreamV1() {
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteCanvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const localCanvasRef = useRef<HTMLCanvasElement>(null);
   const userId = useRef<string>(crypto.randomUUID());
 
   useEffect(() => {
+    let localVideoNode: HTMLVideoElement | null = null;
+
     const startStream = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoNode = localVideoRef.current;
+        }
 
-      const ws = new WebSocket(
-        `ws://localhost:8000/api/ai/video-stream-v1/ws/video/${userId.current}`,
-      );
-      wsRef.current = ws;
+        const ws = new WebSocket(
+          `ws://localhost:8000/api/ai/video-stream-v1/ws/video/${userId.current}`,
+        );
+        wsRef.current = ws;
 
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const context = canvas.getContext('2d');
-      if (!context) return;
+        const localCanvas = localCanvasRef.current;
+        const localContext = localCanvas?.getContext('2d');
+        if (!localCanvas || !localContext) {
+          logger('Local canvas or context not found.');
+          return;
+        }
 
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.play();
+        const remoteCanvas = remoteCanvasRef.current;
+        const remoteContext = remoteCanvas?.getContext('2d');
+        if (!remoteCanvas || !remoteContext) {
+          logger('Remote canvas or context not found.');
+          return;
+        }
 
-      video.onplaying = () => {
-        const sendFrame = () => {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob((blob) => {
-            if (blob && ws.readyState === WebSocket.OPEN) {
-              blob.arrayBuffer().then((buffer) => {
-                ws.send(buffer);
-              });
+        const videoSender = document.createElement('video');
+        videoSender.srcObject = stream;
+        videoSender.muted = true;
+        videoSender.play();
+
+        videoSender.onplaying = () => {
+          localCanvas.width = videoSender.videoWidth;
+          localCanvas.height = videoSender.videoHeight;
+          remoteCanvas.width = videoSender.videoWidth;
+          remoteCanvas.height = videoSender.videoHeight;
+
+          const sendFrame = () => {
+            if (ws.readyState === WebSocket.OPEN) {
+              localContext.drawImage(
+                videoSender,
+                0,
+                0,
+                localCanvas.width,
+                localCanvas.height,
+              );
+              localCanvas.toBlob(
+                (blob) => {
+                  if (blob) {
+                    blob.arrayBuffer().then((buffer) => {
+                      ws.send(buffer);
+                    });
+                  }
+                },
+                'image/jpeg',
+                0.8,
+              );
             }
             requestAnimationFrame(sendFrame);
-          }, 'image/jpeg');
+          };
+          sendFrame();
         };
-        sendFrame();
+
         ws.onmessage = (event) => {
           const blob = new Blob([event.data], { type: 'image/jpeg' });
-          const url = URL.createObjectURL(blob);
-          if (remoteVideoRef.current) remoteVideoRef.current.src = url;
+          const img = new Image();
+
+          img.onload = () => {
+            remoteContext.clearRect(
+              0,
+              0,
+              remoteCanvas.width,
+              remoteCanvas.height,
+            );
+            remoteContext.drawImage(
+              img,
+              0,
+              0,
+              remoteCanvas.width,
+              remoteCanvas.height,
+            );
+            URL.revokeObjectURL(img.src);
+          };
+          img.src = URL.createObjectURL(blob);
         };
-      };
+
+        ws.onopen = () => logger('WebSocket connected.');
+        ws.onclose = () => logger('WebSocket disconnected.');
+        ws.onerror = (error) => logger(error, 'WebSocket error:');
+      } catch (error) {
+        logger(error, 'Error accessing camera or starting stream:');
+      }
     };
 
     startStream();
 
     return () => {
       wsRef.current?.close();
+      if (localVideoNode && localVideoNode.srcObject) {
+        (localVideoNode.srcObject as MediaStream)
+          .getTracks()
+          .forEach((track) => track.stop());
+      }
     };
   }, []);
-
   return (
-    <div className='grid grid-cols-2 gap-4 p-4'>
-      <div>
-        <h2 className='text-lg font-semibold mb-2'>Local Camera</h2>
-        <video
-          ref={localVideoRef}
-          autoPlay
-          muted
-          className='w-full rounded-xl shadow'
-        />
-      </div>
-      <h2 className='text-lg font-semibold mb-2'>Processed Stream</h2>
-      <canvas ref={canvasRef} className='hidden' />
-    </div>
+    <main className='p-4'>
+      <h2 className='text-lg font-semibold mb-2'>Local Camera (Your Feed)</h2>
+      <video
+        ref={localVideoRef}
+        autoPlay
+        muted
+        playsInline
+        className='w-full rounded-xl shadow mb-4'
+      />
+      <canvas ref={localCanvasRef} className='hidden' />
+
+      <h2 className='text-lg font-semibold mb-2'>
+        Remote Stream (Processed by Server)
+      </h2>
+      <canvas
+        ref={remoteCanvasRef}
+        className='w-full rounded-xl shadow border border-gray-300 bg-black'
+        style={{ aspectRatio: '16/9' }}
+      />
+    </main>
   );
 }
