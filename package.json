@@ -31,9 +31,13 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "unrs-resolver",
       "@nestjs/core",
-      "@swc/core"
+      "@prisma/client",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "@swc/core",
+      "prisma",
+      "unrs-resolver"
     ],
     "ignoredBuiltDependencies": [
       "unrs-resolver"
