@@ -36,54 +36,54 @@ services:
     networks:
       - faceid_network
 
-  coturn:
-    image: instrumentisto/coturn
-    platform: linux/amd64
-    container_name: coturn
-    restart: always
-    ports:
-      - '3478:3478'
-      - '3478:3478/udp'
-      - '5349:5349'
-      - '5349:5349/tcp'
-    volumes:
-      - ./turnserver.conf:/etc/coturn/turnserver.conf
-    healthcheck:
-      test: ['CMD-SHELL', 'nc -z localhost 3478 || exit 1']
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    networks:
-      - faceid_network
+  # coturn:
+  #   image: instrumentisto/coturn
+  #   platform: linux/amd64
+  #   container_name: coturn
+  #   restart: always
+  #   ports:
+  #     - '3478:3478'
+  #     - '3478:3478/udp'
+  #     - '5349:5349'
+  #     - '5349:5349/tcp'
+  #   volumes:
+  #     - ./turnserver.conf:/etc/coturn/turnserver.conf
+  #   healthcheck:
+  #     test: ['CMD-SHELL', 'nc -z localhost 3478 || exit 1']
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #   networks:
+  #     - faceid_network
 
-  livekit:
-    image: livekit/livekit-server:latest
-    container_name: livekit
-    restart: always
-    ports:
-      - '7880:7880'
-      - '7881:7881/udp'
-    environment:
-      LIVEKIT_CONFIG_FILE: /etc/livekit/livekit.yaml
-      LIVEKIT_KEYS: '${LIVEKIT_KEY}: ${LIVEKIT_SECRET}'
-    volumes:
-      - ./livekit.yaml:/etc/livekit/livekit.yaml
-    depends_on:
-      - redis
-      - postgres
-      - coturn
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:7880']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1024M
-    networks:
-      - faceid_network
+  # livekit:
+  #   image: livekit/livekit-server:latest
+  #   container_name: livekit
+  #   restart: always
+  #   ports:
+  #     - '7880:7880'
+  #     - '7881:7881/udp'
+  #   environment:
+  #     LIVEKIT_CONFIG_FILE: /etc/livekit/livekit.yaml
+  #     LIVEKIT_KEYS: '${LIVEKIT_KEY}: ${LIVEKIT_SECRET}'
+  #   volumes:
+  #     - ./livekit.yaml:/etc/livekit/livekit.yaml
+  #   depends_on:
+  #     - redis
+  #     - postgres
+  #     - coturn
+  #   healthcheck:
+  #     test: ['CMD', 'curl', '-f', 'http://localhost:7880']
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.0'
+  #         memory: 1024M
+  #   networks:
+  #     - faceid_network
 
 volumes:
   postgres_data:

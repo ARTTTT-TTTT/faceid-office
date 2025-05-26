@@ -1,6 +1,6 @@
 import os
 import cv2
-from app.backups.refacter.face_tracking import FaceTracking
+from app.core.face_tracking import FaceTracking
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -26,9 +26,8 @@ def main():
             if not ret:
                 break
 
-            annotated_frame, blobs = tracking.tracking_face(frame)
-
-            cv2.imshow("Face Tracking", annotated_frame)
+            name = tracking.tracking_face(frame)
+            print(f"Detected: {name}")
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break

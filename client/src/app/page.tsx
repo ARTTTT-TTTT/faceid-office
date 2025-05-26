@@ -67,6 +67,13 @@ export default function HomePage() {
       </div>
 
       <Link
+        href='/video-stream'
+        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
+      >
+        Video Stream
+      </Link>
+
+      <Link
         href='/video-stream-v1'
         className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 text-white font-semibold hover:bg-yellow-600 transition duration-200'
       >

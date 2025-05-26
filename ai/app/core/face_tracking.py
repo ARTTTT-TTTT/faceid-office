@@ -1,4 +1,3 @@
-import cv2
 from app.core.face_blob import FaceBlob
 from app.core.face_detection import FaceDetection
 from app.core.face_embedding import FaceEmbedding
@@ -44,26 +43,18 @@ class FaceTracking:
         self.blobs.append(new_blob)
         matched_ids.add(new_blob.id)
 
-    def decrease_life_and_cleanup(self, matched_ids=None):
+    def decrease_life_and_cleanup(self, matched_ids=set()):
         """Decrease life of unmatched blobs and remove those expired"""
-        if matched_ids is None:
-            matched_ids = set()
-
-        expired_blobs = [
-            blob
-            for blob in self.blobs
-            if blob.id not in matched_ids and blob.decrease_life() <= 0
-        ]
-
-        for blob in expired_blobs:
-            name, summary, img = blob.get_match_summary()
+        to_remove = []
+        for blob in self.blobs:
+            if blob.id not in matched_ids:
+                blob.life -= 1
+                if blob.life <= 0:
+                    to_remove.append(blob)
+        for blob in to_remove:
+            name, img = blob.get_match_summary()
             if img is not None:
-                img = cv2.resize(img, (500, 500))
-                window_name = name if name and name != "Unknown" else "Unknown"
-                cv2.imshow(window_name, img)
-            print(
-                f"[REMOVE] {blob.id} → Most likely matched: {name}, Summary: {summary}"
-            )
+                return name
             self.blobs.remove(blob)
 
     def tracking_face(self, frame):
@@ -72,8 +63,8 @@ class FaceTracking:
         annotated_frame = detections.plot()
 
         if not detections.boxes:
-            self.decrease_life_and_cleanup()
-            return annotated_frame, self.blobs
+            name = self.decrease_life_and_cleanup()
+            return name
 
         positions, face_images = self.detection.extract_faces_and_positions(
             frame, detections
@@ -85,5 +76,5 @@ class FaceTracking:
             matched_person = self.recognition.find_best_match(embedding)
             self.match_or_create_blob(position, face_img, matched_person, matched_ids)
 
-        self.decrease_life_and_cleanup(matched_ids)
-        return annotated_frame, self.blobs
+        name = self.decrease_life_and_cleanup(matched_ids)
+        return name

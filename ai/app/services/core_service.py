@@ -1,40 +1,27 @@
 import cv2
 import numpy as np
 
-from fastapi import HTTPException, UploadFile
-from fastapi.responses import JSONResponse
-
 from app.constants.core_config import CoreConfig
+from app.core.face_tracking import FaceTracking
 
 
 class CoreService:
     core_config = CoreConfig()
 
-    @classmethod
-    async def face_identification(cls, file: UploadFile) -> JSONResponse:
-        try:
-            if file.content_type != "image/jpeg":
-                raise HTTPException(
-                    status_code=400, detail="Only JPEG images are supported."
-                )
+    def __init__(self):
+        self.tracker = FaceTracking()
+        self.tracker.load_faiss_index()
 
-            content = await file.read()
-            frame = cv2.imdecode(np.frombuffer(content, np.uint8), cv2.IMREAD_COLOR)
+    def process_frame(
+        self, user_id: str, frame: np.ndarray
+    ) -> tuple[bytes | None, list[str]]:
+        annotated_frame, faces_info = self.tracker.tracking_face(frame)
 
-            if frame is None:
-                raise HTTPException(
-                    status_code=400, detail="Failed to decode the image."
-                )
+        _, encoded_image = cv2.imencode(".jpg", annotated_frame)
+        return encoded_image.tobytes()
 
-            return {"message": "success"}
 
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"An unexpected error occurred during face identification: {str(e)}",
-            )
+core_service = CoreService()
 
 
 # class DetectionProcessingService:

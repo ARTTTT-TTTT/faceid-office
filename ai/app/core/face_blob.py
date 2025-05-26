@@ -44,7 +44,6 @@ class FaceBlob:
         )
 
     def get_match_summary(self):
-        summary = ", ".join(f"{k}: {v}" for k, v in self.match_history.items())
         valid_named = {
             name: count
             for name, count in self.match_history.items()
@@ -59,14 +58,16 @@ class FaceBlob:
 
         unknown_count = self.match_history.get("Unknown", 0)
 
+        # * UNKNOWN PERSON
         if unknown_count >= max(self.config.sure_unknown, best_match_count * 2):
-            return "Unknown", summary, self.image
+            return "Unknown", self.image
 
+        # * FOUND PERSON
         if (
             best_match_name
             and unknown_count <= best_match_count * 2
             and unknown_count >= self.config.sure_unknown
         ):
-            return best_match_name, summary, self.image
+            return best_match_name, self.image
 
-        return None, None, None
+        return None, None

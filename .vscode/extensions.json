@@ -4,7 +4,6 @@
     "esbenp.prettier-vscode", // Code formatter
     "ms-vscode.vscode-typescript-next", // Official TypeScript/JavaScript extension
     "aaron-bond.better-comments", // Improve comments readability
-    "streetsidesoftware.code-spell-checker", // Spell checker for code
     "waderyan.gitblame", // Git Blame information in status bar
     "eamodio.gitlens", // Git capabilities supercharged
     "formulahendry.auto-rename-tag", // Auto rename paired HTML/XML tag
