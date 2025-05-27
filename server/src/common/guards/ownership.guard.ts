@@ -128,10 +128,16 @@ export class OwnershipGuard implements CanActivate {
       case 'log': {
         const log = await this.prisma.detectionLog.findFirst({
           where: { id: resourceId },
-          include: { camera: true },
+          include: {
+            session: {
+              include: {
+                camera: true,
+              },
+            },
+          },
         });
         return {
-          ok: log?.camera?.adminId === adminId,
+          ok: log?.session?.camera?.adminId === adminId,
           found: !!log,
         };
       }

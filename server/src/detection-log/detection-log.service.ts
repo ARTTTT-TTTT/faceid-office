@@ -20,9 +20,6 @@ export class DetectionLogService {
         person: {
           connect: { id: dto.personId },
         },
-        camera: {
-          connect: { id: dto.cameraId },
-        },
       },
     });
   }
@@ -33,15 +30,19 @@ export class DetectionLogService {
   ): Promise<DetectionLogResponse[]> {
     const logs = await this.prisma.detectionLog.findMany({
       where: {
-        sessionId: sessionId, // filter logs by session
+        sessionId: sessionId,
       },
       orderBy: {
         detectedAt: 'desc',
       },
       take: limit,
       include: {
-        camera: true,
         person: true,
+        session: {
+          include: {
+            camera: true,
+          },
+        },
       },
     });
 
@@ -49,11 +50,13 @@ export class DetectionLogService {
       id: log.id,
       detectedAt: log.detectedAt,
       imageUrl: log.imageUrl,
-      camera: {
-        id: log.camera.id,
-        name: log.camera.name,
-        location: log.camera.location,
-      },
+      camera: log.session.camera
+        ? {
+            id: log.session.camera.id,
+            name: log.session.camera.name,
+            location: log.session.camera.location,
+          }
+        : null,
       person: {
         id: log.person.id,
         fullName: log.person.fullName,
