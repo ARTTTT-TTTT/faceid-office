@@ -5,6 +5,10 @@ from app.services.video_stream_service import video_stream_service
 router = APIRouter(prefix="/video-stream", tags=["VIDEO STREAM"])
 
 
-@router.websocket("/ws/video/{user_id}")
-async def websocket(websocket: WebSocket, user_id: str):
-    await video_stream_service.websocket_connection(websocket, user_id)
+@router.websocket("/{admin_id}/{camera_id}/{session_id}")
+async def websocket(
+    websocket: WebSocket, admin_id: str, camera_id: str, session_id: str
+):
+    await video_stream_service.websocket_connection(
+        websocket, admin_id, camera_id, session_id
+    )

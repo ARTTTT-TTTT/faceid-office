@@ -52,20 +52,23 @@ class FaceTracking:
                 if blob.life <= 0:
                     to_remove.append(blob)
         for blob in to_remove:
-            name, img = blob.get_match_summary()
-            if img is not None:
-                return name
+            person_id, detected_img = blob.get_match_summary()
             self.blobs.remove(blob)
+
+            if detected_img is not None:
+                print("2")
+                return person_id
 
     def tracking_face(self, frame):
         """Main method to track faces in a frame"""
+        # * RESULT IS PERSON ID OR "Unknown" OR None
         detections = self.detection.detect_faces(frame)
         annotated_frame = detections.plot()
-
+        print("1")
         if not detections.boxes:
-            name = self.decrease_life_and_cleanup()
-            return name
-
+            self.decrease_life_and_cleanup()
+            print("3")
+            return annotated_frame
         positions, face_images = self.detection.extract_faces_and_positions(
             frame, detections
         )
@@ -76,5 +79,5 @@ class FaceTracking:
             matched_person = self.recognition.find_best_match(embedding)
             self.match_or_create_blob(position, face_img, matched_person, matched_ids)
 
-        name = self.decrease_life_and_cleanup(matched_ids)
-        return name
+        self.decrease_life_and_cleanup(matched_ids)
+        return annotated_frame

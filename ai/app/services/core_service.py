@@ -12,13 +12,17 @@ class CoreService:
         self.tracker = FaceTracking()
         self.tracker.load_faiss_index()
 
-    def process_frame(
-        self, user_id: str, frame: np.ndarray
-    ) -> tuple[bytes | None, list[str]]:
-        annotated_frame, faces_info = self.tracker.tracking_face(frame)
+    def _process_frame(self, frame: np.ndarray):
+        person_id = self.tracker.tracking_face(frame)
+        if person_id is None:
+            return "None"
+        print(person_id)
+        return person_id
 
-        _, encoded_image = cv2.imencode(".jpg", annotated_frame)
-        return encoded_image.tobytes()
+    def process_frame(self, frame: np.ndarray):
+        annotated_frame = self.tracker.tracking_face(frame)
+        _, buffer = cv2.imencode(".jpg", annotated_frame)
+        return buffer.tobytes()
 
 
 core_service = CoreService()

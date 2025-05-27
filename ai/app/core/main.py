@@ -13,12 +13,13 @@ def main():
     # Setup camera
     # === WINDOWS ===
     # cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
+
     # cap.set(cv2.CAP_PROP_FPS, 5)
 
     # === MACOS ===
     cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
 
     try:
         while cap.isOpened():
@@ -26,8 +27,8 @@ def main():
             if not ret:
                 break
 
-            name = tracking.tracking_face(frame)
-            print(f"Detected: {name}")
+            result = tracking.tracking_face(frame)
+            cv2.imshow("Face Tracking", result)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
