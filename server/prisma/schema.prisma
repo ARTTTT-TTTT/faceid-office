@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_URL")
+  url      = env("POSTGRESQL_URL")
 }
 
 model Admin {
@@ -20,18 +20,6 @@ model Admin {
   people  Person[]
 }
 
-model Camera {
-  id        String   @id @default(uuid())
-  name      String
-  location  String?
-  createdAt DateTime @default(now())
-  adminId   String
-
-  admin    Admin              @relation(fields: [adminId], references: [id])
-  sessions DetectionSession[]
-  logs     DetectionLog[]
-}
-
 model Person {
   id              String   @id @default(uuid())
   fullName        String
@@ -39,11 +27,30 @@ model Person {
   profileImageUrl String? // !FEATURE in the future, must have this fill
   faceImageUrls   String[]
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   adminId         String
 
   admin Admin          @relation(fields: [adminId], references: [id])
   logs  DetectionLog[]
+
+  @@index([adminId])
 }
+model Camera {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  adminId   String
+
+  admin    Admin              @relation(fields: [adminId], references: [id])
+  sessions DetectionSession[]
+  logs     DetectionLog[]
+
+  @@index([adminId])
+}
+
+
 
 model DetectionSession {
   id        String    @id @default(uuid())
@@ -53,6 +60,8 @@ model DetectionSession {
 
   camera Camera         @relation(fields: [cameraId], references: [id])
   logs   DetectionLog[]
+
+  @@index([cameraId])
 }
 
 model DetectionLog {
@@ -66,4 +75,6 @@ model DetectionLog {
   session DetectionSession @relation(fields: [sessionId], references: [id])
   person  Person           @relation(fields: [personId], references: [id])
   camera  Camera           @relation(fields: [cameraId], references: [id])
+
+  @@index([sessionId])
 }
