@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AI"
     API_AI_STR: str = "/api/ai"
     AI_SECRET_KEY: str = "ai_secret_key"
+    
+    SERVER_URL: str = "http://localhost:8080"
 
     FRONTEND_HOST: str = "http://localhost:3000"
     BACKEND_CORS_ORIGINS: list[AnyUrl] | str = []

@@ -41,3 +41,5 @@ class CoreConfig:
 
         # RECOGNITION
         self.recognition_k_neighbors = 3
+
+core_config = CoreConfig()

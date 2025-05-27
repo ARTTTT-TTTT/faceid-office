@@ -22,9 +22,6 @@ class RedisService:
         try:
             if redis_client.exists(person_key):
                 return False
-
-            # ?OPTIONAL ให้ฝั่ง AI set detection_log ใน Redis
-            # ?redis_client.set(person_key, "1")
             return True
 
         except Exception as e:
@@ -32,3 +29,6 @@ class RedisService:
                 status_code=500,
                 detail=f"Failed to check person {admin_id}: {str(e)}",
             )
+
+
+redis_service = RedisService()
