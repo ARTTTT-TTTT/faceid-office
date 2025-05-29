@@ -104,6 +104,7 @@ class WebsocketService:
                             # frame = cv2.resize(frame, (640, 480))
                             annotation, result = face_tracking.tracking_face(frame)
                             print("Results:", result)
+                            await websocket.send_json(result) #send results back to client
                             if annotation is not None:
                                 # print("Frame shape:", frame.shape)
                                 cv2.imshow("result", annotation)
