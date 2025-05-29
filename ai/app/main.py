@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
+import os
 
 from app.api import api_router
 from app.constants.app_config import settings
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

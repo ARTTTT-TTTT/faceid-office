@@ -16,13 +16,13 @@ class CoreConfig:
         self.yolo_model_path = os.path.join(
             self.base_dir, "app/models", self.yolo_model_name
         )
-        self.yolo_threshold = 0.75  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
+        self.yolo_threshold = 0.85  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
         # FACENET
         self.face_embedder_model = "vggface2"
         self.default_device = "cuda" if torch.cuda.is_available() else "cpu"
         self.embedding_dim = 512
-        self.facenet_threshold = 0.65  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
+        self.facenet_threshold = 0.5  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
 
         # VECTOR
         self.vector_path = os.path.join(self.base_dir, "app/vector")
@@ -40,6 +40,7 @@ class CoreConfig:
         self.blob_distance_threshold = 250
 
         # RECOGNITION
-        self.recognition_k_neighbors = 3
+        self.recognition_k_neighbors = 5
+
 
 core_config = CoreConfig()

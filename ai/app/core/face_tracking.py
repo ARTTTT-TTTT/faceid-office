@@ -34,14 +34,23 @@ class FaceTracking:
                     matched_person_name=matched_person or blob.matched_person_name,
                 )
                 matched_ids.add(blob.id)
-                return
+                return {
+                    "id": blob.id,
+                    "name": blob.matched_person_name,
+                }
 
+        # หากไม่มี blob ใกล้เคียง สร้างใหม่
         blob_id = f"face_{self.id_counter}"
         self.id_counter += 1
         new_blob = FaceBlob(id=blob_id, position=position, image=face_img)
         new_blob.matched_person_name = matched_person
         self.blobs.append(new_blob)
         matched_ids.add(new_blob.id)
+
+        return {
+            "id": new_blob.id,
+            "name": matched_person,
+        }
 
     def decrease_life_and_cleanup(self, matched_ids=set()):
         """Decrease life of unmatched blobs and remove those expired"""
@@ -51,33 +60,53 @@ class FaceTracking:
                 blob.life -= 1
                 if blob.life <= 0:
                     to_remove.append(blob)
-        for blob in to_remove:
-            person_id, detected_img = blob.get_match_summary()
-            self.blobs.remove(blob)
 
-            if detected_img is not None:
-                print("2")
-                return person_id
+        # ====new====
+        for blob in to_remove:
+            self.blobs.remove(blob)
 
     def tracking_face(self, frame):
         """Main method to track faces in a frame"""
-        # * RESULT IS PERSON ID OR "Unknown" OR None
-        detections = self.detection.detect_faces(frame)
-        annotated_frame = detections.plot()
-        print("1")
-        if not detections.boxes:
+        try:
+            detections = self.detection.detect_faces(frame)
+
+            # Check if detections is empty or invalid
+            if (
+                not detections
+                or not hasattr(detections, "boxes")
+                or not detections.boxes
+            ):
+                self.decrease_life_and_cleanup()
+                return frame, []  # Return original frame and empty results
+
+            # Generate annotations (bounding boxes, etc.)
+
+            annotation = detections.plot()
+
+            positions, face_images = self.detection.extract_faces_and_positions(
+                frame, detections
+            )
+            matched_ids = set()
+            results = []
+
+            for position, face_img in zip(positions, face_images):
+                embedding = self.embedding.image_embedding(face_img)
+                matched_person = self.recognition.find_best_match(embedding)
+                result = self.match_or_create_blob(
+                    position, face_img, matched_person, matched_ids
+                )
+                results.append(result)
+
+            self.decrease_life_and_cleanup(matched_ids)
+            if annotation is not None:
+                return annotation, results  # Return annotated frame and results
+            else:
+                return frame, []  # Return annotated frame and results
+
+        except Exception as e:
+            print(f"Error in tracking_face: {e}")
             self.decrease_life_and_cleanup()
-            print("3")
-            return annotated_frame
-        positions, face_images = self.detection.extract_faces_and_positions(
-            frame, detections
-        )
-        matched_ids = set()
+            return frame, []  # Return original frame and empty results on error
 
-        for position, face_img in zip(positions, face_images):
-            embedding = self.embedding.image_embedding(face_img)
-            matched_person = self.recognition.find_best_match(embedding)
-            self.match_or_create_blob(position, face_img, matched_person, matched_ids)
 
-        self.decrease_life_and_cleanup(matched_ids)
-        return annotated_frame
+face_tracking = FaceTracking()

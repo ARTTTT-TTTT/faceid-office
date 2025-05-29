@@ -10,7 +10,10 @@ class FaceDetection:
     def detect_faces(self, frame):
         """Detect faces in frame using YOLO model"""
         results = self.model_YOLO.predict(
-            source=frame, conf=self.config.yolo_threshold, verbose=False
+            source=frame,
+            conf=self.config.yolo_threshold,
+            verbose=False,
+            device=self.config.default_device
         )
         return results[0]
 

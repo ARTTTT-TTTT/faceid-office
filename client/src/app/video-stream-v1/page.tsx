@@ -25,7 +25,7 @@ export default function VideoStreamV1() {
         }
 
         const ws = new WebSocket(
-          `ws://localhost:8000/api/ai/video-stream-v1/ws/video/${userId.current}`,
+          `ws://localhost:8000/api/ai/ws/${userId.current}`,
         );
         wsRef.current = ws;
 
@@ -72,12 +72,16 @@ export default function VideoStreamV1() {
                   }
                 },
                 'image/jpeg',
-                0.8,
+                0.7, // คุณภาพลดลงนิดหน่อยเพื่อลดขนาดไฟล์
               );
             }
-            requestAnimationFrame(sendFrame);
           };
-          sendFrame();
+
+          // 1 fps
+          const intervalId = setInterval(sendFrame, 1000 / 10);
+
+          // Cleanup ตอน component ถูก unmount
+          return () => clearInterval(intervalId);
         };
 
         ws.onmessage = (event) => {

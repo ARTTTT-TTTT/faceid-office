@@ -63,11 +63,7 @@ class FaceBlob:
             return "Unknown", self.image
 
         # * FOUND PERSON
-        if (
-            best_match_name
-            and unknown_count <= best_match_count * 2
-            # and unknown_count >= self.config.sure_unknown
-        ):
+        if best_match_name and unknown_count <= best_match_count * 2:
             return best_match_name, self.image
 
         return None, None
