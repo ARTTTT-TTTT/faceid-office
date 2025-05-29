@@ -34,6 +34,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
         default:
           status = HttpStatus.INTERNAL_SERVER_ERROR;
           message = `Prisma error code: ${exception.code}`;
+          //console.error('Unhandled Prisma error:', exception);
           break;
       }
     } else if (exception instanceof Prisma.PrismaClientValidationError) {
