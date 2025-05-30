@@ -11,11 +11,11 @@ import { RedisService } from './redis.service';
       provide: Redis,
       useFactory: (configService: ConfigService) => {
         const redisConfig: RedisOptions = {
-          host: configService.get<string>('REDIS_HOST') || 'localhost',
-          port: configService.get<number>('REDIS_PORT') || 6379,
-          password:
-            configService.get<string>('REDIS_PASSWORD') || 'redis_secret',
+          host: configService.get<string>('REDIS_HOSTS') || 'localhost',
+          port: Number(configService.get<string>('REDIS_PORTS')) || 6379,
+          password: configService.get<string>('REDIS_PASS') || undefined,
         };
+        //console.log('Connecting to Redis with config:', redisConfig);
         const redisClient = new Redis(redisConfig);
         return redisClient;
       },

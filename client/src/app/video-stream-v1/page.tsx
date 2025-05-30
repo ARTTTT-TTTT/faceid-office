@@ -1,15 +1,23 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import logger from '@/lib/logger';
 
+interface FaceTrackingResult {
+  // 🧠 Define the structure of the face tracking result
+  id: string;
+  name: string;
+}
 export default function VideoStreamV1() {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteCanvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const localCanvasRef = useRef<HTMLCanvasElement>(null);
   const userId = useRef<string>(crypto.randomUUID());
+  const [trackingResult, setTrackingResult] = useState<
+    FaceTrackingResult[] | null
+  >(null); // 🧠 State to hold face tracking results
 
   useEffect(() => {
     let localVideoNode: HTMLVideoElement | null = null;
@@ -85,26 +93,38 @@ export default function VideoStreamV1() {
         };
 
         ws.onmessage = (event) => {
-          const blob = new Blob([event.data], { type: 'image/jpeg' });
-          const img = new Image();
+          // Try to detect if this is JSON text or a Blob
+          if (typeof event.data === 'string') {
+            try {
+              const result = JSON.parse(event.data);
+              //console.log('Face tracking result:', result);
+              setTrackingResult(result); // ✅ Set state to display the result
+            } catch (err) {
+              //console.error('Failed to parse JSON:', err);
+            }
+          } else {
+            // 🖼️ Assume it's a binary image (JPEG blob)
+            const blob = new Blob([event.data], { type: 'image/jpeg' });
+            const img = new Image();
 
-          img.onload = () => {
-            remoteContext.clearRect(
-              0,
-              0,
-              remoteCanvas.width,
-              remoteCanvas.height,
-            );
-            remoteContext.drawImage(
-              img,
-              0,
-              0,
-              remoteCanvas.width,
-              remoteCanvas.height,
-            );
-            URL.revokeObjectURL(img.src);
-          };
-          img.src = URL.createObjectURL(blob);
+            img.onload = () => {
+              remoteContext.clearRect(
+                0,
+                0,
+                remoteCanvas.width,
+                remoteCanvas.height,
+              );
+              remoteContext.drawImage(
+                img,
+                0,
+                0,
+                remoteCanvas.width,
+                remoteCanvas.height,
+              );
+              URL.revokeObjectURL(img.src);
+            };
+            img.src = URL.createObjectURL(blob);
+          }
         };
 
         ws.onopen = () => logger('WebSocket connected.');
@@ -136,6 +156,15 @@ export default function VideoStreamV1() {
         playsInline
         className='w-full rounded-xl shadow mb-4'
       />
+
+      {trackingResult && ( // 🧠 Display face tracking results
+        <div className='mt-4 p-4 bg-gray-100 rounded-lg shadow'>
+          <h3 className='font-semibold text-md mb-2'>Face Tracking Results</h3>
+          <pre className='text-sm whitespace-pre-wrap'>
+            {JSON.stringify(trackingResult, null, 2)}
+          </pre>
+        </div>
+      )}
       <canvas ref={localCanvasRef} className='hidden' />
 
       <h2 className='text-lg font-semibold mb-2'>
