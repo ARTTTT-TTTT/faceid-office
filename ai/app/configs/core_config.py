@@ -16,13 +16,13 @@ class CoreConfig:
         self.yolo_model_path = os.path.join(
             self.base_dir, "app/models", self.yolo_model_name
         )
-        self.yolo_threshold = 0.83  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
+        self.yolo_threshold = 0.8  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
         # FACENET
         self.face_embedder_model = "vggface2"
         self.default_device = "cuda" if torch.cuda.is_available() else "cpu"
         self.embedding_dim = 512
-        self.facenet_threshold = 0.6  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
+        self.facenet_threshold = 0.65  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
         admin_id = "admin1"
 
         # VECTOR

@@ -4,6 +4,8 @@ from app.core.face_embedding import FaceEmbedding
 from app.core.face_recognition import FaceRecognition
 from app.configs.core_config import CoreConfig
 
+from concurrent.futures import ThreadPoolExecutor
+
 
 class FaceTracking:
     def __init__(self):
@@ -50,10 +52,11 @@ class FaceTracking:
                         matched_person_name=matched_person or blob.matched_person_name,
                     )
                     matched_ids.add(blob.id)
-                    return {
-                        "id": blob.id,
-                        "name": blob.matched_person_name,
-                    }
+                    return
+                    # return {
+                    #     "id": blob.id,
+                    #     "name": blob.matched_person_name,
+                    # }
 
             # หากไม่มี blob ใกล้เคียง สร้างใหม่
             blob_id = f"face_{self.id_counter}"
@@ -63,10 +66,10 @@ class FaceTracking:
             self.blobs.append(new_blob)
             matched_ids.add(new_blob.id)
 
-            return {
-                "id": new_blob.id,
-                "name": matched_person,
-            }
+            # return {
+            #     "id": new_blob.id,
+            #     "name": matched_person,
+            # }
         except Exception as e:
             print(f"[ERROR] Failed in match_or_create_blob: {e}")
             return {"id": None, "name": None}
@@ -83,10 +86,17 @@ class FaceTracking:
         except Exception as e:
             print(f"[ERROR] Error in decrease_life_and_cleanup: {e}")
         try:
+            results = []
             for blob in to_remove:
+                name, img = blob.get_match_summary()
+                results.append(
+                    {
+                        "id": blob.id,
+                        "name": name,
+                    }
+                )
                 self.blobs.remove(blob)
-
-                
+            return results
         except Exception as e:
             print(f"[ERROR] Error removing expired blobs: {e}")
 
@@ -101,37 +111,45 @@ class FaceTracking:
                 or not hasattr(detections, "boxes")
                 or not detections.boxes
             ):
-                self.decrease_life_and_cleanup()
-                return frame, []  # Return original frame and empty results
-
-            # Generate annotations (bounding boxes, etc.)
+                results = self.decrease_life_and_cleanup()
+                return frame, results
 
             annotation = detections.plot()
+            if annotation is None:
+                return frame, []
 
             positions, face_images = self.detection.extract_faces_and_positions(
                 frame, detections
             )
             matched_ids = set()
-            results = []
 
-            for position, face_img in zip(positions, face_images):
-                embedding = self.embedding.image_embedding(face_img)
+            # Parallel embedding generation
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                embeddings = list(
+                    executor.map(self.embedding.image_embedding, face_images)
+                )
+
+            # Process each face with precomputed embedding
+            results = []
+            for position, face_img, embedding in zip(
+                positions, face_images, embeddings
+            ):
+                if embedding is None:
+                    continue  # Skip invalid embeddings
+
                 matched_person = self.recognition.find_best_match(embedding)
                 result = self.match_or_create_blob(
                     position, face_img, matched_person, matched_ids
                 )
                 results.append(result)
 
-            self.decrease_life_and_cleanup(matched_ids)
-            if annotation is not None:
-                return annotation, results  # Return annotated frame and results
-            else:
-                return frame, []  # Return annotated frame and results
+            results = self.decrease_life_and_cleanup(matched_ids)
+            return annotation, results
 
         except Exception as e:
             print(f"Error in tracking_face: {e}")
             self.decrease_life_and_cleanup()
-            # return frame, []  # Return original frame and empty results on error
+            return frame, []
 
 
 face_tracking = FaceTracking()

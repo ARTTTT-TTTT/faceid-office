@@ -23,6 +23,7 @@ dependencies = [
     "python-socketio[asgi] (>=5.13.0,<6.0.0)",
     "python-jose (>=3.4.0,<4.0.0)",
     "livekit-api (>=1.0.2,<2.0.0)",
+    "imagehash (>=4.3.2,<5.0.0)",
 ]
 
 [build-system]
