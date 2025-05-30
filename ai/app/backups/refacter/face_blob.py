@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import CoreConfig
 
 
 class FaceBlob:

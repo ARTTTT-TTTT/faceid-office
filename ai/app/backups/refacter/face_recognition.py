@@ -4,7 +4,7 @@ from collections import Counter
 
 from langchain_community.vectorstores import FAISS
 
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import CoreConfig
 from app.backups.refacter.dummy_embedding import DummyEmbeddings
 
 

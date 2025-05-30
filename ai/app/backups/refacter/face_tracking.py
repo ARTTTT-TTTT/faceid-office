@@ -3,7 +3,7 @@ from app.backups.refacter.face_blob import FaceBlob
 from app.backups.refacter.face_detection import FaceDetection
 from app.backups.refacter.face_embedding import FaceEmbedding
 from app.backups.refacter.face_recognition import FaceRecognition
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import CoreConfig
 
 
 class FaceTracking:

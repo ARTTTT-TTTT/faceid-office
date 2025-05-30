@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from app.database.redis import redis_client
-from app.constants.redis_keys import redis_keys
+from app.configs.redis_keys import redis_keys
 
 
 class RedisService:

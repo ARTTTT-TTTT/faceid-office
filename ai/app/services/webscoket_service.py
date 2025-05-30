@@ -72,20 +72,22 @@ from typing import Dict
 from fastapi import WebSocket
 from app.core.face_tracking import face_tracking
 import asyncio
+import time
 
 
 class WebsocketService:
-    face_tracking.load_faiss_index()
     _active_connections: Dict[str, WebSocket] = {}
     _latest_frame: Dict[str, bytes] = {}  # Store the latest frame for each user
 
     async def websocket_connection(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
         self._active_connections[user_id] = websocket
+        face_tracking.load_faiss_index()
         print(f"WebSocket connection established for user: {user_id}")
 
         try:
             while True:
+                start_time = time.time()  # Start time for processing
                 # Check for new frame without blocking
                 try:
                     # Use a small timeout to avoid blocking the event loop
@@ -103,21 +105,24 @@ class WebsocketService:
                             # Downscale frame to reduce processing time
                             # frame = cv2.resize(frame, (640, 480))
                             annotation, result = face_tracking.tracking_face(frame)
-                            print("Results:", result)
-                            if annotation is not None:
-                                # print("Frame shape:", frame.shape)
-                                cv2.imshow("result", annotation)
-                            else:
-                                print("Frame is None!")
-                                cv2.imshow("result", frame)
-                            if cv2.waitKey(1) & 0xFF == ord("q"):
-                                break
+                            print("Results:", result, "time:", time.time() - start_time)
+                            # if annotation is not None:
+                            #     # print("Frame shape:", frame.shape)
+                            #     cv2.imshow("result", annotation)
+                            # else:
+                            #     print("Frame is None!")
+                            #     cv2.imshow("result", frame)
+                            # if cv2.waitKey(1) & 0xFF == ord("q"):
+                            #     break
+
+                            if annotation is None:
+                                annotation = frame
 
                             # Optional: Send processed results back to client
-                            # processed_frame = self.process_video_frame(user_id, frame)
-                            # if processed_frame is not None:
-                            #     _, buffer = cv2.imencode(".jpg", processed_frame)
-                            #     await websocket.send_bytes(buffer.tobytes())
+                            frame_result = self.process_video_frame(user_id, annotation)
+                            if frame_result is not None:
+                                _, buffer = cv2.imencode(".jpg", frame_result)
+                                await websocket.send_bytes(buffer.tobytes())
 
                     # Short sleep to prevent CPU overuse
                     await asyncio.sleep(0.001)

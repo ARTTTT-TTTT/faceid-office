@@ -1,11 +1,11 @@
 import redis
-from app.constants.app_config import settings
+from app.configs.app_config import app_config
 
 try:
     redis_client = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        password=settings.REDIS_PASSWORD,
+        host=app_config.REDIS_HOST,
+        port=app_config.REDIS_PORT,
+        password=app_config.REDIS_PASSWORD,
         db=0,
         decode_responses=True,
     )

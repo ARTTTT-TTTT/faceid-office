@@ -16,22 +16,26 @@ class CoreConfig:
         self.yolo_model_path = os.path.join(
             self.base_dir, "app/models", self.yolo_model_name
         )
-        self.yolo_threshold = 0.85  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
+        self.yolo_threshold = 0.83  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
         # FACENET
         self.face_embedder_model = "vggface2"
         self.default_device = "cuda" if torch.cuda.is_available() else "cpu"
         self.embedding_dim = 512
-        self.facenet_threshold = 0.5  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
+        self.facenet_threshold = 0.6  # 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
+        admin_id = "admin1"
 
         # VECTOR
-        self.vector_path = os.path.join(self.base_dir, "app/vector")
+
+        self.vector_path = os.path.join(self.base_dir, f"app/vector/{admin_id}")
         self.faiss_path = os.path.join(self.vector_path, "index.faiss")
         self.pkl_path = os.path.join(self.vector_path, "index.pkl")
         self.batch_size = 5
 
         # FACE IMAGES
-        self.face_images_path = os.path.join(self.project_dir, "storage/face-images")
+        self.face_images_path = os.path.join(
+            self.project_dir, f"storage/{admin_id}/face-images"
+        )
 
         # BLOB MATCHING
         self.sure_know = 5

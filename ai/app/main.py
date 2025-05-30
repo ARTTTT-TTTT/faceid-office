@@ -4,7 +4,7 @@ from fastapi.routing import APIRoute
 import os
 
 from app.api import api_router
-from app.constants.app_config import settings
+from app.configs.app_config import app_config
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -19,21 +19,21 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_AI_STR}/openapi.json",
+    title=app_config.PROJECT_NAME,
+    openapi_url=f"{app_config.API_AI_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
 
-if settings.all_cors_origins:
+if app_config.all_cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.all_cors_origins,
+        allow_origins=app_config.all_cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=settings.API_AI_STR)
+app.include_router(api_router, prefix=app_config.API_AI_STR)
 
 
 @app.get("/")

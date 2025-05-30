@@ -10,7 +10,7 @@ from facenet_pytorch import InceptionResnetV1
 from langchain.embeddings.base import Embeddings
 from langchain_community.vectorstores import FAISS
 
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import CoreConfig
 from app.utils.transform_factory import face_transform
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"

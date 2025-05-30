@@ -3,14 +3,14 @@ from pydantic import AnyUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class AppConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     PROJECT_NAME: str = "AI"
     API_AI_STR: str = "/api/ai"
     AI_SECRET_KEY: str = "ai_secret_key"
-    
+
     SERVER_URL: str = "http://localhost:8080"
 
     FRONTEND_HOST: str = "http://localhost:3000"
@@ -35,4 +35,4 @@ class Settings(BaseSettings):
         ]
 
 
-settings = Settings()
+app_config = AppConfig()

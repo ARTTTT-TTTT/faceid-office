@@ -1,6 +1,6 @@
 import os
 from app.core.vector import Vector
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import CoreConfig
 
 # !FEATURE HANDLE RESPONSE
 # !FEATURE build_empty_vectors

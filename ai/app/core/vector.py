@@ -17,7 +17,7 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 
 from app.utils.transform_factory import face_transform
 from app.core.dummy_embedding import DummyEmbeddings
-from app.constants.core_config import CoreConfig
+from app.configs.core_config import core_config
 
 
 pillow_heif.register_heif_opener()
@@ -36,36 +36,39 @@ vector
 
 # !FEATURE HANDLE ERROR AND RETURN
 
+# !FEATURE แยก storage ของแต่ละ admin
 """
 storage
-├── face-images/
-│ ├── [person_id]/
-│ │ ├── uuid1.jpg
-│ │ ├── uuid2.jpg
-│ │ └── uuid3.jpg
-│ ├── [person_id]/
-│ │ ├── uuid1.jpg
-│ │ ├── uuid2.jpg
-│ │ └── uuid3.jpg
-│ └── ...
+├── [admin_id]/
+│ ├── profile-images/
+│ │ ├── [person_id].jpg
+│ │ └── ...
+│ ├── face-images/
+│ │ ├── [person_id]/
+| │ │ ├── uuid1.jpg
+| │ │ ├── uuid2.jpg
+| │ │ └── uuid3.jpg
+| │ ├── [person_id]/
+| │ │ ├── uuid1.jpg
+| │ │ ├── uuid2.jpg
+| │ │ └── uuid3.jpg
+| │ └── ...
+└── ...
 """
 
 
 class Vector:
     def __init__(self, device=None):
-        self.config = CoreConfig()
-        self.device = device or self.config.default_device
-        self.embedding_dim = self.config.embedding_dim
+        self.device = device or core_config.default_device
+        self.embedding_dim = core_config.embedding_dim
         self.model = (
-            InceptionResnetV1(pretrained=self.config.face_embedder_model)
+            InceptionResnetV1(pretrained=core_config.face_embedder_model)
             .eval()
             .to(self.device)
         )
-        self.model_YOLO = YOLO(self.config.yolo_model_path)
-        self.vector_path = self.config.vector_path
-        self.face_images_path = self.config.face_images_path
-        self.batch_size = self.config.batch_size
-
+        self.model_YOLO = YOLO(core_config.yolo_model_path)
+        self.face_images_path = core_config.face_images_path
+        self.batch_size = core_config.batch_size
         self.transform = face_transform()
 
     def extract_face_vectors(self, face_images_folder: str):
@@ -144,7 +147,7 @@ class Vector:
         แสดงชื่อบุคคลทั้งหมดในฐานข้อมูล พร้อมจำนวนภาพและ metadata ของแต่ละภาพ
         """
         db = FAISS.load_local(
-            self.vector_path,
+            core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -176,7 +179,7 @@ class Vector:
         database มี person_name(ชื่อนั้นกี่ภาพและอะไรบ้าง)
         """
         db = FAISS.load_local(
-            self.vector_path,
+            core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -197,7 +200,7 @@ class Vector:
         นับจำนวนเวกเตอร์ใบหน้าทั้งหมดใน FAISS database
         """
         db = FAISS.load_local(
-            self.vector_path,
+            core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -226,7 +229,7 @@ class Vector:
             docstore=docstore,
             index_to_docstore_id=index_to_docstore_id,
         )
-        db.save_local(self.vector_path)
+        db.save_local(core_config.vector_path)
         print("[✅] Empty FAISS database created and saved.")
 
     def build_vectors(self):
@@ -266,7 +269,7 @@ class Vector:
             docstore=InMemoryDocstore(docstore_dict),
             index_to_docstore_id=index_to_docstore_id,
         )
-        db.save_local(self.vector_path)
+        db.save_local(core_config.vector_path)
         print("[✅] FAISS database built with IndexIDMap and saved.")
         return True
 
@@ -279,10 +282,12 @@ class Vector:
         ซ้ำกับชื่อและภาพที่อยู่ใน model มั้ย
 
         """
-        person_folder = os.path.join(self.config.face_images_path + "/" + person_id)
+        person_folder = os.path.join(
+            self.face_images_path + "/" + person_id
+        )
 
         db = FAISS.load_local(
-            self.vector_path,
+            core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -322,7 +327,7 @@ class Vector:
             db.docstore._dict[doc_id] = doc
             db.index_to_docstore_id[current_count + i] = doc_id
 
-        db.save_local(self.vector_path)
+        db.save_local(core_config.vector_path)
 
     def delete_person_vectors(self, person_id: str):
         """
@@ -331,7 +336,7 @@ class Vector:
         # !FEATURE ยิง API ลบ person_folder
 
         db = FAISS.load_local(
-            self.vector_path,
+            core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -360,4 +365,4 @@ class Vector:
         db.docstore = InMemoryDocstore(remaining_docstore)
         db.index_to_docstore_id = remaining_index_map
 
-        db.save_local(self.vector_path)
+        db.save_local(core_config.vector_path)
