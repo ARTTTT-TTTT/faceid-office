@@ -97,33 +97,3 @@ pnpm lint:fix
 ```bash
 rm -rf node_modules pnpm-lock.yaml
 ```
-
-"""
-storage
-├── [admin_id]/
-│ ├── detected-images/
-│ │ ├── [camera_id]
-| │ │ ├── [session_id]
-| | │ | ├── person-images/
-| │ │ | | ├── [person_id].jpg
-│ │ | | | └── ...
-| | │ | ├── person-images/
-| │ │ | | ├── uuid1.jpg
-│ │ | | | └── ...
-│ │ | └── ...
-│ │ └── ...
-│ ├── profile-images/
-│ │ ├── [person_id].jpg
-│ │ └── ...
-│ ├── face-images/
-│ │ ├── [person_id]/
-| │ │ ├── uuid1.jpg
-| │ │ ├── uuid2.jpg
-| │ │ └── uuid3.jpg
-| │ ├── [person_id]/
-| │ │ ├── uuid1.jpg
-| │ │ ├── uuid2.jpg
-| │ │ └── uuid3.jpg
-| │ └── ...
-└── ...
-"""

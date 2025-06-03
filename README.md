@@ -38,7 +38,7 @@ docker compose up -d
 
 - please read commitlint.config.js
 
-## 🌿 Branch Workflow
+## 🌿 Branch Workflow 🌿
 
 - ทุกฟีเจอร์ใหม่ ให้แตก branch จาก `dev` โดยใช้รูปแบบ:
 
@@ -70,4 +70,34 @@ refactor/<module>/<description>
 
 ```bash
 ci/<system>/<task>
+```
+
+## 🏗️ Storage Folder Structure 🏗️
+
+```
+storage
+├── [admin_id]/
+│ ├── detection-images/
+│ │ ├── [camera_id]
+│ │ │ ├── [session_id]
+│ │ │ │ ├── person-images/
+│ │ │ │ │ ├── [person_id].jpg
+│ │ | │ │ └── ...
+│ │ │ │ └── unknown-images/
+│ │ │ │   ├── uuid1.jpg
+│ │ │ │   └── ...
+│ │ │ └── ...
+│ │ └── ...
+│ ├── profile-images/
+│ │ ├── [person_id].jpg
+│ │ └── ...
+│ └── face-images/
+│   ├── [person_id]/
+│   │ ├── uuid1.jpg
+│   │ └── ...
+│   ├── [person_id]/
+│   │ ├── uuid1.jpg
+│   │ └── ...
+│   └── ...
+└── ...
 ```

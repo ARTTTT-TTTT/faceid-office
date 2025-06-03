@@ -28,8 +28,8 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({
 
   return (
     <Card>
-      <CardContent className='p-4 flex flex-col items-center'>
-        <CardHeader className='size-24 relative'>
+      <CardContent className='flex flex-col items-center p-4'>
+        <CardHeader className='relative size-24'>
           <Image
             src='https://picsum.photos/id/1005/200/300'
             alt='Profile'
@@ -38,22 +38,22 @@ export const AttendanceCard: React.FC<AttendanceCardProps> = ({
             className='rounded-full object-cover'
           />
         </CardHeader>
-        <CardTitle className='font-medium text-xl mt-4'>{name}</CardTitle>
+        <CardTitle className='mt-4 text-xl font-medium'>{name}</CardTitle>
         <CardDescription className='mt-2'>{timestamp}</CardDescription>
         <CardFooter
           className={`${
             status === UserLogStatus.ON_TIME
-              ? 'text-green-600 bg-green-100'
+              ? 'bg-green-100 text-green-600'
               : status === UserLogStatus.LATE
-              ? 'text-yellow-600 bg-yellow-100'
-              : 'bg-gray-100'
-          } mt-2 px-2 py-1 rounded-xl text-sm`}
+                ? 'bg-yellow-100 text-yellow-600'
+                : 'bg-gray-100'
+          } mt-2 rounded-xl px-2 py-1 text-sm`}
         >
           {status === UserLogStatus.ON_TIME
             ? 'เข้างาน'
             : status === UserLogStatus.LATE
-            ? 'สาย'
-            : 'ไม่พบข้อมูล'}
+              ? 'สาย'
+              : 'ไม่พบข้อมูล'}
         </CardFooter>
       </CardContent>
     </Card>

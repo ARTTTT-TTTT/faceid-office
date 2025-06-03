@@ -7,68 +7,85 @@ datasource db {
   url      = env("POSTGRES_URL")
 }
 
+enum Position {
+  STUDENT
+  MANAGER
+  EMPLOYEE
+  OFFICER
+  GUEST
+}
+
 model Admin {
   id              String   @id @default(uuid())
+  name            String
   email           String   @unique
   passwordHash    String
   sessionDuration Int      @default(3600)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  name            String
-  cameras         Camera[]
-  people          Person[]
+
+  cameras Camera[]
+  people  Person[]
 }
 
-model Person {
-  id              String         @id @default(uuid())
-  fullName        String
-  position        String?
-  createdAt       DateTime       @default(now())
-  adminId         String
-  faceImageUrls   String[]
-  profileImageUrl String?
-  updatedAt       DateTime       @updatedAt
-  logs            DetectionLog[]
-  admin           Admin          @relation(fields: [adminId], references: [id])
+model Camera {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  adminId   String
+
+  admin    Admin              @relation(fields: [adminId], references: [id])
+  sessions DetectionSession[]
+  logs     DetectionLog[]
 
   @@index([adminId])
 }
 
-model Camera {
-  id        String             @id @default(uuid())
-  name      String
-  location  String?
-  createdAt DateTime           @default(now())
-  adminId   String
-  updatedAt DateTime           @updatedAt
-  admin     Admin              @relation(fields: [adminId], references: [id])
-  sessions  DetectionSession[]
+model Person {
+  id              String    @id @default(uuid())
+  fullName        String
+  position        Position?
+  profileImageUrl String? // !FEATURE in the future, must have this filled
+  faceImageUrls   String[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  adminId         String
 
+  admin Admin          @relation(fields: [adminId], references: [id])
+  logs  DetectionLog[]
+
+  @@unique([adminId, fullName])
   @@index([adminId])
 }
 
 model DetectionSession {
-  id        String         @id @default(uuid())
-  startedAt DateTime       @default(now())
+  id        String    @id @default(uuid())
+  startedAt DateTime  @default(now())
   endedAt   DateTime?
   cameraId  String
-  logs      DetectionLog[]
-  camera    Camera         @relation(fields: [cameraId], references: [id])
+
+  camera Camera         @relation(fields: [cameraId], references: [id])
+  logs   DetectionLog[]
 
   @@index([cameraId])
 }
 
 model DetectionLog {
-  id         String           @id @default(uuid())
-  detectedAt DateTime         @default(now())
+  id         String   @id @default(uuid())
+  detectedAt DateTime @default(now())
   imageUrl   String
   sessionId  String
   personId   String
-  cameraId   String?
-  person     Person           @relation(fields: [personId], references: [id])
-  session    DetectionSession @relation(fields: [sessionId], references: [id])
+  cameraId   String
+
+  session DetectionSession @relation(fields: [sessionId], references: [id])
+  person  Person           @relation(fields: [personId], references: [id])
+  camera  Camera           @relation(fields: [cameraId], references: [id])
 
   @@index([sessionId])
-  @@index([cameraId])
   @@index([personId])
+  @@index([cameraId])
+  @@index([cameraId, sessionId])
 }

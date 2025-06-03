@@ -61,7 +61,7 @@ export default function DetectionPage() {
 
   return (
     <main
-      className={`grid grid-cols-5 gap-4 p-4 h-screen bg-gray-200 ${
+      className={`grid h-screen grid-cols-5 gap-4 bg-gray-200 p-4 ${
         logUsers.length > 0 && 'grid-rows-[30%_70%] pb-8'
       }`}
       dir='rtl'

@@ -74,7 +74,8 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "isort.args": ["--profile", "black"], // isort setting for Python
+  "isort.args": ["--profile", "black"],
+  "ruff.organizeImports": true,
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -86,6 +87,9 @@
   },
   "[plaintext]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   },
 
   // Extension Specific Settings
@@ -99,5 +103,5 @@
   "css.validate": false, // Disable default CSS validation, often useful with Tailwind
   "github.copilot.nextEditSuggestions.enabled": false, // GitHub Copilot setting
   "database-client.autoSync": true, // Database client extension setting
-  "path-intellisense.extensionOnImport": true // Path Intellisense extension setting
+  "path-intellisense.extensionOnImport": true
 }

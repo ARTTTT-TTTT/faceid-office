@@ -11,7 +11,7 @@
 #         face_tracking.load_faiss_index()
 
 #     def process_frame(self, frame: np.ndarray):
-        
+
 
 #     # if person_id == "Unknown":
 #     #     return {

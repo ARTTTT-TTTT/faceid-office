@@ -88,8 +88,8 @@ const recentActivityColumns = [
 export default function DashboardPage() {
   return (
     <div className='container mx-auto py-10'>
-      <h1 className='text-3xl font-bold mb-6'>Dashboard</h1>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+      <h1 className='mb-6 text-3xl font-bold'>Dashboard</h1>
+      <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
         <Card className='col-span-1'>
           <CardHeader>
             <CardTitle>ภาพรวมพนักงาน</CardTitle>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
               การเข้า-ออกงานวันนี้
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant='outline' className='h-8 ml-2'>
+                  <Button variant='outline' className='ml-2 h-8'>
                     <CalendarIcon className='mr-2 h-4 w-4' />
                     {new Date().toLocaleDateString()}
                     <ChevronDown className='ml-2 h-4 w-4 opacity-50' />
@@ -174,7 +174,7 @@ export default function DashboardPage() {
             <p>
               ขาดงาน: <span className='font-semibold'>5%</span>
             </p>
-            <div className='h-32 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 italic'>
+            <div className='flex h-32 items-center justify-center rounded-md bg-gray-100 italic text-gray-500'>
               กราฟสถิติการเข้างานรายเดือน
             </div>
           </CardContent>
@@ -194,7 +194,7 @@ export default function DashboardPage() {
             <p>
               ลาป่วย: <span className='font-semibold'>3</span> ครั้ง
             </p>
-            <div className='h-32 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 italic'>
+            <div className='flex h-32 items-center justify-center rounded-md bg-gray-100 italic text-gray-500'>
               กราฟสถิติการลา
             </div>
           </CardContent>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>แนวโน้มการเข้า-ออกงาน (7 วันล่าสุด)</CardTitle>
           </CardHeader>
-          <CardContent className='h-48 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 italic'>
+          <CardContent className='flex h-48 items-center justify-center rounded-md bg-gray-100 italic text-gray-500'>
             กราฟแนวโน้มการเข้า-ออกงาน
           </CardContent>
         </Card>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>การกระจายตัวของเวลาเข้างาน</CardTitle>
           </CardHeader>
-          <CardContent className='h-48 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 italic'>
+          <CardContent className='flex h-48 items-center justify-center rounded-md bg-gray-100 italic text-gray-500'>
             แผนภูมิการกระจายตัวของเวลาเข้างาน
           </CardContent>
         </Card>

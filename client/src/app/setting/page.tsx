@@ -170,9 +170,9 @@ export default function SettingPage() {
   if (loadingRedisStatus || loadingSetting) return;
 
   return (
-    <main className='grid grid-cols-1 gap-4 p-4 bg-gray-200 h-screen'>
+    <main className='grid h-screen grid-cols-1 gap-4 bg-gray-200 p-4'>
       <Card>
-        <CardContent className='p-4 flex flex-col items-center overflow-y-auto overflow-x-hidden'>
+        <CardContent className='flex flex-col items-center overflow-y-auto overflow-x-hidden p-4'>
           <CardHeader>
             <CardTitle className='text-4xl font-extrabold text-gray-800'>
               Settings
@@ -185,21 +185,21 @@ export default function SettingPage() {
                 redisStatusData?.status === RedisStatus.START
                   ? 'text-green-600'
                   : redisStatusData?.status === RedisStatus.END
-                  ? 'text-yellow-600'
-                  : 'text-muted-foreground'
+                    ? 'text-yellow-600'
+                    : 'text-muted-foreground'
               } ml-1 text-sm`}
             >
               {redisStatusData?.status === RedisStatus.START
                 ? 'start'
                 : redisStatusData?.status === RedisStatus.END
-                ? 'stop'
-                : 'not found'}
+                  ? 'stop'
+                  : 'not found'}
             </span>
           </CardDescription>
-          <section className='flex flex-col gap-4 items-center justify-center mt-4'>
+          <section className='mt-4 flex flex-col items-center justify-center gap-4'>
             <Button
-              className={`bg-blue-500 font-semibold hover:bg-blue-600 transition duration-200 w-full ${
-                !settingData ? 'opacity-50 cursor-not-allowed' : ''
+              className={`w-full bg-blue-500 font-semibold transition duration-200 hover:bg-blue-600 ${
+                !settingData ? 'cursor-not-allowed opacity-50' : ''
               }`}
               onClick={handleStartSession}
               disabled={!settingData}
@@ -208,8 +208,8 @@ export default function SettingPage() {
             </Button>
 
             <Button
-              className={`bg-red-500 font-semibold hover:bg-red-600 transition duration-200 w-full ${
-                !settingData ? 'opacity-50 cursor-not-allowed' : ''
+              className={`w-full bg-red-500 font-semibold transition duration-200 hover:bg-red-600 ${
+                !settingData ? 'cursor-not-allowed opacity-50' : ''
               }`}
               onClick={handleStopSession}
               disabled={!settingData}
@@ -229,7 +229,7 @@ export default function SettingPage() {
                     to enable session start and stop.
                   </TooltipContent>
                 </Tooltip>
-                <ArrowDown className='h-6 size-6 animate-bounce text-blue-500' />
+                <ArrowDown className='size-6 h-6 animate-bounce text-blue-500' />
               </TooltipProvider>
             ) : (
               <Separator className='h-0.5' />
@@ -238,7 +238,7 @@ export default function SettingPage() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className='space-y-6  w-40'
+                className='w-40 space-y-6'
               >
                 <FormField
                   control={form.control}
@@ -324,7 +324,7 @@ export default function SettingPage() {
                 />
                 <Button
                   type='submit'
-                  className='bg-green-500 font-semibold hover:bg-green-600 transition duration-200 w-full'
+                  className='w-full bg-green-500 font-semibold transition duration-200 hover:bg-green-600'
                 >
                   Confirm
                 </Button>
@@ -334,7 +334,7 @@ export default function SettingPage() {
           <CardFooter>
             <Link
               href='/detection'
-              className='mt-8 text-blue-500 flex items-center justify-center gap-1'
+              className='mt-8 flex items-center justify-center gap-1 text-blue-500'
             >
               <ArrowLeft className='size-6' />
               Go to Detection

@@ -114,8 +114,8 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
   }, []);
 
   return (
-    <Card className='col-span-5 h-full relative'>
-      <CardContent className='p-4 h-full flex flex-col items-center justify-center gap-4 relative'>
+    <Card className='relative col-span-5 h-full'>
+      <CardContent className='relative flex h-full flex-col items-center justify-center gap-4 p-4'>
         <video
           ref={videoRef}
           autoPlay
@@ -123,7 +123,7 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
           muted
           controls={false}
           controlsList='nodownload nofullscreen noremoteplayback'
-          className={`w-fit h-full object-cover rounded-xl pointer-events-none select-none ${
+          className={`pointer-events-none h-full w-fit select-none rounded-xl object-cover ${
             !isCameraOn ? 'hidden' : ''
           }`}
         />
@@ -135,7 +135,7 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
         <Button
           onClick={toggleCamera}
           size='icon'
-          className='absolute top-4 left-4 z-10 bg-gray-50 hover:bg-grey-100 text-black'
+          className='hover:bg-grey-100 absolute left-4 top-4 z-10 bg-gray-50 text-black'
         >
           {isCameraOn ? (
             <VideoOff className='size-5' />
@@ -146,12 +146,12 @@ export const CameraStream: React.FC<CameraStreamProps> = ({
 
         {/* ICON CAMERA OFF */}
         {!isCameraOn && !cameraDenied && (
-          <VideoOff className='absolute text-red-600 size-24' />
+          <VideoOff className='absolute size-24 text-red-600' />
         )}
 
         {/* PERMISSION */}
         {cameraDenied && (
-          <div className='text-center text-red-500 font-medium'>
+          <div className='text-center font-medium text-red-500'>
             กรุณาอนุญาตการเข้าถึงกล้องก่อนใช้งาน
           </div>
         )}
