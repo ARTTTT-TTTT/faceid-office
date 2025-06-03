@@ -8,9 +8,7 @@ class FaceDetection:
         try:
             self.model_YOLO = YOLO(self.config.yolo_model_path)
         except Exception as e:
-            raise RuntimeError(
-                f"Failed to load YOLO model from {self.config.yolo_model_path}: {e}"
-            )
+            raise RuntimeError(f"Failed to load YOLO model from {self.config.yolo_model_path}: {e}")
 
     def detect_faces(self, frame):
         """Detect faces in frame using YOLO model"""

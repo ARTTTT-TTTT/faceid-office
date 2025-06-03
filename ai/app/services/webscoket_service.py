@@ -91,9 +91,7 @@ class WebsocketService:
                 # Check for new frame without blocking
                 try:
                     # Use a small timeout to avoid blocking the event loop
-                    data = await asyncio.wait_for(
-                        websocket.receive_bytes(), timeout=0.001
-                    )
+                    data = await asyncio.wait_for(websocket.receive_bytes(), timeout=0.001)
                     self._latest_frame[user_id] = data  # Store the latest frame
                 except asyncio.TimeoutError:
                     # No new frame, process the latest frame if available

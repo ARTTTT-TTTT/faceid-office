@@ -5,7 +5,6 @@ import pathlib
 
 class CoreConfig:
     def __init__(self):
-
         # DIRECTORIES
         self.base_dir = os.getcwd()
         current_file = pathlib.Path(__file__).resolve()
@@ -13,9 +12,7 @@ class CoreConfig:
 
         # YOLO
         self.yolo_model_name = "yolov11n-face.pt"
-        self.yolo_model_path = os.path.join(
-            self.base_dir, "app/models", self.yolo_model_name
-        )
+        self.yolo_model_path = os.path.join(self.base_dir, "app/models", self.yolo_model_name)
         self.yolo_threshold = 0.83  # 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
         # FACENET
@@ -33,9 +30,7 @@ class CoreConfig:
         self.batch_size = 5
 
         # FACE IMAGES
-        self.face_images_path = os.path.join(
-            self.project_dir, f"storage/{admin_id}/face-images"
-        )
+        self.face_images_path = os.path.join(self.project_dir, f"storage/{admin_id}/face-images")
 
         # BLOB MATCHING
         self.sure_know = 5

@@ -86,7 +86,6 @@ class FaceTracking:
             for blob in to_remove:
                 self.blobs.remove(blob)
 
-                
         except Exception as e:
             print(f"[ERROR] Error removing expired blobs: {e}")
 
@@ -96,11 +95,7 @@ class FaceTracking:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
-            if (
-                not detections
-                or not hasattr(detections, "boxes")
-                or not detections.boxes
-            ):
+            if not detections or not hasattr(detections, "boxes") or not detections.boxes:
                 self.decrease_life_and_cleanup()
                 return frame, []  # Return original frame and empty results
 
@@ -108,18 +103,14 @@ class FaceTracking:
 
             annotation = detections.plot()
 
-            positions, face_images = self.detection.extract_faces_and_positions(
-                frame, detections
-            )
+            positions, face_images = self.detection.extract_faces_and_positions(frame, detections)
             matched_ids = set()
             results = []
 
             for position, face_img in zip(positions, face_images):
                 embedding = self.embedding.image_embedding(face_img)
                 matched_person = self.recognition.find_best_match(embedding)
-                result = self.match_or_create_blob(
-                    position, face_img, matched_person, matched_ids
-                )
+                result = self.match_or_create_blob(position, face_img, matched_person, matched_ids)
                 results.append(result)
 
             self.decrease_life_and_cleanup(matched_ids)

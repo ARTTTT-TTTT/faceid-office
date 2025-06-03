@@ -15,9 +15,7 @@ class RedisService:
 
     @classmethod
     def check_detection_log(cls, admin_id: str, camera_id: str, person_id: str) -> bool:
-        person_key = cls.build_key(
-            admin_id=admin_id, camera_id=camera_id, person_id=person_id
-        )
+        person_key = cls.build_key(admin_id=admin_id, camera_id=camera_id, person_id=person_id)
 
         try:
             if redis_client.exists(person_key):

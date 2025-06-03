@@ -148,31 +148,31 @@ export default function VideoStreamV1() {
   }, []);
   return (
     <main className='p-4'>
-      <h2 className='text-lg font-semibold mb-2'>Local Camera (Your Feed)</h2>
+      <h2 className='mb-2 text-lg font-semibold'>Local Camera (Your Feed)</h2>
       <video
         ref={localVideoRef}
         autoPlay
         muted
         playsInline
-        className='w-full rounded-xl shadow mb-4'
+        className='mb-4 w-full rounded-xl shadow'
       />
 
       {trackingResult && ( // 🧠 Display face tracking results
-        <div className='mt-4 p-4 bg-gray-100 rounded-lg shadow'>
-          <h3 className='font-semibold text-md mb-2'>Face Tracking Results</h3>
-          <pre className='text-sm whitespace-pre-wrap'>
+        <div className='mt-4 rounded-lg bg-gray-100 p-4 shadow'>
+          <h3 className='text-md mb-2 font-semibold'>Face Tracking Results</h3>
+          <pre className='whitespace-pre-wrap text-sm'>
             {JSON.stringify(trackingResult, null, 2)}
           </pre>
         </div>
       )}
       <canvas ref={localCanvasRef} className='hidden' />
 
-      <h2 className='text-lg font-semibold mb-2'>
+      <h2 className='mb-2 text-lg font-semibold'>
         Remote Stream (Processed by Server)
       </h2>
       <canvas
         ref={remoteCanvasRef}
-        className='w-full rounded-xl shadow border border-gray-300 bg-black'
+        className='w-full rounded-xl border border-gray-300 bg-black shadow'
         style={{ aspectRatio: '16/9' }}
       />
     </main>

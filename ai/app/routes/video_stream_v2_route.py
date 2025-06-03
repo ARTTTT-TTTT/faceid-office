@@ -26,7 +26,5 @@ def get_turn_credentials():
     username = f"{int(time.time()) + app_config.TURN_TTL}:livekit"
     key = app_config.TURN_SECRET.encode("utf-8")
     msg = username.encode("utf-8")
-    credential = base64.b64encode(hmac.new(key, msg, hashlib.sha1).digest()).decode(
-        "utf-8"
-    )
+    credential = base64.b64encode(hmac.new(key, msg, hashlib.sha1).digest()).decode("utf-8")
     return {"username": username, "credential": credential}

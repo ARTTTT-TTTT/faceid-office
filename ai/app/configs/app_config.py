@@ -30,9 +30,7 @@ class AppConfig(BaseSettings):
     def all_cors_origins(self) -> list[str]:
         if isinstance(self.BACKEND_CORS_ORIGINS, str):
             return self.BACKEND_CORS_ORIGINS.split(",") + [self.FRONTEND_HOST]
-        return [str(origin) for origin in self.BACKEND_CORS_ORIGINS] + [
-            self.FRONTEND_HOST
-        ]
+        return [str(origin) for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
 
 
 app_config = AppConfig()
