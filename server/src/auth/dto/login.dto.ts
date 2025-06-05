@@ -1,13 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
   @IsNotEmpty()
+  @IsString()
   email: string;
 
-  @Matches(/^\S*$/, {
-    message: 'Username cannot contain spaces',
-  })
   @IsString()
   @IsNotEmpty()
   password: string;

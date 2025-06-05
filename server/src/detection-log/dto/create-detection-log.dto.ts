@@ -6,6 +6,10 @@ export class CreateDetectionLogDto {
   personId: string;
 
   @IsNotEmpty()
+  @IsString()
+  cameraId: string;
+
+  @IsNotEmpty()
   @IsUUID()
   sessionId: string;
 

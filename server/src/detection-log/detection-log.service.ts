@@ -20,6 +20,9 @@ export class DetectionLogService {
         person: {
           connect: { id: dto.personId },
         },
+        camera: {
+          connect: { id: dto.cameraId },
+        },
       },
     });
   }

@@ -1,39 +1,11 @@
-'use client';
-
-import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback } from 'react';
 import '@/lib/env';
 
-import { useFetch } from '@/hooks/useFetch';
-
-import { fetchRedisStatus, fetchSetting } from '@/app/api/setting/route';
-
-import {
-  RedisStartStatus,
-  RedisStatus,
-  RedisStopStatus,
-  Setting,
-} from '@/types/setting';
-
-// !FIX ไม่มีข้อมูลตั้งค่า ลูกศรควรจะแสดง แต่ลูกศรไม่แสดง
+import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
-  const { data: settingData, loading: loadingSetting } =
-    useFetch<Setting | null>(fetchSetting);
-
-  const fetchRedis = useCallback(() => {
-    if (!settingData) return Promise.resolve(null);
-    return fetchRedisStatus(settingData._id);
-  }, [settingData]);
-
-  const { data: redisStatusData, loading: loadingRedisStatus } = useFetch<
-    RedisStartStatus | RedisStopStatus | null
-  >(fetchRedis);
-
-  if (loadingRedisStatus || loadingSetting) return;
   return (
-    <main className='flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4 py-16 text-center'>
+    <main className='flex h-screen w-screen flex-col items-center justify-center gap-6'>
       <h1 className='text-4xl font-extrabold tracking-tight text-gray-800'>
         FaceID Office
       </h1>
@@ -42,50 +14,25 @@ export default function HomePage() {
         ระบบตรวจสอบการเข้า-ออกงานของพนักงาน
       </span>
 
-      <div className='flex items-center justify-center gap-4'>
-        {redisStatusData && redisStatusData.status === RedisStatus.END && (
-          <ArrowRight className='-ml-12 mt-8 size-8 animate-bounce text-blue-500' />
-        )}
-        <Link
-          href='/setting'
-          className='mt-8 inline-block rounded-lg bg-green-500 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-green-600'
-        >
-          1. Setting Page
-        </Link>
-      </div>
+      <Button asChild className='bg-sky-500 hover:bg-sky-500'>
+        <Link href='/login'>Login Page</Link>
+      </Button>
 
-      <div className='flex items-center justify-center gap-4'>
-        {redisStatusData && redisStatusData.status === RedisStatus.START && (
-          <ArrowRight className='-ml-8 mt-8 size-8 animate-bounce text-blue-500' />
-        )}
-        <Link
-          href='/detection'
-          className='mt-8 inline-block rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-blue-600'
-        >
-          2. Detection Page
-        </Link>
-      </div>
+      <Button asChild className='bg-blue-500 hover:bg-blue-500'>
+        <Link href='/detection'>Detection Page</Link>
+      </Button>
 
-      <Link
-        href='/video-stream'
-        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-yellow-600'
-      >
-        Video Stream
-      </Link>
+      <Button asChild className='bg-green-500 hover:bg-green-500'>
+        <Link href='/setting'>Setting Page</Link>
+      </Button>
 
-      <Link
-        href='/video-stream-v1'
-        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-yellow-600'
-      >
-        Video Stream V1
-      </Link>
+      <Button asChild className='bg-yellow-500 hover:bg-yellow-500'>
+        <Link href='/video-stream-v1'>Video Stream V1</Link>
+      </Button>
 
-      <Link
-        href='/video-stream-v2'
-        className='mt-8 inline-block rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-yellow-600'
-      >
-        Video Stream V2
-      </Link>
+      <Button asChild className='bg-yellow-500 hover:bg-yellow-500'>
+        <Link href='/video-stream-v2'>Video Stream V2</Link>
+      </Button>
 
       <footer className='absolute bottom-4 text-base text-gray-500'>
         © {new Date().getFullYear()} by{' '}

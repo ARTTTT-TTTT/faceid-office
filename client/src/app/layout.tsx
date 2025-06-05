@@ -4,7 +4,7 @@ import '@/styles/globals.css';
 
 import { ThemeProvider } from '@/components/theme-provider';
 
-import { siteConfig } from '@/constant/config';
+import { siteConfig } from '@/constants/config';
 // !STARTERCONF Change these default meta
 // !STARTERCONF Look at @/constant/config to change them
 export const metadata: Metadata = {

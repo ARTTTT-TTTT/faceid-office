@@ -1,4 +1,4 @@
-export const formatTime = (utcString: string): string => {
+export const formatThaiTime = (utcString: string): string => {
   const date = new Date(utcString);
   if (isNaN(date.getTime())) return 'Incorrect time';
 

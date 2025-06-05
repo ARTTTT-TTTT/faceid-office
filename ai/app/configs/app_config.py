@@ -13,8 +13,8 @@ class AppConfig(BaseSettings):
 
     SERVER_URL: str = "http://localhost:8080"
 
-    FRONTEND_HOST: str = "http://localhost:3000"
-    BACKEND_CORS_ORIGINS: list[AnyUrl] | str = []
+    FRONTEND_URL: str = "http://localhost:3000"
+    BACKEND_URL: list[AnyUrl] | str = []
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
@@ -28,9 +28,9 @@ class AppConfig(BaseSettings):
 
     @property
     def all_cors_origins(self) -> list[str]:
-        if isinstance(self.BACKEND_CORS_ORIGINS, str):
-            return self.BACKEND_CORS_ORIGINS.split(",") + [self.FRONTEND_HOST]
-        return [str(origin) for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
+        if isinstance(self.BACKEND_URL, str):
+            return self.BACKEND_URL.split(",") + [self.FRONTEND_URL]
+        return [str(origin) for origin in self.BACKEND_URL] + [self.FRONTEND_URL]
 
 
 app_config = AppConfig()
