@@ -78,13 +78,13 @@ export default function VideoStreamV1() {
                   }
                 },
                 'image/jpeg',
-                0.5, // คุณภาพลดลงนิดหน่อยเพื่อลดขนาดไฟล์
+                1, // คุณภาพลดลงนิดหน่อยเพื่อลดขนาดไฟล์
               );
             }
           };
 
           // 1 fps
-          const intervalId = setInterval(sendFrame, 1000 / 3);
+          const intervalId = setInterval(sendFrame, 1000 / 10);
 
           // Cleanup ตอน component ถูก unmount
           return () => clearInterval(intervalId);
