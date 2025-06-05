@@ -62,9 +62,7 @@ class Vector:
         self.device = device or core_config.default_device
         self.embedding_dim = core_config.embedding_dim
         self.model = (
-            InceptionResnetV1(pretrained=core_config.face_embedder_model)
-            .eval()
-            .to(self.device)
+            InceptionResnetV1(pretrained=core_config.face_embedder_model).eval().to(self.device)
         )
         self.model_YOLO = YOLO(core_config.yolo_model_path)
         self.face_images_path = core_config.face_images_path
@@ -189,9 +187,7 @@ class Vector:
             if doc.metadata.get("name") == person_id:
                 result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
                 results.append(result_info)
-                print(
-                    f"[🔍] Found vector: Index={idx}, Doc ID='{doc_id}', Metadata={doc.metadata}"
-                )
+                print(f"[🔍] Found vector: Index={idx}, Doc ID='{doc_id}', Metadata={doc.metadata}")
         print(f"[ℹ️] Total vectors found for '{person_id}': {len(results)}")
         return results
 
@@ -282,9 +278,7 @@ class Vector:
         ซ้ำกับชื่อและภาพที่อยู่ใน model มั้ย
 
         """
-        person_folder = os.path.join(
-            self.face_images_path + "/" + person_id
-        )
+        person_folder = os.path.join(self.face_images_path + "/" + person_id)
 
         db = FAISS.load_local(
             core_config.vector_path,
@@ -292,13 +286,11 @@ class Vector:
             allow_dangerous_deserialization=True,
         )
         existing_keys = {
-            f"{doc.metadata['name']}_{doc.metadata['image']}"
-            for doc in db.docstore._dict.values()
+            f"{doc.metadata['name']}_{doc.metadata['image']}" for doc in db.docstore._dict.values()
         }
 
         new_vectors, new_docs = self.extract_face_vectors_single(person_folder)
         if not new_vectors:
-
             print("[❗] No new faces to add.")
             return
 
@@ -316,9 +308,7 @@ class Vector:
             return
 
         current_count = db.index.ntotal
-        ids = np.array(
-            range(current_count, current_count + len(filtered_vectors)), dtype=np.int64
-        )
+        ids = np.array(range(current_count, current_count + len(filtered_vectors)), dtype=np.int64)
         db.index.add_with_ids(np.array(filtered_vectors).astype(np.float32), ids)
 
         # อัปเดต docstore และ index_to_docstore_id

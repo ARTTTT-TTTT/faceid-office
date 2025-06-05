@@ -51,9 +51,7 @@ class VideoStreamV1Service:
             _, encoded_image = cv2.imencode(".jpg", frame)
             return encoded_image.tobytes()
         else:
-            print(
-                f"Could not decode frame for user: {user_id}. Data length: {len(data)} bytes"
-            )
+            print(f"Could not decode frame for user: {user_id}. Data length: {len(data)} bytes")
             return None
 
     def cleanup_user_connection(self, user_id: str):

@@ -28,16 +28,12 @@ class FaceBlob:
         self.match_history = {}
 
         self.kalman = cv2.KalmanFilter(4, 2)
-        self.kalman.measurementMatrix = np.array(
-            [[1, 0, 0, 0], [0, 1, 0, 0]], np.float32
-        )
+        self.kalman.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
         self.kalman.transitionMatrix = np.array(
             [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32
         )
         self.kalman.processNoiseCov = np.eye(4, dtype=np.float32) * 0.03
-        initial_state = np.array(
-            [[position[0]], [position[1]], [0], [0]], dtype=np.float32
-        )
+        initial_state = np.array([[position[0]], [position[1]], [0], [0]], dtype=np.float32)
         self.kalman.statePre = initial_state.copy()
         self.kalman.statePost = initial_state.copy()
 
@@ -52,9 +48,7 @@ class FaceBlob:
         self.kalman.correct(np.array([[position[0]], [position[1]]], dtype=np.float32))
 
         self.matched_person_name = matched_person_name
-        self.match_history[matched_person_name] = (
-            self.match_history.get(matched_person_name, 0) + 1
-        )
+        self.match_history[matched_person_name] = self.match_history.get(matched_person_name, 0) + 1
 
     def get_match_summary(self):
         summary = ", ".join(f"{k}: {v}" for k, v in self.match_history.items())
@@ -66,9 +60,7 @@ class FaceBlob:
 
         best_match_name, best_match_count = (None, 0)
         if valid_named:
-            best_match_name, best_match_count = max(
-                valid_named.items(), key=lambda x: x[1]
-            )
+            best_match_name, best_match_count = max(valid_named.items(), key=lambda x: x[1])
 
         unknown_count = self.match_history.get("Unknown", 0)
 
@@ -94,7 +86,6 @@ class DummyEmbeddings(Embeddings):
 
 
 class DetectionProcessingService:
-
     def __init__(self):
         self.config = CoreConfig()
         self.model_YOLO = YOLO(self.config.yolo_model_path)
@@ -213,9 +204,7 @@ class DetectionProcessingService:
                     cv2.imshow("Unknown", img)
                 elif name:
                     cv2.imshow(f"{name}", img)
-            print(
-                f"[REMOVE] {blob.id} → Most likely matched: {name} Sumarize: {summary}]"
-            )
+            print(f"[REMOVE] {blob.id} → Most likely matched: {name} Sumarize: {summary}]")
             self.blobs.remove(blob)
 
     def tracking_face(self, frame):

@@ -31,9 +31,7 @@ class FaceVectorDatabase:
     def __init__(self, device=None):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.dim = 512
-        self.model_Facenet = (
-            InceptionResnetV1(pretrained="vggface2").eval().to(self.device)
-        )
+        self.model_Facenet = InceptionResnetV1(pretrained="vggface2").eval().to(self.device)
         self.model_YOLO = YOLO("D:/Project/FaceDetect/model/yolov11n-face.pt")
         self.faiss_storage_path = "D:/Project/FaceDetect/data/faiss_Store"
         self.data_path = "D:/Project/FaceDetect/data/person_img"
@@ -68,9 +66,7 @@ class FaceVectorDatabase:
         vectors = []
         docs = []
 
-        for folder_person_name in tqdm(
-            os.listdir(image_folder), desc=f"Processing {image_folder}"
-        ):
+        for folder_person_name in tqdm(os.listdir(image_folder), desc=f"Processing {image_folder}"):
             # path ที่เก็บ folder ของแต่ละคน เช่น Pun ข้างในมีภาพ
             person_folder = os.path.join(image_folder, folder_person_name)
             # ถ้าไม่มีภาพใน folder ก็ไปหา folder ถัดไป
@@ -199,8 +195,7 @@ class FaceVectorDatabase:
             allow_dangerous_deserialization=True,
         )
         existing_keys = {
-            f"{doc.metadata['name']}_{doc.metadata['image']}"
-            for doc in db.docstore._dict.values()
+            f"{doc.metadata['name']}_{doc.metadata['image']}" for doc in db.docstore._dict.values()
         }
 
         new_vectors, new_docs = self.extract_face_vectors(self.update_path)
@@ -222,9 +217,7 @@ class FaceVectorDatabase:
             return
 
         current_count = db.index.ntotal
-        ids = np.array(
-            range(current_count, current_count + len(filtered_vectors)), dtype=np.int64
-        )
+        ids = np.array(range(current_count, current_count + len(filtered_vectors)), dtype=np.int64)
         db.index.add_with_ids(np.array(filtered_vectors).astype(np.float32), ids)
 
         # อัปเดต docstore และ index_to_docstore_id
@@ -260,9 +253,7 @@ class FaceVectorDatabase:
             print(f"[❗] No vectors found with name '{name_to_delete}'.")
             return
 
-        print(
-            f"[🗑️] Deleting {len(indices_to_delete)} vectors for '{name_to_delete}'..."
-        )
+        print(f"[🗑️] Deleting {len(indices_to_delete)} vectors for '{name_to_delete}'...")
         db.index.remove_ids(np.array(indices_to_delete, dtype=np.int64))
 
         # อัปเดต docstore และ index_to_docstore_id
@@ -310,9 +301,7 @@ class FaceVectorDatabase:
             if doc.metadata.get("name") == person_name:
                 result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
                 results.append(result_info)
-                print(
-                    f"[🔍] Found vector: Index={idx}, Doc ID='{doc_id}', Metadata={doc.metadata}"
-                )
+                print(f"[🔍] Found vector: Index={idx}, Doc ID='{doc_id}', Metadata={doc.metadata}")
         print(f"[ℹ️] Total vectors found for '{person_name}': {len(results)}")
         return results
 

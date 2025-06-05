@@ -6,20 +6,23 @@
   "license": "CHANOM",
   "workspaces": [
     "server",
-    "client",
-    "ai"
+    "client"
   ],
   "scripts": {
-    "format": "prettier -w . && black ai --line-length 100",
-    "format:check": "prettier -c . && black --check ai",
-    "lint": "pnpm --filter client lint && pnpm --filter server lint && pnpm lint:py",
-    "lint:py": "black --check ai",
+    "format": "prettier -w . && cd ai && poetry run black . --line-length 100 && poetry run ruff format .",
+    "format:check": "prettier -c . && cd ai && poetry run black --check . && poetry run ruff format --check .",
+    "lint": "pnpm format && pnpm --filter client lint && pnpm --filter server lint && pnpm lint:py",
+    "lint:py": "cd ai && poetry run ruff check . --fix",
     "prepare": "husky install"
   },
   "lint-staged": {
     "client/**/*.{js,jsx,ts,tsx}": "pnpm --filter client exec eslint --max-warnings=0",
     "server/**/*.{js,jsx,ts,tsx}": "pnpm --filter server exec eslint --max-warnings=0",
-    "*.{json,md}": [
+    "ai/**/*.py": [
+      "cd ai && poetry run black . --line-length 100",
+      "cd ai && poetry run ruff check . --fix"
+    ],
+    "*.{json,css,scss,md}": [
       "prettier -w"
     ]
   },

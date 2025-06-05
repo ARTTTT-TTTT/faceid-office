@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import logger from '@/lib/logger';
 
 interface FaceTrackingResult {
-  // 🧠 Define the structure of the face tracking result
   id: string;
   name: string;
 }
@@ -17,8 +16,7 @@ export default function VideoStreamV1() {
   const userId = useRef<string>(crypto.randomUUID());
   const [trackingResult, setTrackingResult] = useState<
     FaceTrackingResult[] | null
-  >(null); // 🧠 State to hold face tracking results
-
+  >(null);
   useEffect(() => {
     let localVideoNode: HTMLVideoElement | null = null;
 

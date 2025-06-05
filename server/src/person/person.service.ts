@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Position } from '@prisma/client';
 
 import { CreatePersonDto } from '@/person/dto/create-person.dto';
 import { UpdatePersonDto } from '@/person/dto/update-person.dto';
@@ -31,7 +32,7 @@ export class PersonService {
     const newPerson = await this.prisma.person.create({
       data: {
         fullName: dto.fullName,
-        position: dto.position,
+        position: dto.position as any as Position,
         profileImageUrl: dto.profileImageUrl,
         admin: {
           connect: { id: adminId },
@@ -46,7 +47,7 @@ export class PersonService {
       where: { id: personId },
       data: {
         fullName: dto.fullName,
-        position: dto.position,
+        position: dto.position as Position,
       },
     });
 

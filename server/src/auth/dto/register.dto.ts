@@ -1,20 +1,33 @@
-import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDto {
+  @IsString()
+  @IsNotEmpty()
   @IsEmail()
-  @IsString()
+  @Matches(/^\S*$/, {
+    message: 'Email cannot contain spaces',
+  })
   email: string;
+
   @IsString()
+  @IsNotEmpty()
   @MinLength(1)
   @Matches(/^\S*$/, {
     message: 'Username cannot contain spaces',
   })
-  username: string;
+  name: string;
 
-  @Matches(/^\S*$/, {
-    message: 'Username cannot contain spaces',
-  })
   @IsString()
+  @IsNotEmpty()
   @MinLength(8)
+  @Matches(/^\S*$/, {
+    message: 'Password cannot contain spaces',
+  })
   password: string;
 }

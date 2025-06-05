@@ -61,9 +61,7 @@ class FaceTracking:
                     cv2.imshow("Unknown", img)
                 elif name:
                     cv2.imshow(f"{name}", img)
-            print(
-                f"[REMOVE] {blob.id} → Most likely matched: {name} Summarize: {summary}]"
-            )
+            print(f"[REMOVE] {blob.id} → Most likely matched: {name} Summarize: {summary}]")
             self.blobs.remove(blob)
 
     def tracking_face(self, frame):

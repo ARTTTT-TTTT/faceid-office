@@ -23,6 +23,7 @@
     "ms-python.python", // Python Extension (IntelliSense, Linting, Debugging)
     "ms-python.black-formatter", // Black formatter for Python (already in settings, but good to recommend)
     "ms-python.isort", // isort for Python imports (already in settings)
+    "charliermarsh.ruff",
 
     // SQL
     "inferrinizzard.prettier-sql-vscode", // Prettier for SQL (already in settings, but good to recommend)

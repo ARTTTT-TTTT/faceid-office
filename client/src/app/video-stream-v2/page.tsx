@@ -32,7 +32,7 @@ export default function VideoStreamV2() {
   }, []);
 
   if (!token || !turnCreds)
-    return <div className='text-center p-4'>Loading...</div>;
+    return <div className='p-4 text-center'>Loading...</div>;
 
   return (
     <LiveKitRoom
@@ -76,7 +76,7 @@ function VideoGrid() {
   return (
     <div className='grid grid-cols-2 gap-4 p-4'>
       {tracks.map(({ publication, participant }) => (
-        <Card key={participant.identity} className='p-2 rounded-2xl shadow-lg'>
+        <Card key={participant.identity} className='rounded-2xl p-2 shadow-lg'>
           <video
             ref={(ref) => {
               if (ref && publication && publication.track) {
@@ -85,9 +85,9 @@ function VideoGrid() {
             }}
             autoPlay
             muted={participant.isLocal}
-            className='w-full h-auto rounded-xl'
+            className='h-auto w-full rounded-xl'
           />
-          <div className='text-center mt-2 text-sm text-gray-600'>
+          <div className='mt-2 text-center text-sm text-gray-600'>
             {participant.identity} {participant.isLocal && '(You)'}
           </div>
         </Card>

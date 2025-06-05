@@ -5,7 +5,6 @@ import pathlib
 
 class CoreConfig:
     def __init__(self):
-
         # DIRECTORIES
         self.base_dir = os.getcwd()
         current_file = pathlib.Path(__file__).resolve()
@@ -33,9 +32,7 @@ class CoreConfig:
         self.batch_size = 5
 
         # FACE IMAGES
-        self.face_images_path = os.path.join(
-            self.project_dir, f"storage/{admin_id}/face-images"
-        )
+        self.face_images_path = os.path.join(self.project_dir, f"storage/{admin_id}/face-images")
 
         # BLOB MATCHING
         self.sure_know = 5

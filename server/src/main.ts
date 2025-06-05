@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
@@ -6,6 +7,19 @@ import { CustomExceptionFilter } from './common/filters/custom-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService);
+  const frontendUrl = configService.get<string>('FRONTEND_URL');
+  const backendUrls =
+    configService.get<string>('BACKEND_URL')?.split(',') || [];
+
+  const allowedOrigins = [frontendUrl, ...backendUrls].filter(Boolean);
+
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
+
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new CustomExceptionFilter());
   app.useGlobalPipes(
@@ -15,6 +29,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 8080);
+
+  const port = configService.get<number>('PORT') ?? 8080;
+  await app.listen(port);
 }
 void bootstrap();

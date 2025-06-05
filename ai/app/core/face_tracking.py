@@ -118,9 +118,7 @@ class FaceTracking:
             if annotation is None:
                 return frame, []
 
-            positions, face_images = self.detection.extract_faces_and_positions(
-                frame, detections
-            )
+            positions, face_images = self.detection.extract_faces_and_positions(frame, detections)
             matched_ids = set()
 
             # Parallel embedding generation
@@ -138,9 +136,7 @@ class FaceTracking:
                     continue  # Skip invalid embeddings
 
                 matched_person = self.recognition.find_best_match(embedding)
-                result = self.match_or_create_blob(
-                    position, face_img, matched_person, matched_ids
-                )
+                result = self.match_or_create_blob(position, face_img, matched_person, matched_ids)
                 results.append(result)
 
             results = self.decrease_life_and_cleanup(matched_ids)
