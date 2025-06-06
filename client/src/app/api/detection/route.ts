@@ -2,32 +2,27 @@ import logger from '@/lib/logger';
 
 import { WS_AI_URL } from '@/constants/env';
 
+import { FaceTrackingResult } from '@/types/detection';
+
 export const createWebSocket = (
-  onMessage: (data: unknown) => void,
-  remoteCanvasRef: React.RefObject<HTMLCanvasElement>,
+  onMessageImage: (imageData: string) => void,
+  onMessageResult: (results: FaceTrackingResult[]) => void,
 ): WebSocket => {
-  const ws = new WebSocket(`${WS_AI_URL}/${crypto.randomUUID()}`);
-  ws.onopen = () => logger('WebSocket connected');
+  const ws = new WebSocket(`${WS_AI_URL}/admin1`);
+  ws.onopen = () => console.log('WebSocket connected');
   ws.onmessage = (event) => {
     if (typeof event.data === 'string') {
       try {
-        const result = JSON.parse(event.data);
-        onMessage(result);
-      } catch (error) {
-        logger(error, 'Failed to parse tracking result:');
-      }
-    } else {
-      const blob = new Blob([event.data], { type: 'image/jpeg' });
-      const img = new Image();
-      img.onload = () => {
-        const remoteCtx = remoteCanvasRef.current?.getContext('2d');
-        const canvas = remoteCanvasRef.current;
-        if (remoteCtx && canvas) {
-          remoteCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const parsed = JSON.parse(event.data);
+        if (parsed.image) {
+          onMessageImage(parsed.image);
         }
-        URL.revokeObjectURL(img.src);
-      };
-      img.src = URL.createObjectURL(blob);
+        if (Array.isArray(parsed.result) && parsed.result.length > 0) {
+          onMessageResult(parsed.result);
+        }
+      } catch (error) {
+        console.error('Failed to parse message:', error);
+      }
     }
   };
   return ws;

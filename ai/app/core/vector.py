@@ -17,8 +17,7 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 
 from app.utils.transform_factory import face_transform
 from app.core.dummy_embedding import DummyEmbeddings
-from app.configs.core_config import core_config
-
+from app.configs.core_config import CoreConfig
 
 pillow_heif.register_heif_opener()
 
@@ -58,15 +57,18 @@ storage
 
 
 class Vector:
-    def __init__(self, device=None):
-        self.device = device or core_config.default_device
-        self.embedding_dim = core_config.embedding_dim
+    def __init__(self, core_config: CoreConfig, device=None):
+        self.core_config = core_config
+        self.device = device or self.core_config.default_device
+        self.embedding_dim = self.core_config.embedding_dim
         self.model = (
-            InceptionResnetV1(pretrained=core_config.face_embedder_model).eval().to(self.device)
+            InceptionResnetV1(pretrained=self.core_config.face_embedder_model)
+            .eval()
+            .to(self.device)
         )
-        self.model_YOLO = YOLO(core_config.yolo_model_path)
-        self.face_images_path = core_config.face_images_path
-        self.batch_size = core_config.batch_size
+        self.model_YOLO = YOLO(self.core_config.yolo_model_path)
+        self.face_images_path = self.core_config.face_images_path
+        self.batch_size = self.core_config.batch_size
         self.transform = face_transform()
 
     def extract_face_vectors(self, face_images_folder: str):
@@ -145,7 +147,7 @@ class Vector:
         แสดงชื่อบุคคลทั้งหมดในฐานข้อมูล พร้อมจำนวนภาพและ metadata ของแต่ละภาพ
         """
         db = FAISS.load_local(
-            core_config.vector_path,
+            self.core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -177,7 +179,7 @@ class Vector:
         database มี person_name(ชื่อนั้นกี่ภาพและอะไรบ้าง)
         """
         db = FAISS.load_local(
-            core_config.vector_path,
+            self.core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -196,7 +198,7 @@ class Vector:
         นับจำนวนเวกเตอร์ใบหน้าทั้งหมดใน FAISS database
         """
         db = FAISS.load_local(
-            core_config.vector_path,
+            self.core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -215,7 +217,6 @@ class Vector:
         docstore: เก็บ metadata เช่น ชื่อคนและชื่อรูป
         index_to_docstore_id: mapping ระหว่าง index กับ ID ใน docstore
         """
-
         index = faiss.IndexIDMap(faiss.IndexFlatL2(self.embedding_dim))  # ใช้ IndexIDMap
         docstore = InMemoryDocstore({})
         index_to_docstore_id = {}
@@ -225,7 +226,7 @@ class Vector:
             docstore=docstore,
             index_to_docstore_id=index_to_docstore_id,
         )
-        db.save_local(core_config.vector_path)
+        db.save_local(self.core_config.vector_path)
         print("[✅] Empty FAISS database created and saved.")
 
     def build_vectors(self):
@@ -239,7 +240,6 @@ class Vector:
         docstore_dict : เป็น unique id ของแต่ละภาพ
         index_to_docstore_id : สสร้าง dictionary ที่ mapping ระหว่าง ลำดับ index ใน FAISS กับ ID ของเอกสารใน docstore
         """
-
         vectors, docs = self.extract_face_vectors(self.face_images_path)
         if not vectors:
             print("[❗] No face vectors extracted.")
@@ -265,7 +265,7 @@ class Vector:
             docstore=InMemoryDocstore(docstore_dict),
             index_to_docstore_id=index_to_docstore_id,
         )
-        db.save_local(core_config.vector_path)
+        db.save_local(self.core_config.vector_path)
         print("[✅] FAISS database built with IndexIDMap and saved.")
         return True
 
@@ -281,7 +281,7 @@ class Vector:
         person_folder = os.path.join(self.face_images_path + "/" + person_id)
 
         db = FAISS.load_local(
-            core_config.vector_path,
+            self.core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -311,22 +311,20 @@ class Vector:
         ids = np.array(range(current_count, current_count + len(filtered_vectors)), dtype=np.int64)
         db.index.add_with_ids(np.array(filtered_vectors).astype(np.float32), ids)
 
-        # อัปเดต docstore และ index_to_docstore_id
         for i, (vec, doc) in enumerate(zip(filtered_vectors, filtered_docs)):
             doc_id = str(uuid.uuid4())
             db.docstore._dict[doc_id] = doc
             db.index_to_docstore_id[current_count + i] = doc_id
 
-        db.save_local(core_config.vector_path)
+        db.save_local(self.core_config.vector_path)
 
     def delete_person_vectors(self, person_id: str):
         """
         เช็คจากชื่อ ว่าใน metadata มีชื่อนั้นมั้ย ถ้ามี ลบ
         """
         # !FEATURE ยิง API ลบ person_folder
-
         db = FAISS.load_local(
-            core_config.vector_path,
+            self.core_config.vector_path,
             embeddings=DummyEmbeddings(),
             allow_dangerous_deserialization=True,
         )
@@ -355,4 +353,4 @@ class Vector:
         db.docstore = InMemoryDocstore(remaining_docstore)
         db.index_to_docstore_id = remaining_index_map
 
-        db.save_local(core_config.vector_path)
+        db.save_local(self.core_config.vector_path)

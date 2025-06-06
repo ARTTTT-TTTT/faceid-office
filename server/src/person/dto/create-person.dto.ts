@@ -11,8 +11,4 @@ export class CreatePersonDto {
   @IsOptional()
   @IsString()
   position?: string;
-
-  @IsString()
-  @IsOptional()
-  profileImageUrl?: string;
 }

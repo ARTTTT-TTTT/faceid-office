@@ -5,15 +5,18 @@ from app.core.face_recognition import FaceRecognition
 from app.configs.core_config import CoreConfig
 
 from concurrent.futures import ThreadPoolExecutor
+import cv2
+import base64
 
 
 class FaceTracking:
-    def __init__(self):
-        self.config = CoreConfig()
+
+    def __init__(self, core_config: CoreConfig):
+        self.core_config = core_config
         try:
-            self.detection = FaceDetection()
-            self.embedding = FaceEmbedding()
-            self.recognition = FaceRecognition()
+            self.detection = FaceDetection(self.core_config)
+            self.embedding = FaceEmbedding(self.core_config)
+            self.recognition = FaceRecognition(self.core_config)
 
             self.id_counter = 0
             self.blobs = []
@@ -36,7 +39,7 @@ class FaceTracking:
         """Check if two positions are within the blob distance threshold"""
         try:
             dx, dy = pos1[0] - pos2[0], pos1[1] - pos2[1]
-            return dx * dx + dy * dy < self.config.blob_distance_threshold**2
+            return dx * dx + dy * dy < self.core_config.blob_distance_threshold**2
         except Exception as e:
             print(f"[ERROR] Error in is_near: {e}")
             return False
@@ -61,7 +64,7 @@ class FaceTracking:
             # หากไม่มี blob ใกล้เคียง สร้างใหม่
             blob_id = f"face_{self.id_counter}"
             self.id_counter += 1
-            new_blob = FaceBlob(id=blob_id, position=position, image=face_img)
+            new_blob = FaceBlob(id=blob_id, position=position, image=face_img, core_config=self.core_config)
             new_blob.matched_person_name = matched_person
             self.blobs.append(new_blob)
             matched_ids.add(new_blob.id)
@@ -89,10 +92,12 @@ class FaceTracking:
             results = []
             for blob in to_remove:
                 name, img = blob.get_match_summary()
+                _, buffer = cv2.imencode('.jpg', img)
+                detection_image = base64.b64encode(buffer).decode('utf-8')
                 results.append(
                     {
-                        "id": blob.id,
-                        "name": name,
+                        "person_id": name,
+                        "detection_image": detection_image,
                     }
                 )
                 self.blobs.remove(blob)
@@ -106,11 +111,7 @@ class FaceTracking:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
-            if (
-                not detections
-                or not hasattr(detections, "boxes")
-                or not detections.boxes
-            ):
+            if not detections or not hasattr(detections, "boxes") or not detections.boxes:
                 results = self.decrease_life_and_cleanup()
                 return frame, results
 
@@ -123,15 +124,11 @@ class FaceTracking:
 
             # Parallel embedding generation
             with ThreadPoolExecutor(max_workers=4) as executor:
-                embeddings = list(
-                    executor.map(self.embedding.image_embedding, face_images)
-                )
+                embeddings = list(executor.map(self.embedding.image_embedding, face_images))
 
             # Process each face with precomputed embedding
             results = []
-            for position, face_img, embedding in zip(
-                positions, face_images, embeddings
-            ):
+            for position, face_img, embedding in zip(positions, face_images, embeddings):
                 if embedding is None:
                     continue  # Skip invalid embeddings
 
@@ -146,6 +143,3 @@ class FaceTracking:
             print(f"Error in tracking_face: {e}")
             self.decrease_life_and_cleanup()
             return frame, []
-
-
-face_tracking = FaceTracking()

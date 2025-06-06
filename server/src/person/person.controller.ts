@@ -12,7 +12,10 @@ import {
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
-import { UploadImageFiles } from '@/common/decorators/file-upload.decorator';
+import {
+  UploadImageFiles,
+  UploadPersonFiles,
+} from '@/common/decorators/file-upload.decorator';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { DeleteFaceImageDto } from '@/face-image/dto/delete-face-image.dto';
 import { FaceImageService } from '@/face-image/face-image.service';
@@ -30,11 +33,24 @@ export class PersonController {
 
   //Person Management
   @Post()
-  async create(
+  @UploadPersonFiles(3)
+  async createPerson(
     @GetUser('sub') adminId: string,
     @Body() createPersonDto: CreatePersonDto,
+    @UploadedFiles()
+    files: {
+      profileImage: Express.Multer.File[];
+      faceImages: Express.Multer.File[];
+    },
   ) {
-    return this.personService.createPerson(adminId, createPersonDto);
+    const { profileImage, faceImages } = files;
+
+    return this.personService.createPerson(
+      adminId,
+      createPersonDto,
+      profileImage?.[0], // single file
+      faceImages || [], // multiple files
+    );
   }
 
   @Get()

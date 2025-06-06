@@ -64,7 +64,7 @@ export class DetectionLogService {
         id: log.person.id,
         fullName: log.person.fullName,
         position: log.person.position,
-        profileImageUrl: log.person.profileImageUrl,
+        profileImagePath: log.person.profileImagePath,
       },
     }));
   }

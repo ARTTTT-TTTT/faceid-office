@@ -1,7 +1,9 @@
-import { CameraOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, CameraOff, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import logger from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,17 +18,19 @@ import { createWebSocket } from '@/app/api/detection/route';
 import { checkboxToggleSelection } from '@/utils/checkbox-toggle-selection';
 import { formatElapsedTime } from '@/utils/format-elapsed-time';
 
-interface FaceTrackingResult {
-  id: string;
-  name: string;
-}
+import { FaceTrackingResult } from '@/types/detection';
 
 const camaraData = [
   { id: '1', name: 'reg-cam-001', position: 'หน้าร้าน' },
   { id: '2', name: 'reg-cam-002', position: 'โกดัง' },
 ];
 
-export const CameraStream: React.FC = () => {
+interface Props {
+  setTrackingResults: (results: FaceTrackingResult[] | ((prev: FaceTrackingResult[]) => FaceTrackingResult[])) => void;
+}
+
+export const CameraStream: React.FC<Props> = ({ setTrackingResults }) => {
+  const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const localCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,6 +90,13 @@ export const CameraStream: React.FC = () => {
     return intervalId;
   };
 
+  const addTrackingResult = useCallback((newResults: FaceTrackingResult[]) => {
+    setTrackingResults((prev: FaceTrackingResult[]) => {
+      const updated = [...prev, ...newResults];
+      return updated.slice(-4);
+    });
+  }, []);
+
   const startCamera = async () => {
     if (selectedDeviceIds.length === 0 || isStreaming) return;
 
@@ -120,9 +131,26 @@ export const CameraStream: React.FC = () => {
         }
 
         const ws = createWebSocket(
-          (data: unknown) =>
-            setTrackingResult(data as FaceTrackingResult[] | null),
-          remoteCanvasRef,
+          (imageData) => {
+            const img = new Image();
+            img.onload = () => {
+              const remoteCtx = remoteCanvasRef.current?.getContext('2d');
+              if (remoteCtx && remoteCanvasRef.current) {
+                remoteCtx.drawImage(
+                  img,
+                  0,
+                  0,
+                  remoteCanvasRef.current.width,
+                  remoteCanvasRef.current.height,
+                );
+              }
+              URL.revokeObjectURL(img.src);
+            };
+            img.src = `data:image/jpeg;base64,${imageData}`;
+          },
+          (results) => {
+            addTrackingResult(results);
+          },
         );
         wsRef.current = ws;
 
@@ -166,10 +194,24 @@ export const CameraStream: React.FC = () => {
     setTrackingResult(null);
   };
 
+  const exit = () => {
+    // TODO: ยกเลิกการเชื่อมต่อออกจาก session ยกเลิกทุกอย่าง
+    router.push('/');
+  };
+
   return (
     <section className='flex size-full flex-col items-center justify-center gap-2 rounded-lg border bg-white shadow-sm'>
       {/* CAMERA STREAM CONTROL */}
-      <article className='flex h-fit w-full items-center justify-between px-2 pt-2'>
+      <article className='flex h-fit w-full flex-wrap items-center justify-between gap-2 px-2 pt-2'>
+        <Button
+          onClick={exit}
+          className={cn(
+            'flex items-center justify-center gap-2 bg-red-500 hover:bg-red-500',
+          )}
+        >
+          <ArrowLeft className='size-6' />
+          ออก
+        </Button>
         <span className='h-9 rounded-md border bg-white px-4 py-2 text-sm font-medium'>
           {formatElapsedTime(elapsedTime)}
         </span>
@@ -227,11 +269,11 @@ export const CameraStream: React.FC = () => {
 
         <Button
           onClick={isStreaming ? stopCamera : startCamera}
-          className={
+          className={cn(
             isStreaming
               ? 'bg-red-500 hover:bg-red-500'
-              : 'bg-green-500 hover:bg-green-500'
-          }
+              : 'bg-green-500 hover:bg-green-500',
+          )}
         >
           {isStreaming ? 'หยุดตรวจสอบ' : 'เริ่มตรวจสอบ'}
         </Button>
@@ -247,7 +289,6 @@ export const CameraStream: React.FC = () => {
             </p>
           </div>
         ) : trackingResult === null ? (
-          // กรณี streaming แล้วแต่ยังไม่ได้ข้อมูล
           <div className='flex size-fit items-center justify-center gap-2 rounded-md border p-4'>
             <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
             <span className='text-muted-foreground'>
@@ -262,13 +303,17 @@ export const CameraStream: React.FC = () => {
 
         <video
           ref={localVideoRef}
-          className='hidden'
+          className='mb-4 w-full rounded-xl shadow'
           autoPlay
           muted
           playsInline
         />
         <canvas ref={localCanvasRef} className='hidden' />
-        <canvas ref={remoteCanvasRef} className='hidden' />
+        <canvas
+          ref={remoteCanvasRef}
+          className='w-full rounded-xl border border-gray-300 bg-black shadow'
+          style={{ aspectRatio: '16/9' }}
+        />
       </article>
     </section>
   );

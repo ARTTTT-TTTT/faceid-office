@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Detection',
+  title: 'Person',
   description: '',
 };
 
-export default function DetectionLayout({
+export default function PersonLayout({
   children,
 }: {
   children: React.ReactNode;

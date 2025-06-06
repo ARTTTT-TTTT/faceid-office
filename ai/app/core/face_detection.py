@@ -3,21 +3,24 @@ from app.configs.core_config import CoreConfig
 
 
 class FaceDetection:
-    def __init__(self):
-        self.config = CoreConfig()
+
+    def __init__(self, core_config: CoreConfig):
+        self.core_config = core_config
         try:
-            self.model_YOLO = YOLO(self.config.yolo_model_path)
+            self.model_YOLO = YOLO(self.core_config.yolo_model_path)
         except Exception as e:
-            raise RuntimeError(f"Failed to load YOLO model from {self.config.yolo_model_path}: {e}")
+            raise RuntimeError(
+                f"Failed to load YOLO model from {self.core_config.yolo_model_path}: {e}"
+            )
 
     def detect_faces(self, frame):
         """Detect faces in frame using YOLO model"""
         try:
             results = self.model_YOLO.predict(
                 source=frame,
-                conf=self.config.yolo_threshold,
+                conf=self.core_config.yolo_threshold,
                 verbose=False,
-                device=self.config.default_device,
+                device=self.core_config.default_device,
             )
             return results[0]
         except Exception as e:

@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -20,6 +21,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       }),
       inject: [ConfigService],
     }),
+    HttpModule,
     PrismaModule,
   ],
   controllers: [AuthController],

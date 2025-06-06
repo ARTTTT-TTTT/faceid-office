@@ -1,12 +1,11 @@
 import { Metadata } from 'next';
-import * as React from 'react';
 
 export const metadata: Metadata = {
-  title: 'Setting',
+  title: 'Settings',
   description: '',
 };
 
-export default function SettingLayout({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;

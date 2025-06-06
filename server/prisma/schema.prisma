@@ -44,14 +44,14 @@ model Camera {
 }
 
 model Person {
-  id              String    @id @default(uuid())
-  fullName        String
-  position        Position?
-  profileImageUrl String? // !FEATURE in the future, must have this filled
-  faceImageUrls   String[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  adminId         String
+  id               String    @id @default(uuid())
+  fullName         String
+  position         Position?
+  profileImagePath String
+  faceImagePaths   String[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  adminId          String
 
   admin Admin          @relation(fields: [adminId], references: [id])
   logs  DetectionLog[]

@@ -21,11 +21,11 @@ export class FaceImageService {
           id: personId,
         },
         select: {
-          faceImageUrls: true,
+          faceImagePaths: true,
         },
       });
 
-      return { faceImageUrls: person.faceImageUrls };
+      return { faceImagePaths: person.faceImagePaths };
     } catch (error) {
       throw new InternalServerErrorException(
         'Failed to upload images: ' + error,
@@ -52,7 +52,7 @@ export class FaceImageService {
       await this.prisma.person.update({
         where: { id: personId },
         data: {
-          faceImageUrls: {
+          faceImagePaths: {
             push: faceImagePaths,
           },
         },
@@ -83,8 +83,8 @@ export class FaceImageService {
         '..',
         '..',
         'storage',
-        'face_images',
         adminId,
+        'face-images',
         personId,
       );
 
@@ -112,7 +112,7 @@ export class FaceImageService {
       await this.prisma.person.update({
         where: { id: personId },
         data: {
-          faceImageUrls: deleteFaceImageDto.faceImageUrls,
+          faceImagePaths: deleteFaceImageDto.faceImageUrls,
         },
       });
 

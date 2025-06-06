@@ -31,7 +31,7 @@ export default function VideoStreamV1() {
         }
 
         const ws = new WebSocket(
-          `ws://localhost:8000/api/ai/ws/${userId.current}`,
+          `ws://localhost:8000/api/ai/ws/admin1`,
         );
         wsRef.current = ws;
 

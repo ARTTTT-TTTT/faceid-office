@@ -9,12 +9,13 @@ from app.utils.transform_factory import face_transform
 
 
 class FaceEmbedding:
-    def __init__(self):
-        self.config = CoreConfig()
+
+    def __init__(self, core_config: CoreConfig):
+        self.core_config = core_config
         try:
             self.model_Facenet = (
-                InceptionResnetV1(pretrained=self.config.face_embedder_model)
-                .to(self.config.default_device)
+                InceptionResnetV1(pretrained=self.core_config.face_embedder_model)
+                .to(self.core_config.default_device)
                 .eval()
             )
             self.transform = face_transform()
@@ -54,7 +55,7 @@ class FaceEmbedding:
             pil_img = Image.fromarray(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
 
             # Apply transformations
-            tensor = self.transform(pil_img).unsqueeze(0).to(self.config.default_device)
+            tensor = self.transform(pil_img).unsqueeze(0).to(self.core_config.default_device)
 
             # Generate embedding
             with torch.no_grad():
@@ -83,7 +84,7 @@ class FaceEmbedding:
 
         # try:
         #     # Apply transformations
-        #     tensor = self.transform(pil_img).unsqueeze(0).to(self.config.default_device)
+        #     tensor = self.transform(pil_img).unsqueeze(0).to(self.core_config.default_device)
 
         #     # Generate embedding
         #     with torch.no_grad():
@@ -98,7 +99,7 @@ class FaceEmbedding:
         try:
             # แปลง BGR → RGB → Tensor โดยตรง
             rgb_img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
-            tensor = self.transform(rgb_img).unsqueeze(0).to(self.config.default_device)
+            tensor = self.transform(rgb_img).unsqueeze(0).to(self.core_config.default_device)
             with torch.no_grad():
                 embedding = self.model_Facenet(tensor).cpu().numpy()[0]
             return embedding

@@ -4,13 +4,13 @@ from app.configs.core_config import CoreConfig
 
 
 class FaceBlob:
-    def __init__(self, id, position, image=None):
-        self.config = CoreConfig()
+    def __init__(self, id, position, core_config: CoreConfig, image=None):
+        self.core_config = core_config
         try:
             self.id = id
             self.image = image
             self.position = position
-            self.life = self.config.blob_life_time
+            self.life = self.core_config.blob_life_time
 
             self.matched_person_name = None
             self.match_history = {}
@@ -56,7 +56,7 @@ class FaceBlob:
             valid_named = {
                 name: count
                 for name, count in self.match_history.items()
-                if name != "Unknown" and count >= self.config.sure_know
+                if name != "Unknown" and count >= self.core_config.sure_know
             }
 
             best_match_name, best_match_count = (None, 0)
@@ -66,7 +66,7 @@ class FaceBlob:
             unknown_count = self.match_history.get("Unknown", 0)
 
             # * UNKNOWN PERSON
-            if unknown_count >= max(self.config.sure_unknown, best_match_count * 2):
+            if unknown_count >= max(self.core_config.sure_unknown, best_match_count * 2):
                 return "Unknown", self.image
 
             # * FOUND PERSON

@@ -16,7 +16,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export const DetectionTable: React.FC = () => {
+import { FaceTrackingResult } from '@/types/detection';
+
+interface Props {
+  trackingResults: FaceTrackingResult[];
+}
+
+export const DetectionTable: React.FC<Props> = ({ trackingResults }) => {
   const detections = [
     { name: 'สมชาย ใจดี', time: '10:15' },
     { name: 'สมหญิง ใจงาม', time: '10:10' },
@@ -44,12 +50,12 @@ export const DetectionTable: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {detections.slice(0, 12).map((item, index) => (
+            {trackingResults.slice(0, 12).map((item, index) => (
               <TableRow className='w-full' key={index}>
                 <TableCell className='whitespace-normal break-all'>
-                  {item.name}
+                  {item.person_id}
                 </TableCell>
-                <TableCell className='text-center'>{item.time}</TableCell>
+                <TableCell className='text-center'>{item.person_id}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -6,32 +6,33 @@ import { useRouter } from 'next/navigation';
 import { CameraSettings } from '@/components/settings/camera-settings';
 import { SessionSettings } from '@/components/settings/session-settings';
 
-export default function SettingPage() {
+export const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+      delayChildren: 0.5,
+    },
+  }
+};
+
+export const itemVariants = {
+  hidden: { y: 40, opacity: 0 },
+  visible: (custom: number) => ({
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
+      delay: custom,
+    },
+  }),
+};
+
+export default function SettingsPage() {
   const router = useRouter();
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.5,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 40, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 20,
-      },
-    },
-  };
 
   return (
     <main className='relative flex min-h-screen w-screen flex-col items-center gap-6 bg-gray-100 px-4 py-12'>
@@ -54,12 +55,14 @@ export default function SettingPage() {
       >
         <motion.div
           variants={itemVariants}
+          custom={0.2}
           className='flex w-full flex-col items-center justify-center'
         >
           <SessionSettings />
         </motion.div>
         <motion.div
           variants={itemVariants}
+          custom={0.4}
           className='flex w-full flex-col items-center justify-center'
         >
           <CameraSettings />
@@ -73,7 +76,7 @@ export default function SettingPage() {
           type: 'spring',
           stiffness: 200,
           damping: 15,
-          delay: 1.2,
+          delay: 0.6,
         }}
         className='absolute left-6 top-12 z-20'
       >

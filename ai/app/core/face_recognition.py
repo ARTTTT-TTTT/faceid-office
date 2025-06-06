@@ -4,12 +4,14 @@ from collections import Counter
 
 from langchain_community.vectorstores import FAISS
 
-from app.configs.core_config import core_config
+from app.configs.core_config import CoreConfig
 from app.core.dummy_embedding import DummyEmbeddings
 
 
 class FaceRecognition:
-    def __init__(self):
+
+    def __init__(self, core_config: CoreConfig):
+        self.core_config = core_config
         try:
             self.index = None
             self.index_ivf = None
@@ -25,13 +27,13 @@ class FaceRecognition:
         try:
             # Load FAISS vector store
             self.faiss_db = FAISS.load_local(
-                core_config.vector_path,
+                self.core_config.vector_path,
                 embeddings=DummyEmbeddings(),
                 allow_dangerous_deserialization=True,
             )
 
             # Load the FAISS index directly from file
-            self.index = faiss.read_index(core_config.faiss_path)
+            self.index = faiss.read_index(self.core_config.faiss_path)
 
             if not isinstance(self.index, faiss.IndexIDMap):
                 raise ValueError("Loaded index is not of type IndexIDMap")
@@ -68,7 +70,7 @@ class FaceRecognition:
 
             # Search for k nearest neighbors
             distances, indices = self.index_ivf.search(
-                np.array([embedding]), k=core_config.recognition_k_neighbors
+                np.array([embedding]), k=self.core_config.recognition_k_neighbors
             )
 
             # Map FAISS index IDs to names
@@ -81,7 +83,7 @@ class FaceRecognition:
             most_common_name = name_counter.most_common(1)[0][0]
 
             # Check distance threshold
-            if distances[0][0] < core_config.facenet_threshold:
+            if distances[0][0] < self.core_config.facenet_threshold:
                 return most_common_name
             else:
                 return "Unknown"

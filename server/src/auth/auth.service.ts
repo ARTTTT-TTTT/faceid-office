@@ -1,11 +1,14 @@
+import { HttpService } from '@nestjs/axios';
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Admin } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { lastValueFrom } from 'rxjs';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -14,6 +17,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private http: HttpService,
   ) {}
 
   async register(email: string, name: string, password: string) {
@@ -34,6 +38,13 @@ export class AuthService {
         passwordHash: hashed,
       },
     });
+
+    try {
+      const url = `http://localhost:8000/api/ai/vectors/${admin.id}/build/empty`;
+      await lastValueFrom(this.http.post(url, {}));
+    } catch {
+      throw new InternalServerErrorException('Failed to initialize AI vectors');
+    }
 
     return {
       id: admin.id,

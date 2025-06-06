@@ -14,23 +14,27 @@ export default function HomePage() {
         ระบบตรวจสอบการเข้า-ออกงานของพนักงาน
       </span>
 
-      <Button asChild className='bg-sky-500 hover:bg-sky-500'>
+      <Button asChild className='bg-sky-500 hover:bg-sky-600'>
         <Link href='/login'>Login Page</Link>
       </Button>
 
-      <Button asChild className='bg-blue-500 hover:bg-blue-500'>
+      <Button asChild className='bg-blue-500 hover:bg-blue-600'>
         <Link href='/detection'>Detection Page</Link>
       </Button>
 
-      <Button asChild className='bg-green-500 hover:bg-green-500'>
-        <Link href='/setting'>Setting Page</Link>
+      <Button asChild className='bg-pink-500 hover:bg-pink-600'>
+        <Link href='/person'>Person Page</Link>
       </Button>
 
-      <Button asChild className='bg-yellow-500 hover:bg-yellow-500'>
+      <Button asChild className='bg-green-500 hover:bg-green-600'>
+        <Link href='/settings'>Setting Page</Link>
+      </Button>
+
+      <Button asChild className='bg-yellow-500 hover:bg-yellow-600'>
         <Link href='/video-stream-v1'>Video Stream V1</Link>
       </Button>
 
-      <Button asChild className='bg-yellow-500 hover:bg-yellow-500'>
+      <Button asChild className='bg-yellow-500 hover:bg-yellow-600'>
         <Link href='/video-stream-v2'>Video Stream V2</Link>
       </Button>
 

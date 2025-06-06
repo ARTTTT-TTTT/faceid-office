@@ -3,7 +3,37 @@ import {
   BadRequestException,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
+
+export function UploadPersonFiles(maxFaceImages = 3) {
+  return applyDecorators(
+    UseInterceptors(
+      FileFieldsInterceptor(
+        [
+          { name: 'profileImage', maxCount: 1 },
+          { name: 'faceImages', maxCount: maxFaceImages },
+        ],
+        {
+          fileFilter: (_req, file, callback) => {
+            if (!['image/jpeg'].includes(file.mimetype)) {
+              return callback(
+                new BadRequestException('Only JPG files are allowed!'),
+                false,
+              );
+            }
+            callback(null, true);
+          },
+          limits: {
+            fileSize: 1024 * 1024 * 5,
+          },
+        },
+      ),
+    ),
+  );
+}
 
 export function UploadImageFiles(
   fieldName: string = 'faceImages',
