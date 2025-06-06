@@ -64,7 +64,12 @@ class FaceTracking:
             # หากไม่มี blob ใกล้เคียง สร้างใหม่
             blob_id = f"face_{self.id_counter}"
             self.id_counter += 1
-            new_blob = FaceBlob(id=blob_id, position=position, image=face_img, core_config=self.core_config)
+            new_blob = FaceBlob(
+                id=blob_id,
+                position=position,
+                image=face_img,
+                core_config=self.core_config,
+            )
             new_blob.matched_person_name = matched_person
             self.blobs.append(new_blob)
             matched_ids.add(new_blob.id)
@@ -92,8 +97,13 @@ class FaceTracking:
             results = []
             for blob in to_remove:
                 name, img = blob.get_match_summary()
-                _, buffer = cv2.imencode('.jpg', img)
-                detection_image = base64.b64encode(buffer).decode('utf-8')
+                if img is None or img.size == 0:
+                    continue  # ข้ามไปถ้าไม่มีภาพ
+
+                _, buffer = cv2.imencode(".jpg", img)
+                if buffer is None:
+                    continue  # ข้ามถ้า encode ไม่สำเร็จ
+                detection_image = base64.b64encode(buffer).decode("utf-8")
                 results.append(
                     {
                         "person_id": name,
@@ -111,7 +121,11 @@ class FaceTracking:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
-            if not detections or not hasattr(detections, "boxes") or not detections.boxes:
+            if (
+                not detections
+                or not hasattr(detections, "boxes")
+                or not detections.boxes
+            ):
                 results = self.decrease_life_and_cleanup()
                 return frame, results
 
@@ -119,21 +133,29 @@ class FaceTracking:
             if annotation is None:
                 return frame, []
 
-            positions, face_images = self.detection.extract_faces_and_positions(frame, detections)
+            positions, face_images = self.detection.extract_faces_and_positions(
+                frame, detections
+            )
             matched_ids = set()
 
             # Parallel embedding generation
             with ThreadPoolExecutor(max_workers=4) as executor:
-                embeddings = list(executor.map(self.embedding.image_embedding, face_images))
+                embeddings = list(
+                    executor.map(self.embedding.image_embedding, face_images)
+                )
 
             # Process each face with precomputed embedding
             results = []
-            for position, face_img, embedding in zip(positions, face_images, embeddings):
+            for position, face_img, embedding in zip(
+                positions, face_images, embeddings
+            ):
                 if embedding is None:
                     continue  # Skip invalid embeddings
 
                 matched_person = self.recognition.find_best_match(embedding)
-                result = self.match_or_create_blob(position, face_img, matched_person, matched_ids)
+                result = self.match_or_create_blob(
+                    position, face_img, matched_person, matched_ids
+                )
                 results.append(result)
 
             results = self.decrease_life_and_cleanup(matched_ids)
