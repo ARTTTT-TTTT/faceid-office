@@ -27,9 +27,13 @@ const camaraData = [
 
 interface Props {
   setTrackingResults: (results: FaceTrackingResult[] | ((prev: FaceTrackingResult[]) => FaceTrackingResult[])) => void;
+  setTrackingUnknownResults: (results: FaceTrackingResult[] | ((prev: FaceTrackingResult[]) => FaceTrackingResult[])) => void;
 }
 
-export const CameraStream: React.FC<Props> = ({ setTrackingResults }) => {
+export const CameraStream: React.FC<Props> = ({
+  setTrackingResults,
+  setTrackingUnknownResults,
+}) => {
   const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -91,10 +95,42 @@ export const CameraStream: React.FC<Props> = ({ setTrackingResults }) => {
   };
 
   const addTrackingResult = useCallback((newResults: FaceTrackingResult[]) => {
-    setTrackingResults((prev: FaceTrackingResult[]) => {
-      const updated = [...prev, ...newResults];
-      return updated.slice(-4);
-    });
+    // แยกผลลัพธ์เป็น known และ unknown
+    const unknownResults = newResults.filter(
+      (result) => result.person_id === 'Unknown',
+    );
+    const knownResults = newResults.filter(
+      (result) => result.person_id !== 'Unknown',
+    );
+
+    // ฟังก์ชันอัปเดต state โดยจำกัดแค่ 4 อันล่าสุด
+    const updateState = (
+      prevState: FaceTrackingResult[],
+      newItems: FaceTrackingResult[],
+    ): FaceTrackingResult[] => {
+      const updated = [...prevState, ...newItems];
+
+      // ลบของซ้ำ
+      const seen = new Set<string>();
+      const uniqueItems = updated.filter((item) => {
+        const key = `${item.person_id}-${item.detection_image}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      // เก็บแค่ 4 อันล่าสุด
+      return uniqueItems.slice(-4);
+    };
+
+    // อัปเดต state ถ้ามีข้อมูลใหม่
+    if (unknownResults.length > 0) {
+      setTrackingUnknownResults((prev) => updateState(prev, unknownResults));
+    }
+
+    if (knownResults.length > 0) {
+      setTrackingResults((prev) => updateState(prev, knownResults));
+    }
   }, []);
 
   const startCamera = async () => {
