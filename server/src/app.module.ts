@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { AdminModule } from './admin/admin.module';
+import { AiVectorModule } from './ai-vector/ai-vector.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -27,6 +28,7 @@ import { SessionModule } from './session/session.module';
     CameraModule,
     CommonModule,
     DetectionSessionModule,
+    AiVectorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,11 +9,11 @@ interface Props {
 export const PersonRow: React.FC<Props> = ({ person }) => {
   return (
     <TableRow className='transition-colors hover:bg-blue-200'>
-      <TableCell className='break-word whitespace-pre-wrap align-top font-medium'>
-        {person.fullName}ชื่อ
+      <TableCell className='break-word whitespace-pre-wrap pl-5 align-top font-medium'>
+        {person.fullName}
       </TableCell>
       <TableCell className='text-nowrap text-center align-top'>
-        {person.position}ตำแหน่ง
+        {person.position}
       </TableCell>
     </TableRow>
   );

@@ -1,5 +1,5 @@
 export const siteConfig = {
-  title: 'FaceID Office',
+  title: 'Face ID Office',
   description: '',
   url: 'https://google.com',
 };

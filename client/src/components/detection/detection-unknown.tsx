@@ -15,8 +15,10 @@ interface Props {
   trackingUnknownResults: FaceTrackingResult[];
 }
 
-export const DetectionUnknown: React.FC<Props> = ({ trackingUnknownResults = [] }) => {
-  const unknownDetections = [
+export const DetectionUnknown: React.FC<Props> = ({
+  trackingUnknownResults = [],
+}) => {
+  const _unknownDetections = [
     { id: 1, imageUrl: '/images/og.jpg', time: '00:01' },
     { id: 2, imageUrl: '/images/og.jpg', time: '00:02' },
   ];

@@ -10,7 +10,6 @@ import asyncio
 
 
 class WebsocketService:
-
     def __init__(self, admin_id: str):
         self._active_connections: Dict[str, WebSocket] = {}
         self._latest_frame: Dict[str, bytes] = {}
@@ -21,7 +20,7 @@ class WebsocketService:
         await websocket.accept()
         self._active_connections[admin_id] = websocket
         self.face_tracking.load_faiss_index()
-        print(f"WebSocket connection established for user: {admin_id}")
+        print(f"WebSocket connection established for admin_id: {admin_id}")
 
         try:
             while True:
@@ -43,21 +42,18 @@ class WebsocketService:
                             img_str = base64.b64encode(buffer).decode("utf-8")
 
                             await websocket.send_text(
-                                json.dumps({
-                                    "image": img_str,
-                                    "result": result
-                                })
+                                json.dumps({"image": img_str, "result": result})
                             )
 
                     await asyncio.sleep(0.05)
                 except Exception as e:
-                    print(f"Error processing frame for user {admin_id}: {e}")
+                    print(f"Error processing frame for admin_id {admin_id}: {e}")
                     break
 
         except Exception as e:
-            print(f"An error occurred for user {admin_id}: {e}")
+            print(f"An error occurred for admin_id {admin_id}: {e}")
         finally:
-            print(f"WebSocket connection disconnected for user: {admin_id}")
+            print(f"WebSocket connection disconnected for admin_id: {admin_id}")
             self.cleanup_user_connection(admin_id)
             if admin_id in self._active_connections:
                 del self._active_connections[admin_id]
@@ -65,4 +61,4 @@ class WebsocketService:
                 del self._latest_frame[admin_id]
 
     def cleanup_user_connection(self, admin_id: str):
-        print(f"Cleaning up resources for user: {admin_id}")
+        print(f"Cleaning up resources for usadmin_ider: {admin_id}")

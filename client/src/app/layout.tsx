@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import '@/styles/globals.css';
 
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 import { siteConfig } from '@/constants/config';
 // !STARTERCONF Change these default meta
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <head />
       <body>
+        <Toaster />
         <ThemeProvider
           attribute='class'
           defaultTheme='light'

@@ -41,7 +41,7 @@ export const SessionSettings = () => {
   });
 
   return (
-    <Card className='w-full max-w-lg'>
+    <Card className='w-full max-w-2xl'>
       <CardHeader>
         <CardTitle className='text-2xl text-green-600'>
           ตั้งค่าเซสชั่น

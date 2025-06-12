@@ -5,6 +5,8 @@ import pathlib
 
 class CoreConfig:
     def __init__(self, admin_id: str):
+        self.admin_id = admin_id
+
         # DIRECTORIES
         self.base_dir = os.getcwd()
         current_file = pathlib.Path(__file__).resolve()

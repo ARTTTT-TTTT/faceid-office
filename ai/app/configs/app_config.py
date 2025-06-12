@@ -8,7 +8,7 @@ class AppConfig(BaseSettings):
 
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     PROJECT_NAME: str = "AI"
-    API_AI_STR: str = "/api/ai"
+    API_STR: str = "/api"
     AI_SECRET_KEY: str = "ai_secret_key"
 
     SERVER_URL: str = "http://localhost:8080"

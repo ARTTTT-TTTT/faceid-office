@@ -30,9 +30,7 @@ export default function VideoStreamV1() {
           localVideoNode = localVideoRef.current;
         }
 
-        const ws = new WebSocket(
-          `ws://localhost:8000/api/ai/ws/admin1`,
-        );
+        const ws = new WebSocket(`ws://localhost:8000/api/ai/ws/${userId}`);
         wsRef.current = ws;
 
         const localCanvas = localCanvasRef.current;

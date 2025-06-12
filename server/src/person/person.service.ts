@@ -8,13 +8,17 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+import { AiVectorService } from '@/ai-vector/ai-vector.service';
 import { CreatePersonDto } from '@/person/dto/create-person.dto';
 import { UpdatePersonDto } from '@/person/dto/update-person.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class PersonService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiVectorService: AiVectorService,
+  ) {}
 
   async createPerson(
     adminId: string,
@@ -23,7 +27,8 @@ export class PersonService {
     faceImages: Express.Multer.File[],
   ) {
     // TODO: ไม่เจอ adminId แล้วขึ้น error 500?
-    // Step 1: Check if admin exists
+    // TODO: ถ้าเกิด error ให้ลบ profileImage, faceImages, vector, ที่ save ไปแล้ว
+    // !Check if admin exists
     const admin = await this.prisma.admin.findUnique({
       where: { id: adminId },
     });
@@ -32,7 +37,7 @@ export class PersonService {
       throw new NotFoundException(`Admin with ID ${adminId} not found`);
     }
 
-    // Step 2: Create person
+    // * Create person
     const newPerson = await this.prisma.person.create({
       data: {
         fullName: dto.fullName,
@@ -45,7 +50,7 @@ export class PersonService {
       },
     });
 
-    // Step 3: Save images
+    // * Save images
     let profileImagePath: string | undefined;
     if (profileImage) {
       profileImagePath = await this.saveProfileImageToFileSystem(
@@ -64,7 +69,7 @@ export class PersonService {
       );
     }
 
-    // Step 4: Update person with image paths
+    // * Update person with image paths
     const person = await this.prisma.person.update({
       where: { id: newPerson.id },
       data: {
@@ -72,6 +77,9 @@ export class PersonService {
         faceImagePaths,
       },
     });
+
+    // * Update person vectors in AI service
+    await this.aiVectorService.updatePersonVectors(adminId, newPerson.id);
 
     return person;
   }

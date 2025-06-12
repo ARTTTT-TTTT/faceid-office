@@ -20,7 +20,7 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 app = FastAPI(
     title=app_config.PROJECT_NAME,
-    openapi_url=f"{app_config.API_AI_STR}/openapi.json",
+    openapi_url=f"{app_config.API_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
 
@@ -33,9 +33,9 @@ if app_config.all_cors_origins:
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=app_config.API_AI_STR)
+app.include_router(api_router, prefix=app_config.API_STR)
 
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the AI for FaceID Office!"}
+    return {"message": "Welcome to the AI for Face ID Office!"}

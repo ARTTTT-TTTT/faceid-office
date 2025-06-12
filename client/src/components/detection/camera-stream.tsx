@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import logger from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { useFetch } from '@/hooks/use-fetch';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,10 +15,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-import { createWebSocket } from '@/app/api/detection/route';
+import { me } from '@/utils/api/auth';
+import { createWebSocket } from '@/utils/api/detection';
 import { checkboxToggleSelection } from '@/utils/checkbox-toggle-selection';
 import { formatElapsedTime } from '@/utils/format-elapsed-time';
 
+import { Me } from '@/types/auth';
 import { FaceTrackingResult } from '@/types/detection';
 
 const camaraData = [
@@ -26,8 +29,16 @@ const camaraData = [
 ];
 
 interface Props {
-  setTrackingResults: (results: FaceTrackingResult[] | ((prev: FaceTrackingResult[]) => FaceTrackingResult[])) => void;
-  setTrackingUnknownResults: (results: FaceTrackingResult[] | ((prev: FaceTrackingResult[]) => FaceTrackingResult[])) => void;
+  setTrackingResults: (
+    results:
+      | FaceTrackingResult[]
+      | ((prev: FaceTrackingResult[]) => FaceTrackingResult[]),
+  ) => void;
+  setTrackingUnknownResults: (
+    results:
+      | FaceTrackingResult[]
+      | ((prev: FaceTrackingResult[]) => FaceTrackingResult[]),
+  ) => void;
 }
 
 export const CameraStream: React.FC<Props> = ({
@@ -41,15 +52,15 @@ export const CameraStream: React.FC<Props> = ({
   const remoteCanvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [trackingResult, setTrackingResult] = useState<
-    FaceTrackingResult[] | null
-  >(null);
+  const [isWsLoading, setIsWsLoading] = useState(true);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>([]);
   const [selectedRegisteredIds, setSelectedRegisteredIds] = useState<string[]>(
     [],
   );
   const [isStreaming, setIsStreaming] = useState(false);
+
+  const { data: userData } = useFetch<Me>(me);
 
   const listVideoDevices = useCallback(async () => {
     try {
@@ -94,47 +105,48 @@ export const CameraStream: React.FC<Props> = ({
     return intervalId;
   };
 
-  const addTrackingResult = useCallback((newResults: FaceTrackingResult[]) => {
-    // แยกผลลัพธ์เป็น known และ unknown
-    const unknownResults = newResults.filter(
-      (result) => result.person_id === 'Unknown',
-    );
-    const knownResults = newResults.filter(
-      (result) => result.person_id !== 'Unknown',
-    );
+  const addTrackingResult = useCallback(
+    (newResults: FaceTrackingResult[]) => {
+      const unknownResults = newResults.filter(
+        (result) => result.person_id === 'Unknown',
+      );
+      const knownResults = newResults.filter(
+        (result) => result.person_id !== 'Unknown',
+      );
 
-    // ฟังก์ชันอัปเดต state โดยจำกัดแค่ 4 อันล่าสุด
-    const updateState = (
-      prevState: FaceTrackingResult[],
-      newItems: FaceTrackingResult[],
-    ): FaceTrackingResult[] => {
-      const updated = [...prevState, ...newItems];
+      const updateState = (
+        prevState: FaceTrackingResult[],
+        newItems: FaceTrackingResult[],
+      ): FaceTrackingResult[] => {
+        const updated = [...prevState, ...newItems];
 
-      // ลบของซ้ำ
-      const seen = new Set<string>();
-      const uniqueItems = updated.filter((item) => {
-        const key = `${item.person_id}-${item.detection_image}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+        // ลบของซ้ำ
+        const seen = new Set<string>();
+        const uniqueItems = updated.filter((item) => {
+          const key = `${item.person_id}-${item.detection_image}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
 
-      // เก็บแค่ 4 อันล่าสุด
-      return uniqueItems.slice(-4);
-    };
+        // เก็บแค่ 4 อันล่าสุด
+        return uniqueItems.slice(-4);
+      };
 
-    // อัปเดต state ถ้ามีข้อมูลใหม่
-    if (unknownResults.length > 0) {
-      setTrackingUnknownResults((prev) => updateState(prev, unknownResults));
-    }
+      // อัปเดต state ถ้ามีข้อมูลใหม่
+      if (unknownResults.length > 0) {
+        setTrackingUnknownResults((prev) => updateState(prev, unknownResults));
+      }
 
-    if (knownResults.length > 0) {
-      setTrackingResults((prev) => updateState(prev, knownResults));
-    }
-  }, []);
+      if (knownResults.length > 0) {
+        setTrackingResults((prev) => updateState(prev, knownResults));
+      }
+    },
+    [setTrackingResults, setTrackingUnknownResults],
+  );
 
   const startCamera = async () => {
-    if (selectedDeviceIds.length === 0 || isStreaming) return;
+    if (selectedDeviceIds.length === 0 || isStreaming || !userData) return;
 
     setIsStreaming(true);
     setElapsedTime(0);
@@ -167,6 +179,7 @@ export const CameraStream: React.FC<Props> = ({
         }
 
         const ws = createWebSocket(
+          userData.sub,
           (imageData) => {
             const img = new Image();
             img.onload = () => {
@@ -193,6 +206,7 @@ export const CameraStream: React.FC<Props> = ({
         const intervalId = captureAndSendFrames(video, canvas, ctx, ws);
         video.dataset.intervalId = intervalId.toString();
       };
+      setIsWsLoading(false);
     } catch (error) {
       logger(error, 'Camera error:');
       stopCamera();
@@ -226,13 +240,12 @@ export const CameraStream: React.FC<Props> = ({
       clearInterval(Number(intervalId));
       delete video.dataset.intervalId;
     }
-
-    setTrackingResult(null);
+    setIsWsLoading(true);
   };
 
   const exit = () => {
     // TODO: ยกเลิกการเชื่อมต่อออกจาก session ยกเลิกทุกอย่าง
-    router.push('/');
+    router.push('/dashboard');
   };
 
   return (
@@ -324,32 +337,28 @@ export const CameraStream: React.FC<Props> = ({
               กล้องยังไม่เปิด กรุณากดปุ่มเริ่มตรวจสอบ <br /> เพื่อเริ่มใช้งาน
             </p>
           </div>
-        ) : trackingResult === null ? (
-          <div className='flex size-fit items-center justify-center gap-2 rounded-md border p-4'>
+        ) : isWsLoading === true ? (
+          <div className='m-4 flex size-fit items-center justify-center gap-2 rounded-md border p-4'>
             <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
             <span className='text-muted-foreground'>
               กำลังรอข้อมูลจากเซิร์ฟเวอร์...
             </span>
           </div>
         ) : (
-          <pre className='whitespace-pre-wrap text-sm text-gray-800'>
-            {JSON.stringify(trackingResult, null, 2)}
-          </pre>
+          <canvas
+            ref={remoteCanvasRef}
+            className='h-full w-full rounded-xl p-2'
+          />
         )}
 
         <video
           ref={localVideoRef}
-          className='mb-4 w-full rounded-xl shadow'
+          className='mb-4 hidden w-full rounded-xl shadow'
           autoPlay
           muted
           playsInline
         />
         <canvas ref={localCanvasRef} className='hidden' />
-        <canvas
-          ref={remoteCanvasRef}
-          className='w-full rounded-xl border border-gray-300 bg-black shadow'
-          style={{ aspectRatio: '16/9' }}
-        />
       </article>
     </section>
   );

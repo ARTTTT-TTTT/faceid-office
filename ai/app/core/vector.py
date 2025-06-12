@@ -21,40 +21,6 @@ from app.configs.core_config import CoreConfig
 
 pillow_heif.register_heif_opener()
 
-# !FEATURE แยก vector ของแต่ละ admin
-"""
-vector
-├── [admin_id]/
-│ ├── index.faiss
-| └──index.pkl
-├── [admin_id]/
-| ├── index.faiss
-| └── index.pkl
-└── ...
-"""
-
-# !FEATURE HANDLE ERROR AND RETURN
-
-# !FEATURE แยก storage ของแต่ละ admin
-"""
-storage
-├── [admin_id]/
-│ ├── profile-images/
-│ │ ├── [person_id].jpg
-│ │ └── ...
-│ ├── face-images/
-│ │ ├── [person_id]/
-| │ │ ├── uuid1.jpg
-| │ │ ├── uuid2.jpg
-| │ │ └── uuid3.jpg
-| │ ├── [person_id]/
-| │ │ ├── uuid1.jpg
-| │ │ ├── uuid2.jpg
-| │ │ └── uuid3.jpg
-| │ └── ...
-└── ...
-"""
-
 
 class Vector:
     def __init__(self, core_config: CoreConfig, device=None):
@@ -142,71 +108,7 @@ class Vector:
     ========== CRUD ===========
     """
 
-    def get_people_vectors(self):
-        """
-        แสดงชื่อบุคคลทั้งหมดในฐานข้อมูล พร้อมจำนวนภาพและ metadata ของแต่ละภาพ
-        """
-        db = FAISS.load_local(
-            self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
-            allow_dangerous_deserialization=True,
-        )
-
-        people_data = {}
-
-        for idx, doc_id in db.index_to_docstore_id.items():
-            doc = db.docstore.search(doc_id)
-            name = doc.metadata.get("name")
-
-            if name not in people_data:
-                people_data[name] = []
-
-            result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
-            people_data[name].append(result_info)
-
-        # สรุปผล
-        for person_name, vectors in people_data.items():
-            print(f"\n👤 {person_name} - {len(vectors)} vectors")
-            for vector in vectors:
-                print(
-                    f"   ↳ Index={vector['index']}, Doc ID='{vector['doc_id']}', Metadata={vector['metadata']}"
-                )
-
-        return people_data
-
-    def get_person_vectors(self, person_id: str):
-        """
-        database มี person_name(ชื่อนั้นกี่ภาพและอะไรบ้าง)
-        """
-        db = FAISS.load_local(
-            self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
-            allow_dangerous_deserialization=True,
-        )
-        results = []
-        for idx, doc_id in db.index_to_docstore_id.items():
-            doc = db.docstore.search(doc_id)
-            if doc.metadata.get("name") == person_id:
-                result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
-                results.append(result_info)
-                print(f"[🔍] Found vector: Index={idx}, Doc ID='{doc_id}', Metadata={doc.metadata}")
-        print(f"[ℹ️] Total vectors found for '{person_id}': {len(results)}")
-        return results
-
-    def get_total_vectors(self):
-        """
-        นับจำนวนเวกเตอร์ใบหน้าทั้งหมดใน FAISS database
-        """
-        db = FAISS.load_local(
-            self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
-            allow_dangerous_deserialization=True,
-        )
-        total_count = db.index.ntotal
-        print(f"[📊] Total face vectors in FAISS: {total_count}")
-        return total_count
-
-    def build_empty_vectors(self):
+    def build_empty_vectors(self) -> dict:
         """
         index    : สร้าง vector ขนาด 512
         docstore : สร้าง ที่ว่าง ๆ ที่เก็บ metadata เช่น ชื่อบุคคลและชื่อไฟล์
@@ -227,9 +129,12 @@ class Vector:
             index_to_docstore_id=index_to_docstore_id,
         )
         db.save_local(self.core_config.vector_path)
-        print("[✅] Empty FAISS database created and saved.")
+        return {
+            "success": True,
+            "message": f"Empty vectors for {self.core_config.admin_id} created successfully.",
+        }
 
-    def build_vectors(self):
+    def build_vectors(self) -> dict:
         """
         batch_size : แบ่งเป็น batch เพื่อลดการใช้ RAM
         index : สร้าง IndexFlatL2 -ขนาด 512
@@ -242,8 +147,10 @@ class Vector:
         """
         vectors, docs = self.extract_face_vectors(self.face_images_path)
         if not vectors:
-            print("[❗] No face vectors extracted.")
-            return
+            return {
+                "success": False,
+                "message": f"No face vectors of {self.core_config.admin_id} extracted.",
+            }
 
         index = faiss.IndexIDMap(faiss.IndexFlatL2(self.embedding_dim))
         ids = np.array(range(len(vectors)), dtype=np.int64)
@@ -266,10 +173,65 @@ class Vector:
             index_to_docstore_id=index_to_docstore_id,
         )
         db.save_local(self.core_config.vector_path)
-        print("[✅] FAISS database built with IndexIDMap and saved.")
-        return True
+        return {
+            "success": True,
+            "message": f"Vectors for {self.core_config.admin_id} built successfully with {len(vectors)} vectors.",
+        }
 
-    def update_person_vectors(self, person_id: str):
+    def get_people_vectors(self) -> dict:
+        """
+        แสดงชื่อบุคคลทั้งหมดในฐานข้อมูล พร้อมจำนวนภาพและ metadata ของแต่ละภาพ
+        """
+        db = FAISS.load_local(
+            self.core_config.vector_path,
+            embeddings=DummyEmbeddings(),
+            allow_dangerous_deserialization=True,
+        )
+
+        people_data = {}
+
+        for idx, doc_id in db.index_to_docstore_id.items():
+            doc = db.docstore.search(doc_id)
+            name = doc.metadata.get("name")
+
+            if name not in people_data:
+                people_data[name] = []
+
+            result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
+            people_data[name].append(result_info)
+
+        return people_data
+
+    def get_person_vectors(self, person_id: str) -> dict:
+        """
+        database มี person_name(ชื่อนั้นกี่ภาพและอะไรบ้าง)
+        """
+        db = FAISS.load_local(
+            self.core_config.vector_path,
+            embeddings=DummyEmbeddings(),
+            allow_dangerous_deserialization=True,
+        )
+        results = []
+        for idx, doc_id in db.index_to_docstore_id.items():
+            doc = db.docstore.search(doc_id)
+            if doc.metadata.get("name") == person_id:
+                result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
+                results.append(result_info)
+        return {"person_id": person_id, "total_vectors": len(results), "vectors": results}
+
+    def get_total_vectors(self) -> int:
+        """
+        นับจำนวนเวกเตอร์ใบหน้าทั้งหมดใน FAISS database
+        """
+        db = FAISS.load_local(
+            self.core_config.vector_path,
+            embeddings=DummyEmbeddings(),
+            allow_dangerous_deserialization=True,
+        )
+        total_count = db.index.ntotal
+        return total_count
+
+    def update_person_vectors(self, person_id: str) -> dict:
         """
         db
         load model vector : เดิมมาใช้งานเป็น base
@@ -291,8 +253,10 @@ class Vector:
 
         new_vectors, new_docs = self.extract_face_vectors_single(person_folder)
         if not new_vectors:
-            print("[❗] No new faces to add.")
-            return
+            return {
+                "success": False,
+                "message": f"No new faces to add for {person_id}.",
+            }
 
         filtered_vectors = []
         filtered_docs = []
@@ -304,8 +268,10 @@ class Vector:
                 existing_keys.add(key)
 
         if not filtered_vectors:
-            print("[ℹ️] All vectors already exist in FAISS.")
-            return
+            return {
+                "success": False,
+                "message": f"No new vectors to add for {person_id}.",
+            }
 
         current_count = db.index.ntotal
         ids = np.array(range(current_count, current_count + len(filtered_vectors)), dtype=np.int64)
@@ -317,8 +283,12 @@ class Vector:
             db.index_to_docstore_id[current_count + i] = doc_id
 
         db.save_local(self.core_config.vector_path)
+        return {
+            "success": True,
+            "message": f"Updated vectors for {person_id} with {len(filtered_vectors)} new vectors.",
+        }
 
-    def delete_person_vectors(self, person_id: str):
+    def delete_person_vectors(self, person_id: str) -> dict:
         """
         เช็คจากชื่อ ว่าใน metadata มีชื่อนั้นมั้ย ถ้ามี ลบ
         """
@@ -337,10 +307,8 @@ class Vector:
                 indices_to_delete.append(faiss_id)
 
         if not indices_to_delete:
-            print(f"[❗] No vectors found with name '{person_id}'.")
-            return
+            return {"success": False, "message": f"No vectors found for {person_id}."}
 
-        print(f"[🗑️] Deleting {len(indices_to_delete)} vectors for '{person_id}'...")
         db.index.remove_ids(np.array(indices_to_delete, dtype=np.int64))
 
         remaining_index_map = {}
@@ -354,3 +322,4 @@ class Vector:
         db.index_to_docstore_id = remaining_index_map
 
         db.save_local(self.core_config.vector_path)
+        return {"success": True, "message": f"Deleted vectors for {person_id}."}

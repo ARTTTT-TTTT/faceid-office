@@ -40,7 +40,7 @@ export default function LoginPage() {
           animate='animate'
           variants={h1Variants}
         >
-          FaceID Office
+          Face ID Office
         </motion.h1>
         <AnimatePresence mode='wait'>
           <motion.div

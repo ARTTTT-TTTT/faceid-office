@@ -1,15 +1,13 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import logger from '@/lib/logger';
-
 import { TermsDialog } from '@/components/login/term-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { loginAdmin } from '@/app/api/auth/route';
+import { login } from '@/utils/api/auth';
 
 export const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
   const router = useRouter();
@@ -22,12 +20,8 @@ export const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await loginAdmin(form);
-      router.push('/detection');
-    } catch (error) {
-      logger(error, '[LoginForm] handleLogin');
-    }
+    await login(form);
+    router.push('/dashboard');
   };
 
   return (

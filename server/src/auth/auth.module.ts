@@ -3,6 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
+import { AiVectorModule } from '@/ai-vector/ai-vector.module';
 import { PrismaModule } from '@/prisma/prisma.module';
 
 import { AuthController } from './auth.controller';
@@ -23,6 +24,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     }),
     HttpModule,
     PrismaModule,
+    AiVectorModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

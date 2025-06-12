@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <main className='flex h-screen w-screen flex-col items-center justify-center gap-6'>
       <h1 className='text-4xl font-extrabold tracking-tight text-gray-800'>
-        FaceID Office
+        Face ID Office
       </h1>
 
       <span className='mt-2 text-lg text-gray-500'>
@@ -18,12 +18,12 @@ export default function HomePage() {
         <Link href='/login'>Login Page</Link>
       </Button>
 
-      <Button asChild className='bg-blue-500 hover:bg-blue-600'>
-        <Link href='/detection'>Detection Page</Link>
+      <Button asChild className='bg-pink-500 hover:bg-pink-600'>
+        <Link href='/dashboard'>Dashboard Page</Link>
       </Button>
 
-      <Button asChild className='bg-pink-500 hover:bg-pink-600'>
-        <Link href='/person'>Person Page</Link>
+      <Button asChild className='bg-blue-500 hover:bg-blue-600'>
+        <Link href='/detection'>Detection Page</Link>
       </Button>
 
       <Button asChild className='bg-green-500 hover:bg-green-600'>

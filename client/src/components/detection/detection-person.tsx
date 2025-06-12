@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { FaceTrackingResult } from '@/types/detection';
@@ -27,7 +26,7 @@ export const DetectionPerson: React.FC<Props> = ({ trackingResults = [] }) => {
     if (trackingResults.length > 0) {
       setAnimateId(Number(trackingResults[0].person_id));
     }
-  }, [personDetections]);
+  }, [personDetections, trackingResults]);
 
   return (
     <section className='grid size-full grid-rows-4 gap-2 overflow-hidden bg-green-500 px-1 py-2'>

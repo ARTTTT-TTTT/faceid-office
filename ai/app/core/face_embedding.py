@@ -9,7 +9,6 @@ from app.utils.transform_factory import face_transform
 
 
 class FaceEmbedding:
-
     def __init__(self, core_config: CoreConfig):
         self.core_config = core_config
         try:

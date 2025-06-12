@@ -5,11 +5,12 @@ import { WS_AI_URL } from '@/constants/env';
 import { FaceTrackingResult } from '@/types/detection';
 
 export const createWebSocket = (
+  admin_id: string,
   onMessageImage: (imageData: string) => void,
   onMessageResult: (results: FaceTrackingResult[]) => void,
 ): WebSocket => {
-  const ws = new WebSocket(`${WS_AI_URL}/admin1`);
-  ws.onopen = () => console.log('WebSocket connected');
+  const ws = new WebSocket(`${WS_AI_URL}/${admin_id}`);
+  ws.onopen = () => logger('WebSocket connected');
   ws.onmessage = (event) => {
     if (typeof event.data === 'string') {
       try {
@@ -21,7 +22,7 @@ export const createWebSocket = (
           onMessageResult(parsed.result);
         }
       } catch (error) {
-        console.error('Failed to parse message:', error);
+        logger(error, 'Failed to parse message:');
       }
     }
   };

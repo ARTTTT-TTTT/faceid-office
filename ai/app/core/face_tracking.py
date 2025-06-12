@@ -10,7 +10,6 @@ import base64
 
 
 class FaceTracking:
-
     def __init__(self, core_config: CoreConfig):
         self.core_config = core_config
         try:
@@ -121,11 +120,7 @@ class FaceTracking:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
-            if (
-                not detections
-                or not hasattr(detections, "boxes")
-                or not detections.boxes
-            ):
+            if not detections or not hasattr(detections, "boxes") or not detections.boxes:
                 results = self.decrease_life_and_cleanup()
                 return frame, results
 
@@ -133,29 +128,21 @@ class FaceTracking:
             if annotation is None:
                 return frame, []
 
-            positions, face_images = self.detection.extract_faces_and_positions(
-                frame, detections
-            )
+            positions, face_images = self.detection.extract_faces_and_positions(frame, detections)
             matched_ids = set()
 
             # Parallel embedding generation
             with ThreadPoolExecutor(max_workers=4) as executor:
-                embeddings = list(
-                    executor.map(self.embedding.image_embedding, face_images)
-                )
+                embeddings = list(executor.map(self.embedding.image_embedding, face_images))
 
             # Process each face with precomputed embedding
             results = []
-            for position, face_img, embedding in zip(
-                positions, face_images, embeddings
-            ):
+            for position, face_img, embedding in zip(positions, face_images, embeddings):
                 if embedding is None:
                     continue  # Skip invalid embeddings
 
                 matched_person = self.recognition.find_best_match(embedding)
-                result = self.match_or_create_blob(
-                    position, face_img, matched_person, matched_ids
-                )
+                result = self.match_or_create_blob(position, face_img, matched_person, matched_ids)
                 results.append(result)
 
             results = self.decrease_life_and_cleanup(matched_ids)

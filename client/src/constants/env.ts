@@ -5,20 +5,19 @@ const showLogger = isLocal
   ? true
   : process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true';
 
+// TODO: Check NEXT_PUBLIC_
+
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-const SERVER_AUTH_URL = `${SERVER_URL}${process.env.NEXT_PUBLIC_SERVER_AUTH_URL}`;
-
 const AI_URL = process.env.NEXT_PUBLIC_AI_URL;
-const AI_VECTORS_URL = `${AI_URL}${process.env.NEXT_PUBLIC_AI_VECTORS_URL}`;
-
 const WS_AI_URL = process.env.NEXT_PUBLIC_WS_AI_URL;
+
+const SECRET_KEY = process.env.SECRET_KEY;
 
 export {
   AI_URL,
-  AI_VECTORS_URL,
   isLocal,
   isProd,
-  SERVER_AUTH_URL,
+  SECRET_KEY,
   SERVER_URL,
   showLogger,
   WS_AI_URL,

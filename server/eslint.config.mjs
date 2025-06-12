@@ -9,11 +9,6 @@ import eslintPluginUnusedImports from 'eslint-plugin-unused-imports';
 export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
     languageOptions: {
       globals: {
         ...globals.node,
@@ -25,27 +20,27 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
-    // Include the plugins here (in Flat Config, plugins are often implicitly used by referencing their rules)
+
+    // กำหนด plugins ที่ระดับสูงสุดของอ็อบเจกต์การตั้งค่า
     plugins: {
       'unused-imports': eslintPluginUnusedImports,
       'simple-import-sort': eslintPluginSimpleImportSort,
     },
+
     rules: {
+      // ปิดกฎที่ซ้ำซ้อนหรือขัดแย้งกับ @typescript-eslint หรือ unused-imports
       'no-unused-vars': 'off',
       'no-console': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      'react/no-unescaped-entities': 'off', // React specific, อาจไม่จำเป็นใน NestJS
-
-      // 'react/display-name': 'off',        // React specific, อาจไม่จำเป็นใน NestJS
-      // 'react/jsx-curly-brace-presence': [ // React specific, อาจไม่จำเป็นใน NestJS
+      // 'react/no-unescaped-entities': 'off', // ถ้าโปรเจกต์นี้ไม่ใช่ React ก็ลบทิ้งได้เลย
+      // 'react/display-name': 'off',
+      // 'react/jsx-curly-brace-presence': [
       //   'warn',
       //   { props: 'never', children: 'never' },
       // ],
 
       //#region  //*=========== Unused Import ===========
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off', // ปิดกฎของ TS เพื่อให้ unused-imports จัดการแทน
       'unused-imports/no-unused-imports': 'warn',
       'unused-imports/no-unused-vars': [
         'warn',
@@ -107,17 +102,8 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
-  {
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
+  // ใช้ config ที่แนะนำจาก plugins ต่างๆ
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
 );

@@ -1,14 +1,12 @@
 import { useState } from 'react';
 
-import logger from '@/lib/logger';
-
 import { TermsDialog } from '@/components/login/term-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { registerAdmin } from '@/app/api/auth/route';
+import { register } from '@/utils/api/auth';
 
 export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {
   const [openTermsDialog, setOpenTermsDialog] = useState(false);
@@ -24,12 +22,8 @@ export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await registerAdmin(form);
-      onSwitch();
-    } catch (error) {
-      logger(error, '[RegisterForm] handleRegister');
-    }
+    await register(form);
+    onSwitch();
   };
 
   return (

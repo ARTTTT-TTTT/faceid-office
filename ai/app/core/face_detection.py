@@ -3,7 +3,6 @@ from app.configs.core_config import CoreConfig
 
 
 class FaceDetection:
-
     def __init__(self, core_config: CoreConfig):
         self.core_config = core_config
         try:

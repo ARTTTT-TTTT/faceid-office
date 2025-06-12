@@ -1,4 +1,4 @@
-# FaceID Office
+# Face ID Office
 
 [![Status: Development](https://img.shields.io/badge/Status-Development-yellow)](https://your-badge-url)
 

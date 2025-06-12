@@ -13,7 +13,7 @@ export const PersonFilter: React.FC<Props> = ({
   setSearchTerm,
 }) => {
   return (
-    <section className='relative w-full max-w-xl items-center bg-white'>
+    <section className='relative w-full items-center rounded-lg bg-white'>
       {/* SEARCH BAR */}
       <Search className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500' />
       <Input

@@ -3,7 +3,7 @@ from typing import Dict
 
 from app.services.webscoket_service import WebsocketService
 
-router = APIRouter(prefix="/ws", tags=["WEBSOCKET"])
+router = APIRouter(tags=["WEBSOCKET"])
 
 # Dictionary เพื่อเก็บการเชื่อมต่อ WebSocket ที่ใช้งานอยู่
 # ?FEATURE (สามารถย้ายไป service หรือ Redis ได้ใน production)

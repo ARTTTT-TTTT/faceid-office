@@ -23,7 +23,7 @@ interface Props {
 }
 
 export const DetectionTable: React.FC<Props> = ({ trackingResults }) => {
-  const detections = [
+  const _detections = [
     { name: 'สมชาย ใจดี', time: '10:15' },
     { name: 'สมหญิง ใจงาม', time: '10:10' },
     { name: 'John Doe', time: '09:45' },

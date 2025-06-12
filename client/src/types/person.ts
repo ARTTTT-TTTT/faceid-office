@@ -1,15 +1,25 @@
-enum Position {
+export enum Position {
   STUDENT,
   MANAGER,
   EMPLOYEE,
   OFFICER,
-  GUEST
+  GUEST,
 }
 
-interface Person {
-  id: number;
+export interface Person {
+  adminId: string;
+  createdAt: string;
+  faceImagePaths: string[];
   fullName: string;
+  id: string;
   position: Position;
+  profileImagePath: Position;
+  updatedAt: Position;
 }
 
-export type { Person };
+export interface CreatePersonPayload {
+  profileImage: File;
+  faceImages: File[];
+  fullName: string;
+  position: string;
+}

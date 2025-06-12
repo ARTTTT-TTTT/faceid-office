@@ -9,7 +9,6 @@ from app.core.dummy_embedding import DummyEmbeddings
 
 
 class FaceRecognition:
-
     def __init__(self, core_config: CoreConfig):
         self.core_config = core_config
         try:

@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 
-import { PersonRow } from '@/components/person/person-row';
+import { PersonRow } from '@/components/dashboard/person-row';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -21,13 +21,13 @@ import {
 
 import { Person } from '@/types/person';
 
-interface PersonTableProps {
+interface Props {
   handleSort: (key: keyof Person) => void;
   getSortIcon: (key: keyof Person) => JSX.Element | null;
   currentItems: Person[];
 }
 
-export const PersonTable: React.FC<PersonTableProps> = ({
+export const PersonTable: React.FC<Props> = ({
   handleSort,
   getSortIcon,
   currentItems,
@@ -37,7 +37,7 @@ export const PersonTable: React.FC<PersonTableProps> = ({
       <TableHeader className='cursor-pointer bg-blue-400 hover:bg-blue-400'>
         <TableRow className='bg-blue-400 hover:bg-blue-400'>
           {[
-            { key: 'fullName', label: 'ชื่อ' },
+            { key: 'fullName', label: 'ชื่อ', className: 'ml-3' },
             {
               key: 'position',
               label: 'ตำแหน่ง',
@@ -75,7 +75,7 @@ export const PersonTable: React.FC<PersonTableProps> = ({
       <TableFooter>
         <TableRow className='bg-gray-50'>
           <TableCell
-            className='font-semibold text-gray-700 dark:text-gray-200'
+            className='pl-5 font-semibold text-gray-700 dark:text-gray-200'
             colSpan={1}
           >
             {currentItems.length > 0 ? 'จำนวนสมาชิก' : ''}

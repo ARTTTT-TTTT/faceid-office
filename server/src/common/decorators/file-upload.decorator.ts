@@ -18,9 +18,9 @@ export function UploadPersonFiles(maxFaceImages = 3) {
         ],
         {
           fileFilter: (_req, file, callback) => {
-            if (!['image/jpeg'].includes(file.mimetype)) {
+            if (!['image/png'].includes(file.mimetype)) {
               return callback(
-                new BadRequestException('Only JPG files are allowed!'),
+                new BadRequestException('Only PNG files are allowed!'),
                 false,
               );
             }
@@ -43,9 +43,9 @@ export function UploadImageFiles(
     UseInterceptors(
       FilesInterceptor(fieldName, maxCount, {
         fileFilter: (_req, file, callback) => {
-          if (!['image/jpeg'].includes(file.mimetype)) {
+          if (!['image/png'].includes(file.mimetype)) {
             return callback(
-              new BadRequestException('Only JPG files are allowed!'),
+              new BadRequestException('Only PNG files are allowed!'),
               false,
             );
           }
