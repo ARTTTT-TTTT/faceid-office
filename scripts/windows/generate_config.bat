@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-REM .\scripts\generate_config.bat
+REM .\scripts\windows\generate_config.bat
 
 for /f "usebackq delims=" %%A in (".env") do (
     set "line=%%A"

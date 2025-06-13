@@ -13,7 +13,7 @@
     "format:check": "prettier -c . && cd ai && poetry run black --check . && poetry run ruff format --check .",
     "lint": "pnpm format && pnpm --filter client lint && pnpm --filter server lint && pnpm lint:py",
     "lint:py": "cd ai && poetry run ruff check . --fix",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "lint-staged": {
     "client/**/*.{js,jsx,ts,tsx}": "pnpm --filter client exec eslint --max-warnings=0",

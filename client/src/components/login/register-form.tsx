@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 
 import { register } from '@/utils/api/auth';
 
+// TODO: Hadle error from register api call
+
 export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {
   const [openTermsDialog, setOpenTermsDialog] = useState(false);
   const [form, setForm] = useState({

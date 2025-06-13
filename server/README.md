@@ -6,22 +6,59 @@
 pnpm install
 ```
 
+## 🛢️ Prisma 🛢️
+
+### 💾 Prisma Migrate Dev (Development) 💾
+
+```bash
+pnpm prisma migrate dev
+```
+
+### 💾 (Optional) If you don't want to keep the migration history 💾
+
+```bash
+pnpm prisma db push
+```
+
+### ☁️ Prisma Migrate Deploy (Production) ☁️
+
+```bash
+pnpm prisma migrate Deploy
+```
+
 ### ⚙️ Prisma Generate ⚙️
 
 ```bash
 pnpm prisma generate
 ```
 
-### 💾 Prisma Migrate Dev (Initial Migration) 💾
+### ⚡Apply SQL Code ⚡
+
+- `Linux`
 
 ```bash
-pnpm prisma migrate dev --name "dev"
+./prisma/apply-sql.sh
 ```
 
-### 🛢 Prisma Studio 🛢
+- `Windows`
 
 ```bash
-pnpm studio
+powershell.exe -ExecutionPolicy Bypass -File "prisma\apply-sql.ps1"
+```
+
+---
+
+### 🚀 Prisma Studio 🚀
+
+```bash
+pnpm prisma studio
+```
+
+#### (OPTIONAL) ❌ Delete Prisma migration and reset Database ❌
+
+```bash
+rm -rf prisma/migrations
+pnpm prisma migrate reset
 ```
 
 ## 🚀 Compile and run 🚀
@@ -53,25 +90,25 @@ pnpm start:prod
 - #### Resource
 
 ```bash
-pnpm generate [name]
+pnpm nest generate resource [name]
 ```
 
 - #### Service
 
 ```bash
-pnpm generate:service [name]
+pnpm nest generate service [name]
 ```
 
 - #### Controller
 
 ```bash
-pnpm generate:controller [name]
+pnpm nest generate controller [name]
 ```
 
 - #### Module
 
 ```bash
-pnpm generate:module [name]
+pnpm nest generate module [name]
 ```
 
 ## 🧹 Clean project 🧹

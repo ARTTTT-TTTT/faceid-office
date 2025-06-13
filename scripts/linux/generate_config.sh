@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# * chmod +x scripts/generate_config.sh
-# * ./scripts/generate_config.sh
+# * chmod +x scripts/linux/generate_config.sh
+# * ./scripts/linux/generate_config.sh
 
 export $(grep -v '^#' .env | xargs)
 

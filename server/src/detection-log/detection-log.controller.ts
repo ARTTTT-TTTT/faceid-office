@@ -12,7 +12,7 @@ import { DetectionLogResponse } from './dto/detection-log-response.dto';
 export class DetectionLogController {
   constructor(private readonly detectionLogService: DetectionLogService) {}
 
-  // !FEATURE getDetectionLog (pagination)
+  // TODO: getDetectionLog (pagination)
 
   @Post()
   async createDetectionLog(@Body() dto: CreateDetectionLogDto) {

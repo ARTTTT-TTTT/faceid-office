@@ -20,6 +20,12 @@ pnpm install
 docker compose up -d
 ```
 
+##### (Optional) ❌ Reset Docker ❌
+
+```bash
+docker system prune -af
+```
+
 ## Tech Stack 🚀
 
 | Technology | Icon                                                                                                              |
