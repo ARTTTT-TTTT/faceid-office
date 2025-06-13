@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-REM .\scripts\clean_branches.bat
+REM .\scripts\windows\clean_branches.bat
 
 git remote prune origin
 

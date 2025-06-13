@@ -4,13 +4,13 @@
 
 ### Install Python 3.11
 
-- #### MacOS
+- `Linux`
 
 ```bash
 brew install python@3.11
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 winget install Python.Python.3.11
@@ -18,18 +18,18 @@ winget install Python.Python.3.11
 
 [Python download](https://www.python.org/downloads/)
 
-##
+---
 
 #### (Optional) Install pipx
 
-- #### MacOS
+- `Linux`
 
 ```bash
 brew install pipx
 pipx ensurepath
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 python -m pip install --upgrade pipx
@@ -38,7 +38,7 @@ pipx ensurepath
 
 [Pipx download](https://pipx.pypa.io/stable/installation/)
 
-##
+---
 
 ### Install Poetry
 

@@ -103,5 +103,8 @@
   "css.validate": false, // Disable default CSS validation, often useful with Tailwind
   "github.copilot.nextEditSuggestions.enabled": false, // GitHub Copilot setting
   "database-client.autoSync": true, // Database client extension setting
-  "path-intellisense.extensionOnImport": true
+  "path-intellisense.extensionOnImport": true,
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

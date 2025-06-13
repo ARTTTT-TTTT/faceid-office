@@ -14,14 +14,12 @@ export class DetectionLogService {
       data: {
         detectedAt: new Date(),
         imageUrl: dto.imageUrl,
+        cameraId: dto.cameraId,
         session: {
           connect: { id: dto.sessionId },
         },
         person: {
           connect: { id: dto.personId },
-        },
-        camera: {
-          connect: { id: dto.cameraId },
         },
       },
     });
