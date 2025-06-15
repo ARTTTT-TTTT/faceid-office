@@ -69,6 +69,12 @@ pnpm prisma migrate reset
 pnpm dev
 ```
 
+### 🚀 production
+
+```bash
+pnpm build
+```
+
 ```bash
 pnpm start
 ```
@@ -77,12 +83,6 @@ pnpm start
 
 ```bash
 pnpm start:debug
-```
-
-### 🚀 production
-
-```bash
-pnpm start:prod
 ```
 
 ### 🏗️ NestJS Generate 🏗️

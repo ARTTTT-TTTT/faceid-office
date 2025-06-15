@@ -11,6 +11,16 @@ pnpm install
 #### 🧪 development
 
 ```bash
+pnpm dev
+```
+
+#### 🚀 production
+
+```bash
+pnpm build
+```
+
+```bash
 pnpm start
 ```
 
@@ -18,12 +28,6 @@ pnpm start
 
 ```bash
 pnpm start:watch
-```
-
-#### 🚀 production
-
-```bash
-pnpm start:prod
 ```
 
 ## 🆑 Delete node_modules 🆑
