@@ -29,5 +29,5 @@ export function useFetch<T>(fetchFn: () => Promise<T> | null) {
     fetchData();
   }, [fetchFn, reloadIndex]);
 
-  return { data, loading, error, refetch };
+  return { data, setData, loading, error, refetch };
 }

@@ -1,11 +1,19 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UploadedFiles,
+  UseGuards,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
-
-import { DetectionLogService } from './detection-log.service';
-import { CreateDetectionLogDto } from './dto/create-detection-log.dto';
-import { DetectionLogResponse } from './dto/detection-log-response.dto';
+import { UploadDetectionFiles } from '@/common/decorators/file-upload.decorator';
+import { DetectionLogService } from '@/detection-log/detection-log.service';
+import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
+import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('detection-log')
@@ -14,9 +22,16 @@ export class DetectionLogController {
 
   // TODO: getDetectionLog (pagination)
 
+  // * ========== CORE ===========
+
   @Post()
-  async createDetectionLog(@Body() dto: CreateDetectionLogDto) {
-    return this.detectionLogService.createDetectionLog(dto);
+  @UploadDetectionFiles(1)
+  async createDetectionLog(
+    @Body() dto: CreateDetectionLogDto,
+    @UploadedFiles()
+    detectionImage: Express.Multer.File,
+  ) {
+    return this.detectionLogService.createDetectionLog(dto, detectionImage);
   }
 
   @CheckOwnership('session', 'sessionId', 'query')

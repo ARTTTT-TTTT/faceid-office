@@ -1,3 +1,9 @@
+-- Drop trigger if exists
+DROP TRIGGER IF EXISTS enforce_session_camera_consistency ON "DetectionLog";
+
+-- Drop function if exists (optional, ถ้าคุณจะ recreate function ทุกครั้ง)
+DROP FUNCTION IF EXISTS validate_log_camera_id();
+
 -- Function
 CREATE OR REPLACE FUNCTION validate_log_camera_id()
 RETURNS TRIGGER AS $$

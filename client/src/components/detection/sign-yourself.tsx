@@ -73,7 +73,7 @@ export const SignYourself: React.FC = () => {
   };
 
   return (
-    <Card className='flex h-full flex-col'>
+    <Card className='flex h-full flex-col rounded-none'>
       <CardHeader className='p-2'>
         <CardTitle>ลงชื่อด้วยตัวเอง</CardTitle>
         <CardDescription>
@@ -89,7 +89,7 @@ export const SignYourself: React.FC = () => {
             placeholder='ชื่อ...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className='mr-2 rounded-md border p-2'
+            className='mr-2 rounded-md border p-2 text-white'
           />
           <Button onClick={handleSearch}>
             <Search className='size-4 md:size-5' />{' '}

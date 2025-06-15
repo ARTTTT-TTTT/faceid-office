@@ -1,6 +1,6 @@
 import logger from '@/lib/logger';
 
-import { WS_AI_URL } from '@/constants/env';
+import { WS_URL } from '@/constants/env';
 
 import { FaceTrackingResult } from '@/types/detection';
 
@@ -9,7 +9,7 @@ export const createWebSocket = (
   onMessageImage: (imageData: string) => void,
   onMessageResult: (results: FaceTrackingResult[]) => void,
 ): WebSocket => {
-  const ws = new WebSocket(`${WS_AI_URL}/${admin_id}`);
+  const ws = new WebSocket(`${WS_URL}/${admin_id}`);
   ws.onopen = () => logger('WebSocket connected');
   ws.onmessage = (event) => {
     if (typeof event.data === 'string') {

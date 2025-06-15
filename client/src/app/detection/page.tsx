@@ -1,5 +1,6 @@
 'use client';
 
+import type { Variants } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -13,21 +14,21 @@ import { FaceTrackingResult } from '@/types/detection';
 
 const sectionVariantsTop = {
   hidden: { y: -100, opacity: 0 },
-  visible: (custom: number) => ({
+  visible: {
     y: 0,
     opacity: 1,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 300,
       damping: 20,
-      delay: custom,
+      delay: 0.4,
     },
-  }),
+  },
 };
 
-const sectionVariantsLeft = {
+const sectionVariantsLeft: Variants = {
   hidden: { x: -100, opacity: 0 },
-  visible: (custom: number) => ({
+  visible: (custom = 0) => ({
     x: 0,
     opacity: 1,
     transition: {
@@ -41,40 +42,37 @@ const sectionVariantsLeft = {
 
 const sectionVariantsRight = {
   hidden: { x: 100, opacity: 0 },
-  visible: (delay: number) => ({
+  visible: (custom = 0) => ({
     x: 0,
     opacity: 1,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 300,
       damping: 20,
-      delay: delay,
+      delay: custom,
     },
   }),
 };
 
 export default function DetectionPage() {
-  const [trackingResults, setTrackingResults] = useState<FaceTrackingResult[]>(
+  const [trackingResults, _setTrackingResults] = useState<FaceTrackingResult[]>(
     [],
   );
-  const [trackingUnknownResults, setTrackingUnknownResults] = useState<
+  const [trackingUnknownResults, _setTrackingUnknownResults] = useState<
     FaceTrackingResult[]
   >([]);
 
   return (
-    <main className='grid h-screen w-screen grid-cols-[35%_25%_40%] grid-rows-1 gap-2 overflow-hidden bg-slate-500 pr-4'>
+    <main className='grid h-screen w-screen grid-cols-[35%_25%_40%] grid-rows-1 overflow-hidden'>
       {/* Section 1 */}
       <motion.section
         variants={sectionVariantsLeft}
         initial='hidden'
         animate='visible'
         custom={0.2}
-        className='grid grid-rows-[70%_30%] gap-2 pb-4 pl-2 pt-2'
+        className='grid grid-rows-[60%_40%]'
       >
-        <CameraStream
-          setTrackingResults={setTrackingResults}
-          setTrackingUnknownResults={setTrackingUnknownResults}
-        />
+        <CameraStream />
         <SignYourself />
       </motion.section>
 
@@ -83,8 +81,7 @@ export default function DetectionPage() {
         variants={sectionVariantsTop}
         initial='hidden'
         animate='visible'
-        custom={0.4}
-        className='grid grid-rows-[50%_50%] gap-2 pb-4 pt-2'
+        className='grid grid-rows-[50%_50%]'
       >
         <DetectionUnknown trackingUnknownResults={trackingUnknownResults} />
         <DetectionTable trackingResults={trackingResults} />

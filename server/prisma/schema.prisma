@@ -24,8 +24,9 @@ model Admin {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  cameras Camera[]
-  people  Person[]
+  cameras  Camera[]
+  people   Person[]
+  sessions Session[]
 }
 
 model Person {
@@ -53,35 +54,40 @@ model Camera {
   updatedAt DateTime @updatedAt
   adminId   String
 
-  admin    Admin              @relation(fields: [adminId], references: [id])
-  sessions DetectionSession[]
+  admin    Admin          @relation(fields: [adminId], references: [id])
+  sessions Session[]      @relation("CameraToSession") // * Many-to-Many กับ Session
+  logs     DetectionLog[]
 
   @@index([adminId])
 }
 
-model DetectionSession {
+model Session {
   id        String    @id @default(uuid())
   startedAt DateTime  @default(now())
   endedAt   DateTime?
-  cameraId  String
+  adminId   String
 
-  camera Camera         @relation(fields: [cameraId], references: [id])
-  logs   DetectionLog[]
+  admin   Admin          @relation(fields: [adminId], references: [id])
+  cameras Camera[]       @relation("CameraToSession") // * Many-to-Many กับ Camera
+  logs    DetectionLog[]
 
-  @@index([cameraId])
+  @@index([adminId])
 }
 
 model DetectionLog {
-  id         String   @id @default(uuid())
-  detectedAt DateTime @default(now())
-  imageUrl   String
-  sessionId  String
-  personId   String
-  cameraId   String
+  id                 String   @id @default(uuid())
+  detectedAt         DateTime @default(now())
+  isUnknown          Boolean  @default(false)
+  detectionImagePath String
+  cameraId           String
+  sessionId          String
+  personId           String
 
-  session DetectionSession @relation(fields: [sessionId], references: [id])
-  person  Person           @relation(fields: [personId], references: [id])
+  camera  Camera  @relation(fields: [cameraId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+  person  Person  @relation(fields: [personId], references: [id])
 
+  @@index([cameraId])
   @@index([sessionId])
   @@index([personId])
 }

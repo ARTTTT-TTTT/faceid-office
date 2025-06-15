@@ -39,9 +39,9 @@ export function NavUser() {
 
   if (loading)
     return (
-      <div className='flex h-fit w-full items-center justify-center gap-2 rounded-md border p-2'>
-        <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-        <span className='text-muted-foreground'>กำลังโหลด...</span>
+      <div className='flex h-fit w-full items-center justify-center gap-2 rounded-md border p-2 text-muted-foreground'>
+        <Loader2 className='size-6 animate-spin' />
+        <span>กำลังโหลด...</span>
       </div>
     );
   if (error || !userData)

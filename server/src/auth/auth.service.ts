@@ -20,6 +20,8 @@ export class AuthService {
     private readonly aiVectorService: AiVectorService,
   ) {}
 
+  // * ========== CORE ===========
+
   async register(email: string, name: string, password: string) {
     // TODO: ถ้าเกิด error ให้ลบ vector และ admin_id ที่ save ไปแล้ว
     const existingEmail = await this.prisma.admin.findUnique({

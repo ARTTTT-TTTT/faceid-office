@@ -1,12 +1,14 @@
 import cv2
-import numpy as np
+import numpy
 import base64
 import json
+import asyncio
+
 from typing import Dict
 from fastapi import WebSocket
+
 from app.core.face_tracking import FaceTracking
 from app.configs.core_config import CoreConfig
-import asyncio
 
 
 class WebsocketService:
@@ -20,7 +22,9 @@ class WebsocketService:
         await websocket.accept()
         self._active_connections[admin_id] = websocket
         self.face_tracking.load_faiss_index()
-        print(f"WebSocket connection established for admin_id: {admin_id}")
+        print(
+            f"[CONNECTED] WebSocket \n admin_id: {admin_id}  \n camera_id: {admin_id} \n session_id: {admin_id} \n ==="
+        )
 
         try:
             while True:
@@ -30,7 +34,7 @@ class WebsocketService:
                 except asyncio.TimeoutError:
                     if admin_id in self._latest_frame:
                         data = self._latest_frame[admin_id]
-                        nparr = np.frombuffer(data, np.uint8)
+                        nparr = numpy.frombuffer(data, numpy.uint8)
                         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                         if frame is not None:
                             frame = cv2.resize(frame, (640, 480))
@@ -46,19 +50,21 @@ class WebsocketService:
                             )
 
                     await asyncio.sleep(0.05)
-                except Exception as e:
-                    print(f"Error processing frame for admin_id {admin_id}: {e}")
+                except Exception:
+                    # ? ตามปกติจะไม่เกิด error ไม่มีปัญหา
+                    # ? print(f"[ERROR] processing frame for admin_id {admin_id}: {e}")
                     break
 
         except Exception as e:
-            print(f"An error occurred for admin_id {admin_id}: {e}")
+            if e:
+                print(
+                    f"[ERROR] WebSocket \n admin_id: {admin_id} \n camera_id: {admin_id} \n session_id: {admin_id} \n error: {e} \n ==="
+                )
         finally:
-            print(f"WebSocket connection disconnected for admin_id: {admin_id}")
-            self.cleanup_user_connection(admin_id)
+            print(
+                f"[DISCONNECTED] WebSocket \n admin_id: {admin_id}  \n camera_id: {admin_id} \n session_id: {admin_id} \n ==="
+            )
             if admin_id in self._active_connections:
                 del self._active_connections[admin_id]
             if admin_id in self._latest_frame:
                 del self._latest_frame[admin_id]
-
-    def cleanup_user_connection(self, admin_id: str):
-        print(f"Cleaning up resources for usadmin_ider: {admin_id}")

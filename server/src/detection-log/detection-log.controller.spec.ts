@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DetectionLogController } from './detection-log.controller';
-import { DetectionLogService } from './detection-log.service';
+import { DetectionLogController } from '@/detection-log/detection-log.controller';
+import { DetectionLogService } from '@/detection-log/detection-log.service';
 
 describe('DetectionLogController', () => {
   let controller: DetectionLogController;

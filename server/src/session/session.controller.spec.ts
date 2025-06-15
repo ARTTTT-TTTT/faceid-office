@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { SessionController } from './session.controller';
-import { SessionService } from './session.service';
+import { SessionController } from '@/session/session.controller';
+import { SessionService } from '@/session/session.service';
 
 describe('SessionController', () => {
   let controller: SessionController;

@@ -7,7 +7,7 @@ interface YourResource {
   name: string;
 }
 
-// CREATE - POST
+// * CREATE - POST
 export const createResource = async (
   payload: Partial<YourResource>,
 ): Promise<YourResource> => {
@@ -31,7 +31,7 @@ export const createResource = async (
   }
 };
 
-// READ - GET (list)
+// * READ - GET (list)
 export const getResources = async (): Promise<YourResource[]> => {
   try {
     const res = await fetch(BASE_URL, {
@@ -52,7 +52,7 @@ export const getResources = async (): Promise<YourResource[]> => {
   }
 };
 
-// READ - GET (single item by id)
+// * READ - GET (single item by id)
 export const getResourceById = async (id: number): Promise<YourResource> => {
   try {
     const res = await fetch(`${BASE_URL}/${id}`, {
@@ -73,7 +73,7 @@ export const getResourceById = async (id: number): Promise<YourResource> => {
   }
 };
 
-// UPDATE - PUT/PATCH (update full or partial)
+// * UPDATE - PUT/PATCH (update full or partial)
 export const updateResource = async (
   id: number,
   payload: Partial<YourResource>,
@@ -98,7 +98,7 @@ export const updateResource = async (
   }
 };
 
-// DELETE - DELETE
+// * DELETE - DELETE
 export const deleteResource = async (
   id: number,
 ): Promise<{ message: string }> => {

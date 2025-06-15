@@ -1,20 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { AdminService } from '@/admin/admin.service';
 import { CameraService } from '@/camera/camera.service';
-import { DetectionSessionService } from '@/detection-session/detection-session.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
-
-import {
-  DetectionSession,
-  FailedCamera,
-  HandleCameraResult,
-  ResultEntry,
-  RetryResult,
-  SessionStatus,
-  StartSessionResult,
-} from './session.interface';
+import { SessionStatusResponseDto } from '@/session/dto/session-response.dto';
+import { CameraResultEntry, SessionStatus } from '@/session/session.interface';
 
 @Injectable()
 export class SessionService {
@@ -27,27 +23,33 @@ export class SessionService {
     private readonly redisService: RedisService,
     private readonly adminService: AdminService,
     private readonly cameraService: CameraService,
-    private readonly detectionSessionService: DetectionSessionService,
     private readonly prisma: PrismaService,
   ) {}
 
-  private buildKey(adminId: string, cameraId: string, personId: string) {
+  private _buildKey(adminId: string, cameraId: string, personId: string) {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.personPrefix}:${personId}`;
   }
+
+  // * ========== CORE ===========
 
   private buildMarkerKey(adminId: string, cameraId: string) {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.trackingSuffix}`;
   }
 
-  async startSession(adminId: string): Promise<StartSessionResult> {
-    const cameras = await this.cameraService.getCameras(adminId);
+  async startSession(adminId: string): Promise<SessionStatusResponseDto> {
+    // TODO: try catch redis key logic
+    const cameraList = await this.cameraService.getCameras(adminId);
+    if (cameraList.length === 0) {
+      throw new NotFoundException(
+        `Admin ${adminId} There is no camera to start the session.`,
+      );
+    }
     const sessionDuration = await this.adminService.getSessionDuration(adminId);
 
-    const results: ResultEntry[] = [];
-    const createdKeys: string[] = [];
-    const failedCameras: FailedCamera[] = [];
+    // * Manage Redis keys for each camera tracking
+    const cameras: CameraResultEntry[] = [];
 
-    for (const camera of cameras) {
+    for (const camera of cameraList) {
       const cameraId = camera.id;
       const result = await this.handleSingleCameraSession(
         adminId,
@@ -55,33 +57,27 @@ export class SessionService {
         sessionDuration,
       );
 
-      results.push({ cameraId: result.cameraId, TTL: result.TTL });
-
-      if (result.success) {
-        createdKeys.push(result.markerKey);
-      } else {
-        failedCameras.push({
-          cameraId: result.cameraId,
-          markerKey: result.markerKey,
-        });
-      }
+      cameras.push({
+        cameraId: result.cameraId,
+        TTL: result.TTL,
+        markerKey: result.markerKey,
+      });
     }
 
-    const retry = await this.retryFailedCameras(failedCameras, sessionDuration);
-    results.push(...retry.results);
-    createdKeys.push(...retry.createdKeys);
-
-    const totalExpected = cameras.length;
-    const totalCreated = createdKeys.length;
+    // * Create session
+    const session = await this.prisma.session.create({
+      data: {
+        admin: { connect: { id: adminId } },
+        cameras: {
+          connect: cameraList.map((camera) => ({ id: camera.id })),
+        },
+      },
+    });
 
     return {
-      results,
-      summary: {
-        success: totalCreated === totalExpected,
-        totalExpected,
-        totalCreated,
-        failed: totalExpected - totalCreated,
-      },
+      sessionId: session.id,
+      cameras,
+      status: SessionStatus.START,
     };
   }
 
@@ -89,146 +85,161 @@ export class SessionService {
     adminId: string,
     cameraId: string,
     sessionDuration: number,
-  ): Promise<HandleCameraResult> {
+  ): Promise<CameraResultEntry> {
     const markerKey = this.buildMarkerKey(adminId, cameraId);
     const markerExists = await this.redisService.exists(markerKey);
 
     if (markerExists) {
-      await this.stopExistingSession(adminId, cameraId);
-      return {
-        cameraId,
-        TTL: 'Failed to start session (marker still exists)',
-        success: false,
-        markerKey,
-      };
+      throw new ConflictException(
+        `Failed to start session for camera ${cameraId}: Marker already exists.`,
+      );
     }
 
     await this.redisService.setex(markerKey, sessionDuration, '1');
     const ttl = await this.redisService.ttl(markerKey);
 
     if (ttl > 0) {
-      await this.detectionSessionService.createSession(cameraId);
       return {
         cameraId,
-        TTL: `Session started with TTL: ${ttl}s`,
-        success: true,
+        TTL: ttl,
         markerKey,
       };
     }
 
-    return {
-      cameraId,
-      TTL: 'Failed to verify TTL after setting',
-      success: false,
-      markerKey,
-    };
+    throw new InternalServerErrorException(
+      `Failed to start session for camera ${cameraId}: Failed to verify TTL after setting.`,
+    );
   }
 
-  private async retryFailedCameras(
-    failedCameras: { cameraId: string; markerKey: string }[],
-    sessionDuration: number,
-  ): Promise<RetryResult> {
-    const retryResults: ResultEntry[] = [];
-    const createdKeys: string[] = [];
-
-    for (const { cameraId, markerKey } of failedCameras) {
-      await this.redisService.setex(markerKey, sessionDuration, '1');
-      const retryTtl = await this.redisService.ttl(markerKey);
-
-      if (retryTtl > 0) {
-        createdKeys.push(markerKey);
-        await this.detectionSessionService.createSession(cameraId);
-        retryResults.push({
-          cameraId,
-          TTL: `Retry success: Session started with TTL: ${retryTtl}s`,
-        });
-      } else {
-        retryResults.push({
-          cameraId,
-          TTL: `Retry failed again`,
-        });
-      }
-    }
-
-    return { results: retryResults, createdKeys };
-  }
-
-  async endSession(adminId: string): Promise<void> {
-    const cameras = await this.cameraService.getCameras(adminId);
-
-    for (const camera of cameras) {
-      const cameraId = camera.id;
-
-      await this.detectionSessionService.endSessionsByCameraId(cameraId);
-
-      // Delete Redis marker key
-      const markerKey = this.buildMarkerKey(adminId, cameraId);
-      await this.redisService.del(markerKey);
-    }
-  }
-
-  async getSessions(cameraId: string): Promise<DetectionSession[]> {
-    return this.prisma.detectionSession.findMany({
-      where: { cameraId: cameraId },
-    });
-  }
-
-  // Function เพิ่มเติมสำหรับหยุด Session ที่อาจค้างอยู่ (อ้างอิงจาก logic ใน startSession ของ Python)
-  private async stopExistingSession(
+  async endSession(
     adminId: string,
-    cameraId: string,
-  ): Promise<void> {
-    // Logic ในส่วนนี้อาจซับซ้อนขึ้นอยู่กับว่าคุณเก็บข้อมูล Session ที่กำลังทำงานไว้อย่างไรใน Redis
-    // ตัวอย่างเช่น คุณอาจมี Set ของ Session IDs ที่กำลังทำงานอยู่
-    // หรือคุณอาจต้อง Scan Keys ที่มี Pattern เกี่ยวข้องกับ Session นั้นๆ
+    sessionId: string,
+  ): Promise<SessionStatusResponseDto> {
+    const cameraList = await this.cameraService.getCameras(adminId);
 
-    // ในตัวอย่างนี้ เราจะลองลบ Marker Key เท่านั้น
-    const markerKey = this.buildMarkerKey(adminId, cameraId);
-    await this.redisService.del(markerKey);
-
-    // คุณอาจต้องมี Logic เพิ่มเติมเพื่อ End Session ใน Prisma ด้วย
-    // เช่น Query หา Session ที่ startedAt มีค่า และ endedAt เป็น null
-    // และทำการ Update endedAt
-    await this.prisma.detectionSession.updateMany({
+    // * Update session
+    const session = await this.prisma.session.updateMany({
       where: {
-        cameraId: cameraId,
+        id: sessionId,
+        adminId: adminId,
         endedAt: null,
       },
       data: {
         endedAt: new Date(),
       },
     });
+    if (session.count === 0) {
+      throw new NotFoundException(
+        `Session with ID ${sessionId} not found, already ended, or not owned by admin.`,
+      );
+    }
+
+    // * Manage Redis keys for each camera tracking
+    const cameras: CameraResultEntry[] = [];
+
+    for (const camera of cameraList) {
+      const cameraId = camera.id;
+      const markerKey = this.buildMarkerKey(adminId, cameraId);
+
+      try {
+        const delCount = await this.redisService.del(markerKey);
+
+        if (delCount > 0) {
+          cameras.push({
+            cameraId,
+            TTL: null,
+            markerKey,
+          });
+        } else {
+          throw new ConflictException(
+            `Failed to end session for camera ${cameraId}: Marker not found or already deleted.`,
+          );
+        }
+      } catch (error) {
+        throw new InternalServerErrorException(
+          `Failed to end session for camera ${cameraId}: \n error: ${error}`,
+        );
+      }
+    }
+
+    return {
+      sessionId,
+      cameras,
+      status: SessionStatus.END,
+    };
   }
 
-  async getSessionStatus(adminId: string): Promise<SessionStatus[]> {
-    const cameras = await this.cameraService.getCameras(adminId);
-    const results: {
-      cameraId: string;
-      status: 'start' | 'end';
-      TTL: number | null;
-    }[] = [];
+  async getSessionStatus(adminId: string): Promise<SessionStatusResponseDto> {
+    const cameraList = await this.cameraService.getCameras(adminId);
 
-    for (const camera of cameras) {
+    // * Get the latest active session of Admin.
+    const session = await this.prisma.session.findFirst({
+      where: {
+        adminId: adminId,
+        endedAt: null,
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    // * If not found, it is considered an end status.
+    if (!session) {
+      for (const camera of cameraList) {
+        const cameraId = camera.id;
+        const markerKey = this.buildMarkerKey(adminId, cameraId);
+        await this.redisService.del(markerKey);
+      }
+      return {
+        sessionId: null,
+        cameras: [],
+        status: SessionStatus.END,
+      };
+    }
+
+    // * If Active Session is found, check the Redis marker key of all Admin cameras.
+    const camerasStatus: CameraResultEntry[] = [];
+    let isAnyCameraMarkerMissing = false;
+
+    for (const camera of cameraList) {
       const cameraId = camera.id;
       const markerKey = this.buildMarkerKey(adminId, cameraId);
       const exists = await this.redisService.exists(markerKey);
 
       if (exists) {
         const ttl = await this.redisService.ttl(markerKey);
-        results.push({
+        camerasStatus.push({
           cameraId,
-          status: 'start',
           TTL: ttl,
+          markerKey,
         });
       } else {
-        results.push({
+        isAnyCameraMarkerMissing = true;
+        camerasStatus.push({
           cameraId,
-          status: 'end',
           TTL: null,
+          markerKey,
         });
       }
     }
 
-    return results;
+    // * Consider the overall session status.
+    let currentSessionStatus: SessionStatus;
+    if (isAnyCameraMarkerMissing) {
+      currentSessionStatus = SessionStatus.END;
+
+      await this.prisma.session.update({
+        where: { id: session.id },
+        data: { endedAt: new Date() },
+      });
+    } else {
+      currentSessionStatus = SessionStatus.START;
+    }
+
+    return {
+      sessionId: session.id,
+      cameras: camerasStatus,
+      status: currentSessionStatus,
+    };
   }
 }

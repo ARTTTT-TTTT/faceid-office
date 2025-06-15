@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { OwnershipGuard } from './guards/ownership.guard';
+import { OwnershipGuard } from '@/common/guards/ownership.guard';
 
 @Module({
   providers: [OwnershipGuard],

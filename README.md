@@ -20,7 +20,7 @@ pnpm install
 docker compose up -d
 ```
 
-##### (Optional) ❌ Reset Docker ❌
+##### ❌ (Optional) Reset Docker ❌
 
 ```bash
 docker system prune -af
@@ -90,7 +90,7 @@ storage
 │ │ │ │ │ ├── [person_id].jpg
 │ │ | │ │ └── ...
 │ │ │ │ └── unknown-images/
-│ │ │ │   ├── uuid1.jpg
+│ │ │ │   ├── [detection_log_id].jpg
 │ │ │ │   └── ...
 │ │ │ └── ...
 │ │ └── ...

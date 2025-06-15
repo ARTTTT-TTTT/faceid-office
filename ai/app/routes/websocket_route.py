@@ -7,6 +7,7 @@ router = APIRouter(tags=["WEBSOCKET"])
 
 # Dictionary เพื่อเก็บการเชื่อมต่อ WebSocket ที่ใช้งานอยู่
 # ?FEATURE (สามารถย้ายไป service หรือ Redis ได้ใน production)
+
 active_connections: Dict[str, WebSocket] = {}
 
 

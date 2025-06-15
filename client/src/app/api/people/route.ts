@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
-      { message: 'Internal server error during create person.' },
+      { message: 'Internal server error during person creation.' },
       { status: 500 },
     );
   }
@@ -38,7 +38,7 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
-      { message: 'Internal server error during fetch people.' },
+      { message: 'Internal server error during fetching people.' },
       { status: 500 },
     );
   }

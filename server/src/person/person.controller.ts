@@ -31,7 +31,8 @@ export class PersonController {
     private readonly faceImageService: FaceImageService,
   ) {}
 
-  //Person Management
+  // * ========== CORE ===========
+
   @Post()
   @UploadPersonFiles(3)
   async createPerson(
@@ -57,6 +58,8 @@ export class PersonController {
   async getPeople(@GetUser('sub') adminId: string) {
     return this.personService.getPeople(adminId);
   }
+
+  // * ========== OTHER ===========
 
   @Get(':personId')
   @CheckOwnership('person', 'personId')

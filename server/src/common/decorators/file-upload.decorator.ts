@@ -27,7 +27,31 @@ export function UploadPersonFiles(maxFaceImages = 3) {
             callback(null, true);
           },
           limits: {
-            fileSize: 1024 * 1024 * 5,
+            fileSize: 1024 * 1024 * 5, // 5MB
+          },
+        },
+      ),
+    ),
+  );
+}
+
+export function UploadDetectionFiles(maxDetectionImage = 1) {
+  return applyDecorators(
+    UseInterceptors(
+      FileFieldsInterceptor(
+        [{ name: 'detectionImage', maxCount: maxDetectionImage }],
+        {
+          fileFilter: (_req, file, callback) => {
+            if (!['image/png'].includes(file.mimetype)) {
+              return callback(
+                new BadRequestException('Only PNG files are allowed!'),
+                false,
+              );
+            }
+            callback(null, true);
+          },
+          limits: {
+            fileSize: 1024 * 1024 * 5, // 5MB
           },
         },
       ),
@@ -52,7 +76,7 @@ export function UploadImageFiles(
           callback(null, true);
         },
         limits: {
-          fileSize: 1024 * 1024 * 5, // 5MB per file
+          fileSize: 1024 * 1024 * 5, // 5MB
         },
       }),
     ),

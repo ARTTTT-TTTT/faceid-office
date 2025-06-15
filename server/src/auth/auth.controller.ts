@@ -10,6 +10,8 @@ import { RegisterDto } from './dto/register.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // * ========== CORE ===========
+
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto.email, dto.name, dto.password);

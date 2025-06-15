@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { CameraResponseDto } from '@/camera/dto/camera-response.dto';
+import { CreateCameraDto } from '@/camera/dto/create-camera.dto';
+import { UpdateCameraDto } from '@/camera/dto/update-camera.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-
-import { CameraResponseDto } from './dto/camera-response.dto';
-import { CreateCameraDto } from './dto/create-camera.dto';
-import { UpdateCameraDto } from './dto/update-camera.dto';
 
 @Injectable()
 export class CameraService {
   constructor(private prisma: PrismaService) {}
+
+  // * ========== CORE ===========
 
   async createCamera(
     adminId: string,
@@ -18,23 +19,42 @@ export class CameraService {
       data: {
         name: dto.name,
         location: dto.location,
-        adminId,
+        admin: {
+          connect: { id: adminId },
+        },
       },
     });
+
     return {
       id: camera.id,
       name: camera.name,
       location: camera.location,
-      createdAt: camera.createdAt,
+    };
+  }
+
+  async updateCamera(
+    cameraId: string,
+    dto: UpdateCameraDto,
+  ): Promise<CameraResponseDto> {
+    const camera = await this.prisma.camera.update({
+      where: { id: cameraId },
+      data: dto,
+    });
+
+    return {
+      id: camera.id,
+      name: camera.name,
+      location: camera.location,
     };
   }
 
   async getCameras(adminId: string): Promise<CameraResponseDto[]> {
-    const admin = await this.prisma.admin.findUnique({
+    const existingAdmin = await this.prisma.admin.findUnique({
       where: { id: adminId },
     });
-    if (!admin) {
-      throw new NotFoundException('Admin not found');
+
+    if (!existingAdmin) {
+      throw new NotFoundException(`Admin with ID ${adminId} not found`);
     }
 
     const cameras = await this.prisma.camera.findMany({
@@ -42,13 +62,14 @@ export class CameraService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return cameras.map(({ id, name, location, createdAt }) => ({
+    return cameras.map(({ id, name, location }) => ({
       id,
       name,
       location,
-      createdAt,
     }));
   }
+
+  // * ========== OTHER ===========
 
   async getOneCamera(
     adminId: string,
@@ -65,20 +86,8 @@ export class CameraService {
       throw new NotFoundException('Camera not found');
     }
 
-    const { id, name, location, createdAt } = camera;
-    return { id, name, location, createdAt };
-  }
-
-  async updateCamera(cameraId: string, dto: UpdateCameraDto) {
-    const existing = await this.prisma.camera.findUnique({
-      where: { id: cameraId },
-    });
-    if (!existing) throw new NotFoundException('Camera not found');
-
-    return this.prisma.camera.update({
-      where: { id: cameraId },
-      data: dto,
-    });
+    const { id, name, location } = camera;
+    return { id, name, location };
   }
 
   // !FEATURE: Delete camera but still keep the logs

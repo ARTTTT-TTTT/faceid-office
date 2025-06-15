@@ -113,15 +113,17 @@ export class OwnershipGuard implements CanActivate {
         return { ok: !!person, found: !!person };
       }
       case 'session': {
-        const session = await this.prisma.detectionSession.findFirst({
+        const session = await this.prisma.session.findFirst({
           where: { id: resourceId },
-          include: { camera: true },
+          include: { cameras: true },
         });
         //console.log('session', session);
         //console.log('adminId', adminId);
         //console.log('session?.camera?.adminId', session?.camera?.adminId);
         return {
-          ok: session?.camera?.adminId === adminId,
+          ok:
+            Array.isArray(session?.cameras) &&
+            session.cameras.some((camera) => camera.adminId === adminId),
           found: !!session,
         };
       }
@@ -131,13 +133,15 @@ export class OwnershipGuard implements CanActivate {
           include: {
             session: {
               include: {
-                camera: true,
+                cameras: true,
               },
             },
           },
         });
         return {
-          ok: log?.session?.camera?.adminId === adminId,
+          ok:
+            Array.isArray(log?.session?.cameras) &&
+            log.session.cameras.some((camera) => camera.adminId === adminId),
           found: !!log,
         };
       }

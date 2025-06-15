@@ -32,8 +32,6 @@ export const createPerson = async (
   }
 };
 
-// TODO: Promise<YourResource[]>
-
 export const getPeople = async (): Promise<Person[]> => {
   try {
     const res = await fetch('/api/people', {

@@ -18,6 +18,8 @@ export class AiVectorService {
     }
   }
 
+  // * ========== CORE ===========
+
   async buildEmptyVectors(adminId: string) {
     try {
       const url = `${this.AI_URL}/vectors/${adminId}/build/empty`;

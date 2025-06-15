@@ -1,7 +1,15 @@
 'use client';
 
-import { type LucideIcon, ScanFace } from 'lucide-react';
+import {
+  type LucideIcon,
+  AlarmClockOff,
+  Loader2,
+  ScanFace,
+} from 'lucide-react';
 import Link from 'next/link';
+
+import { useFetch } from '@/hooks/use-fetch';
+import { useSessionCountdown } from '@/hooks/use-session-countdown';
 
 import {
   SidebarGroup,
@@ -10,6 +18,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+import { getSessionStatus } from '@/utils/api/session';
+import { formatTime } from '@/utils/format-time';
+
+import { Session } from '@/types/session';
 
 export function NavMain({
   items,
@@ -20,6 +38,14 @@ export function NavMain({
     icon?: LucideIcon;
   }[];
 }) {
+  const { data: sessionData, loading: sessionLoading } =
+    useFetch<Session>(getSessionStatus);
+
+  const { remainingTTL, isSessionActive } = useSessionCountdown(
+    sessionData,
+    sessionLoading,
+  );
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className='flex flex-col gap-2'>
@@ -35,6 +61,34 @@ export function NavMain({
                 เริ่มตรวจสอบใบหน้า
               </Link>
             </SidebarMenuButton>
+            {sessionLoading ? (
+              <div className='flex h-9 w-16 items-center justify-center rounded-md border px-2 text-muted-foreground'>
+                <Loader2 className='animate-spin' />
+              </div>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className='flex h-9 w-16 items-center justify-center rounded-md border px-2 font-medium shadow-sm'>
+                    {isSessionActive ? (
+                      formatTime(remainingTTL, false)
+                    ) : (
+                      <AlarmClockOff className='text-red-700' />
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSessionActive
+                    ? `เซสชั่นกำลังเปิดอยู่`
+                    : `ไม่มีเซสชั่นที่ใช้งานอยู่`}
+                  <br />
+                  {isSessionActive
+                    ? `เหลือเวลาอีก ${formatTime(
+                        remainingTTL,
+                      )} ชั่วโมง เซสชั่นจะถูกปิดลง`
+                    : `กด "เริ่มตรวจสอบใบหน้า" เพื่อจัดการกับเซสชั่นในปัจจุบัน`}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>

@@ -1,13 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import {
+  AdminProfile,
+  AdminSettingsResponseDto,
+} from '@/admin/dto/admin-response.dto';
+import { UpdateSessionDurationDto } from '@/admin/dto/update-session-duration.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-
-import { AdminProfile } from './dto/admin-response.dto';
-import { UpdateSessionDurationDto } from './dto/update-session-duration.dto';
 
 @Injectable()
 export class AdminService {
   constructor(private prisma: PrismaService) {}
+
+  // * ========== CORE ===========
+
+  async getSettings(adminId: string): Promise<AdminSettingsResponseDto> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: adminId },
+      select: {
+        sessionDuration: true,
+        cameras: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+          },
+        },
+      },
+    });
+
+    return admin;
+  }
+
+  async updateSessionDuration(adminId: string, dto: UpdateSessionDurationDto) {
+    const admin = await this.prisma.admin.update({
+      where: { id: adminId },
+      data: dto,
+    });
+
+    return {
+      sessionDuration: admin.sessionDuration,
+    };
+  }
+
+  async getSessionDuration(adminId: string): Promise<number> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: adminId },
+      select: {
+        sessionDuration: true,
+      },
+    });
+
+    if (!admin) {
+      throw new NotFoundException(`Admin with ID ${adminId} not found`);
+    }
+    return admin.sessionDuration;
+  }
+
+  // * ========== OTHER ===========
 
   async getProfile(adminId: string): Promise<AdminProfile> {
     const admin = await this.prisma.admin.findUnique({
@@ -31,42 +80,9 @@ export class AdminService {
       },
     });
 
-    if (!admin) throw new NotFoundException('Admin not found');
+    if (!admin) {
+      throw new NotFoundException(`Admin with ID ${adminId} not found`);
+    }
     return admin;
-  }
-
-  async updateSessionDuration(adminId: string, dto: UpdateSessionDurationDto) {
-    const admin = await this.prisma.admin.findUnique({
-      where: { id: adminId },
-    });
-
-    if (!admin) throw new NotFoundException('Admin not found');
-
-    const updatedAdmin = await this.prisma.admin.update({
-      where: { id: adminId },
-      data: {
-        sessionDuration: dto.sessionDuration,
-      },
-    });
-
-    return {
-      id: updatedAdmin.id,
-      name: updatedAdmin.name,
-      email: updatedAdmin.email,
-      sessionDuration: updatedAdmin.sessionDuration, // optional
-    };
-  }
-
-  async getSessionDuration(adminId: string): Promise<number> {
-    const admin = await this.prisma.admin.findUnique({
-      where: { id: adminId },
-      select: {
-        sessionDuration: true,
-      },
-    });
-
-    if (!admin) throw new NotFoundException('Admin not found');
-
-    return admin.sessionDuration;
   }
 }

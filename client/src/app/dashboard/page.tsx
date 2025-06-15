@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Plus, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, Plus, Users, X } from 'lucide-react';
 import {
   useCallback,
   useDeferredValue,
@@ -25,7 +25,6 @@ import { getPeople } from '@/utils/api/person';
 import { Person } from '@/types/person';
 
 export default function DashboardPage() {
-  const [people, setPeople] = useState<Person[]>([]);
   const [sortedData, setSortedData] = useState<Person[]>([]);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Person;
@@ -43,17 +42,16 @@ export default function DashboardPage() {
   const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
-  const { data: peopleData } = useFetch<Person[]>(getPeople);
-  useEffect(() => {
-    if (peopleData) {
-      setPeople(peopleData);
-    }
-  }, [peopleData]);
+  const {
+    data: peopleData,
+    setData: setPeopleData,
+    loading: peopleLoading,
+  } = useFetch<Person[]>(getPeople);
 
   const filteredData = useMemo(() => {
-    if (!people) return [];
+    if (!peopleData) return [];
 
-    let data = [...people];
+    let data = [...peopleData];
 
     if (deferredSearch) {
       data = data.filter((person) =>
@@ -69,7 +67,7 @@ export default function DashboardPage() {
       );
     }
     return data;
-  }, [people, deferredSearch]);
+  }, [peopleData, deferredSearch]);
 
   const sortData = useCallback(
     (
@@ -149,62 +147,77 @@ export default function DashboardPage() {
         ตารางสมาชิก
       </motion.h1>
 
-      <motion.div
-        // initial={{ y: -170 }}
-        // animate={{ y: 0 }}
-        // transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className='w-full max-w-2xl rounded-lg'
-      >
-        <PersonFilter
-          searchTerm={deferredSearch}
-          setSearchTerm={setSearchTerm}
-        />
-      </motion.div>
-
-      <motion.article
-        variants={itemVariants}
-        initial='hidden'
-        animate='visible'
-        custom={0.1}
-        className='flex h-fit w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 shadow-lg'
-      >
-        <section className='flex items-center justify-between bg-blue-400 p-4'>
-          <span className='flex items-center justify-center gap-2 text-xl font-bold text-white'>
-            <Users className='size-6' />
-            สมาชิกทั้งหมด
-          </span>
-
-          {/* ADD PERSON */}
-          <Button
-            onClick={() => setIsAddPersonDialogOpen(true)}
-            className='w-40 gap-2 bg-green-500 font-bold hover:bg-green-500'
+      {peopleLoading ? (
+        <div className='flex size-fit items-center justify-center gap-2 rounded-md border p-4 text-muted-foreground'>
+          <Loader2 className='size-6 animate-spin' />
+          <span>กำลังโหลดข้อมูลสมาชิก...</span>
+        </div>
+      ) : peopleData ? (
+        <>
+          <motion.div
+            variants={itemVariants}
+            initial='hidden'
+            animate='visible'
+            custom={0.1}
+            className='w-full max-w-2xl rounded-lg'
           >
-            <Plus className='size-10 font-bold' />
-            เพิ่มสมาชิก
-          </Button>
-          <AddPersonDialog
-            isOpen={isAddPersonDialogOpen}
-            onClose={() => setIsAddPersonDialogOpen(false)}
-            setPeople={setPeople}
-          />
-        </section>
+            <PersonFilter
+              searchTerm={deferredSearch}
+              setSearchTerm={setSearchTerm}
+            />
+          </motion.div>
 
-        <PersonTable
-          handleSort={handleSort}
-          getSortIcon={getSortIcon}
-          currentItems={currentItems}
-        />
+          <motion.article
+            variants={itemVariants}
+            initial='hidden'
+            animate='visible'
+            custom={0.2}
+            className='flex h-fit w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 shadow-lg'
+          >
+            <section className='flex items-center justify-between bg-blue-400 p-4'>
+              <span className='flex items-center justify-center gap-2 text-xl font-bold text-white'>
+                <Users className='size-6' />
+                สมาชิกทั้งหมด
+              </span>
 
-        {sortedData.length > 0 && (
-          <PersonTableFooter
-            currentPage={currentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            setItemsPerPage={setItemsPerPage}
-            setCurrentPage={setCurrentPage}
-          />
-        )}
-      </motion.article>
+              {/* ADD PERSON */}
+              <Button
+                onClick={() => setIsAddPersonDialogOpen(true)}
+                className='w-40 gap-2 bg-green-500 font-bold hover:bg-green-500'
+              >
+                <Plus className='size-10 font-bold' />
+                เพิ่มสมาชิก
+              </Button>
+              <AddPersonDialog
+                isOpen={isAddPersonDialogOpen}
+                onClose={() => setIsAddPersonDialogOpen(false)}
+                setPeopleData={setPeopleData}
+              />
+            </section>
+
+            <PersonTable
+              handleSort={handleSort}
+              getSortIcon={getSortIcon}
+              currentItems={currentItems}
+            />
+
+            {sortedData.length > 0 && (
+              <PersonTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                setCurrentPage={setCurrentPage}
+              />
+            )}
+          </motion.article>
+        </>
+      ) : (
+        <div className='flex size-fit items-center justify-center gap-2 rounded-md border border-red-500 p-4 text-red-500'>
+          <X className='size-6' />
+          <span>ไม่พบข้อมูลสมาชิก โปรดติดต่อผู้พัฒนา...</span>
+        </div>
+      )}
     </main>
   );
 }

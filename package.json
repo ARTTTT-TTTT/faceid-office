@@ -4,27 +4,16 @@
   "version": "1.0.0",
   "description": "Face Identification Office",
   "license": "CHANOM",
-  "workspaces": [
-    "server",
-    "client"
-  ],
   "scripts": {
-    "format": "prettier -w . && cd ai && poetry run black . --line-length 100 && poetry run ruff format .",
-    "format:check": "prettier -c . && cd ai && poetry run black --check . && poetry run ruff format --check .",
-    "lint": "pnpm format && pnpm --filter client lint && pnpm --filter server lint && pnpm lint:py",
-    "lint:py": "cd ai && poetry run ruff check . --fix",
+    "format:client": "pnpm --filter client format",
+    "format:server": "pnpm --filter server format",
+    "format:ai": "cd ai && poetry run black .",
+    "lint:client": "pnpm --filter client lint",
+    "lint:server": "pnpm --filter server lint",
+    "lint:ai": "cd ai && poetry run ruff check . --fix",
+    "format": "prettier -w . && pnpm format:client && pnpm format:server && pnpm format:ai",
+    "lint": "pnpm lint:client && pnpm lint:server && pnpm lint:ai",
     "prepare": "husky"
-  },
-  "lint-staged": {
-    "client/**/*.{js,jsx,ts,tsx}": "pnpm --filter client exec eslint --max-warnings=0",
-    "server/**/*.{js,jsx,ts,tsx}": "pnpm --filter server exec eslint --max-warnings=0",
-    "ai/**/*.py": [
-      "cd ai && poetry run black . --line-length 100",
-      "cd ai && poetry run ruff check . --fix"
-    ],
-    "*.{json,css,scss,md}": [
-      "prettier -w"
-    ]
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",
@@ -37,20 +26,6 @@
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
-    ]
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@prisma/client",
-      "@prisma/engines",
-      "@scarf/scarf",
-      "@swc/core",
-      "prisma",
-      "unrs-resolver"
-    ],
-    "ignoredBuiltDependencies": [
-      "unrs-resolver"
     ]
   }
 }

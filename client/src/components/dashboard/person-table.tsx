@@ -1,5 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
+import { cn } from '@/lib/utils';
+
 import { PersonRow } from '@/components/dashboard/person-row';
 import { Button } from '@/components/ui/button';
 import {
@@ -72,16 +74,16 @@ export const PersonTable: React.FC<Props> = ({
           </TableRow>
         )}
       </TableBody>
-      <TableFooter>
+      <TableFooter className={cn(currentItems.length > 0 ? '' : 'hidden')}>
         <TableRow className='bg-gray-50'>
           <TableCell
             className='pl-5 font-semibold text-gray-700 dark:text-gray-200'
             colSpan={1}
           >
-            {currentItems.length > 0 ? 'จำนวนสมาชิก' : ''}
+            จำนวนสมาชิก
           </TableCell>
           <TableCell className='text-center font-semibold text-gray-700 dark:text-gray-200'>
-            {currentItems.length > 0 ? currentItems.length : ''}
+            {currentItems.length}
           </TableCell>
         </TableRow>
       </TableFooter>

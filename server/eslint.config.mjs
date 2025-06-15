@@ -1,4 +1,5 @@
 // @ts-check
+// server/eslint.config.mjs
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
@@ -32,12 +33,6 @@ export default tseslint.config(
       'no-unused-vars': 'off',
       'no-console': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      // 'react/no-unescaped-entities': 'off', // ถ้าโปรเจกต์นี้ไม่ใช่ React ก็ลบทิ้งได้เลย
-      // 'react/display-name': 'off',
-      // 'react/jsx-curly-brace-presence': [
-      //   'warn',
-      //   { props: 'never', children: 'never' },
-      // ],
 
       //#region  //*=========== Unused Import ===========
       '@typescript-eslint/no-unused-vars': 'off', // ปิดกฎของ TS เพื่อให้ unused-imports จัดการแทน

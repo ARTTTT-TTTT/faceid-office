@@ -1,7 +1,7 @@
 export interface DetectionLogResponse {
   id: string;
   detectedAt: Date;
-  imageUrl: string;
+  detectionImagePath: string;
   camera: {
     id: string;
     name: string;

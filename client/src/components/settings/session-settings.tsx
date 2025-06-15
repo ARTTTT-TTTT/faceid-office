@@ -1,10 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import z from 'zod';
-
-import logger from '@/lib/logger';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+
+import { updateSessionDuration } from '@/utils/api/admin';
+
+import { AdminSettings, updateSessionDurationPayload } from '@/types/admin';
 
 const SessionSchema = z.object({
   session_duration: z.coerce
@@ -35,10 +40,54 @@ const SessionSchema = z.object({
 
 type SessionFormType = z.infer<typeof SessionSchema>;
 
-export const SessionSettings = () => {
+interface Props {
+  settingsData: AdminSettings;
+  setSettingsData: (settingsData: AdminSettings) => void;
+}
+
+export const SessionSettings: React.FC<Props> = ({
+  settingsData,
+  setSettingsData,
+}) => {
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const form = useForm<SessionFormType>({
     resolver: zodResolver(SessionSchema),
+    defaultValues: {
+      session_duration: settingsData.sessionDuration / 3600,
+    },
   });
+  const { isDirty } = form.formState;
+
+  const onSubmit = async (data: SessionFormType) => {
+    setIsSubmitLoading(true);
+    const payload: updateSessionDurationPayload = {
+      sessionDuration: Math.round(data.session_duration * 3600),
+    };
+
+    try {
+      const updatedSettings = await updateSessionDuration(payload);
+      setSettingsData(updatedSettings);
+      form.reset(data);
+    } catch (err) {
+      toast.error('เกิดข้อผิดพลาดในการอัปเดต', {
+        position: 'top-right',
+        style: {
+          background: '#ef4444',
+          color: '#fff',
+        },
+      });
+    } finally {
+      setIsSubmitLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (settingsData.sessionDuration !== undefined) {
+      form.reset({
+        session_duration: settingsData.sessionDuration / 3600,
+      });
+    }
+  }, [settingsData.sessionDuration, form]);
 
   return (
     <Card className='w-full max-w-2xl'>
@@ -49,10 +98,7 @@ export const SessionSettings = () => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((data) => logger(data))}
-            className='space-y-6'
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
               name='session_duration'
@@ -88,12 +134,22 @@ export const SessionSettings = () => {
                 </FormItem>
               )}
             />
-            <Button
-              type='submit'
-              className='w-full bg-green-500 hover:bg-green-600'
-            >
-              ยืนยัน
-            </Button>
+            {isDirty && (
+              <Button
+                type='submit'
+                className='w-full bg-green-500 hover:bg-green-600'
+                disabled={isSubmitLoading || !isDirty}
+              >
+                {isSubmitLoading ? (
+                  <span className='flex items-center justify-center gap-2'>
+                    <Loader2 className='size-6 animate-spin text-muted-foreground' />
+                    กำลังบันทึก...
+                  </span>
+                ) : (
+                  'ยืนยัน'
+                )}
+              </Button>
+            )}
           </form>
         </Form>
       </CardContent>

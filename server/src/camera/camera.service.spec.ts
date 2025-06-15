@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { CameraService } from './camera.service';
+import { CameraService } from '@/camera/camera.service';
 
 describe('CameraService', () => {
   let service: CameraService;

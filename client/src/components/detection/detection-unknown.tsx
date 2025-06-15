@@ -18,12 +18,8 @@ interface Props {
 export const DetectionUnknown: React.FC<Props> = ({
   trackingUnknownResults = [],
 }) => {
-  const _unknownDetections = [
-    { id: 1, imageUrl: '/images/og.jpg', time: '00:01' },
-    { id: 2, imageUrl: '/images/og.jpg', time: '00:02' },
-  ];
   return (
-    <Card className='flex h-full flex-col items-center justify-center border-red-500 bg-red-500'>
+    <Card className='flex h-full flex-col items-center justify-center rounded-none border-red-500 bg-red-500'>
       <CardHeader className='p-2'>
         <CardTitle>บุคคลที่ไม่รู้จัก</CardTitle>
         <CardDescription className='sr-only'></CardDescription>

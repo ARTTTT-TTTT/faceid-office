@@ -41,7 +41,7 @@ import { CreatePersonPayload, Person, Position } from '@/types/person';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  setPeople: React.Dispatch<React.SetStateAction<Person[]>>;
+  setPeopleData: React.Dispatch<React.SetStateAction<Person[] | null>>;
 }
 
 interface CapturedFaceImage {
@@ -62,7 +62,7 @@ const positionOptions = Object.keys(Position).filter((key) =>
 export const AddPersonDialog: React.FC<Props> = ({
   isOpen,
   onClose,
-  setPeople,
+  setPeopleData,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -221,7 +221,7 @@ export const AddPersonDialog: React.FC<Props> = ({
         },
       });
 
-      setPeople((prev) => [...prev, data]);
+      setPeopleData((prev) => (prev ? [...prev, data] : [data]));
 
       clearFormState();
       //cameraOff();

@@ -20,6 +20,8 @@ export class PersonService {
     private readonly aiVectorService: AiVectorService,
   ) {}
 
+  // * ========== CORE ===========
+
   async createPerson(
     adminId: string,
     dto: CreatePersonDto,
@@ -157,6 +159,8 @@ export class PersonService {
     });
     return people;
   }
+
+  // * ========== OTHER ===========
 
   async getPerson(personId: string) {
     const person = await this.prisma.person.findFirst({

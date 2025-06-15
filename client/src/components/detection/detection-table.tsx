@@ -23,20 +23,8 @@ interface Props {
 }
 
 export const DetectionTable: React.FC<Props> = ({ trackingResults }) => {
-  const _detections = [
-    { name: 'สมชาย ใจดี', time: '10:15' },
-    { name: 'สมหญิง ใจงาม', time: '10:10' },
-    { name: 'John Doe', time: '09:45' },
-    { name: 'Jane Smith', time: '09:30' },
-    { name: 'ณรงค์ฤทธิ์ ทองแท้', time: '09:20' },
-    { name: 'Suda Lee', time: '09:00' },
-    { name: 'Daniel Kim', time: '08:45' },
-    { name: 'Aom', time: '08:30' },
-    { name: 'Aom', time: '08:30' },
-    { name: 'Aom', time: '08:30' },
-  ];
   return (
-    <Card className='overflow-hidden'>
+    <Card className='overflow-hidden rounded-none'>
       <CardHeader className='sr-only'>
         <CardTitle>รายชื่อบุคคลล่าสุดที่พบ</CardTitle>
         <CardDescription></CardDescription>

@@ -19,7 +19,7 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(1)
   @Matches(/^\S*$/, {
-    message: 'Username cannot contain spaces',
+    message: 'Name cannot contain spaces',
   })
   name: string;
 

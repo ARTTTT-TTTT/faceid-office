@@ -49,8 +49,6 @@ class FaceRecognition:
                 if doc_id in docstore_dict
             }
 
-            print("[✅] FAISS index and mappings loaded successfully.")
-
         except FileNotFoundError as e:
             print(f"[❌] File not found during FAISS index loading: {e}")
         except ValueError as e:
