@@ -8,7 +8,7 @@ export const CameraStream: React.FC = () => {
   const localCanvasRef = useRef<HTMLCanvasElement>(null);
   const remoteCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [isWsLoading, setIsWsLoading] = useState(true);
+  const [isWsLoading, setIsWsLoading] = useState(false);
 
   const [isStreaming, setIsStreaming] = useState(false);
 

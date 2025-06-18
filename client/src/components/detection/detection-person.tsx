@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-import { FaceTrackingResult } from '@/types/detection';
+import { FaceTrackingResult } from '@/types/websocket';
 
 interface Props {
   trackingResults: FaceTrackingResult[];

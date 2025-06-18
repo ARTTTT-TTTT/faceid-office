@@ -6,6 +6,8 @@
 pnpm install
 ```
 
+---
+
 ## 🛢️ Prisma 🛢️
 
 ### 💾 Prisma Migrate Dev (Development) 💾
@@ -61,6 +63,8 @@ rm -rf prisma/migrations
 pnpm prisma migrate reset
 ```
 
+---
+
 ## 🚀 Compile and run 🚀
 
 ### 🧪 development
@@ -85,33 +89,9 @@ pnpm start
 pnpm start:debug
 ```
 
-### 🏗️ NestJS Generate 🏗️
+---
 
-- #### Resource
-
-```bash
-pnpm nest generate resource [name]
-```
-
-- #### Service
-
-```bash
-pnpm nest generate service [name]
-```
-
-- #### Controller
-
-```bash
-pnpm nest generate controller [name]
-```
-
-- #### Module
-
-```bash
-pnpm nest generate module [name]
-```
-
-## 🧹 Clean project 🧹
+## 🧹 Format documents 🧹
 
 ```bash
 pnpm lint:fix
@@ -128,9 +108,3 @@ pnpm lint:fix
 - `ForbiddenException` พยายามเข้าถึง Endpoint หรือดำเนินการบางอย่างโดยที่ Role หรือสิทธิ์ไม่เพียงพอ
 
 - `InternalServerErrorException` เกิด Error ใน Logic ของ Application, ปัญหาในการเชื่อมต่อ Database (ในกรณีที่ไม่สามารถระบุ Exception ที่เฉพาะเจาะจงกว่าได้)
-
-## 🆑 Delete node_modules 🆑
-
-```bash
-rm -rf node_modules pnpm-lock.yaml
-```

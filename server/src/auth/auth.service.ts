@@ -1,6 +1,8 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,10 +12,10 @@ import * as bcrypt from 'bcryptjs';
 import { AiVectorService } from '@/ai-vector/ai-vector.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
-// TODO: ถ้า ลบ user ออกไปแล้ว จะต้องลบ vector กับ storage ที่เกี่ยวข้องด้วย
-
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger('AuthService');
+
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
@@ -43,7 +45,24 @@ export class AuthService {
       },
     });
 
-    await this.aiVectorService.buildEmptyVectors(admin.id);
+    try {
+      await this.aiVectorService.buildEmptyVectors(admin.id);
+    } catch (error) {
+      if (admin.id) {
+        await this.prisma.admin.delete({
+          where: { id: admin.id },
+        });
+
+        // await this.aiVectorService.deleteVectors(admin.id);
+      }
+      this.logger.error(
+        'Error during admin registration or vector creation:',
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Error during admin registration or vector creation:',
+      );
+    }
 
     return {
       id: admin.id,

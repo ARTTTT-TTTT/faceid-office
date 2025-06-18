@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
     const encoder = new TextEncoder();
     const { payload } = await jwtVerify(token, encoder.encode(SECRET_KEY));
 
-    return NextResponse.json(payload);
+    const payloadWithToken = { ...payload, access_token: token };
+
+    return NextResponse.json(payloadWithToken);
   } catch {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }

@@ -1,8 +1,0 @@
-{
-  "recommendations": [
-    "donjayamanne.python-environment-manager",
-    "ms-python.isort",
-    "ms-python.python",
-    "ms-python.black-formatter"
-  ]
-}

@@ -55,4 +55,16 @@ export class AiVectorService {
       );
     }
   }
+
+  async deleteVectors(adminId: string) {
+    try {
+      const url = `${this.AI_URL}/vectors/${adminId}}`;
+      const response = await lastValueFrom(this.httpService.delete(url));
+      return response;
+    } catch {
+      throw new InternalServerErrorException(
+        `Failed to delete AI vectors for adminId: ${adminId}`,
+      );
+    }
+  }
 }

@@ -6,15 +6,17 @@
 pnpm install
 ```
 
+---
+
 ## 🚀 Compile and run 🚀
 
-#### 🧪 development
+### 🧪 development
 
 ```bash
 pnpm dev
 ```
 
-#### 🚀 production
+### 🚀 production
 
 ```bash
 pnpm build
@@ -24,23 +26,21 @@ pnpm build
 pnpm start
 ```
 
-#### 🔎 watch
+### 🔎 watch
 
 ```bash
 pnpm start:watch
 ```
 
-## 🆑 Delete node_modules 🆑
+---
 
-```bash
-rm -rf node_modules pnpm-lock.yaml
-```
-
-## 🧹 Clean project 🧹
+## 🧹 Format documents 🧹
 
 ```bash
 pnpm lint:fix
 ```
+
+---
 
 ## Component Logic Flow
 

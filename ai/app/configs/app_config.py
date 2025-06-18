@@ -9,9 +9,10 @@ class AppConfig(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     PROJECT_NAME: str = "AI"
     API_STR: str = "/api"
-    AI_SECRET_KEY: str = "ai_secret_key"
+    SECRET_KEY: str = "secret_key"
+    ALGORITHM: str = "HS256"
 
-    SERVER_URL: str = "http://localhost:8080"
+    SERVER_URL: str = "http://localhost:8080" + API_STR
 
     FRONTEND_URL: str = "http://localhost:3000"
     BACKEND_URL: list[AnyUrl] | str = []
@@ -19,12 +20,6 @@ class AppConfig(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = "redis_secret"
-
-    LIVEKIT_KEY: str = "livekitkey"
-    LIVEKIT_SECRET: str = "livekitsecret"
-
-    TURN_SECRET: str = "turnsecret"
-    TURN_TTL: int = 3600
 
     @property
     def all_cors_origins(self) -> list[str]:

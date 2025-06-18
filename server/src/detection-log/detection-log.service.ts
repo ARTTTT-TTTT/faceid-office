@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -12,29 +8,33 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class DetectionLogService {
+  private readonly unknown = 'UNKNOWN';
   constructor(private readonly prisma: PrismaService) {}
 
   // * ========== CORE ===========
 
   async createDetectionLog(
     dto: CreateDetectionLogDto,
+    adminId: string,
     detectionImage: Express.Multer.File,
   ) {
-    // TODO: ไม่เจอ adminId แล้วขึ้น error 500?
-    // !Check if admin exists
-    const admin = await this.prisma.admin.findUnique({
-      where: { id: dto.adminId },
-    });
+    // * Check is unknown with personId
+    let isUnknown: boolean;
+    let personConnectData: { connect: { id: string } } | undefined;
 
-    if (!admin) {
-      throw new NotFoundException(`Admin with ID ${dto.adminId} not found`);
+    if (dto.personId === this.unknown) {
+      isUnknown = true;
+      personConnectData = undefined;
+    } else {
+      isUnknown = false;
+      personConnectData = { connect: { id: dto.personId } };
     }
 
     // * Create detection log
     const newDetectionLog = await this.prisma.detectionLog.create({
       data: {
         detectedAt: new Date(),
-        isUnknown: dto.isUnknown,
+        isUnknown: isUnknown,
         detectionImagePath: '',
         camera: {
           connect: { id: dto.cameraId },
@@ -42,18 +42,16 @@ export class DetectionLogService {
         session: {
           connect: { id: dto.sessionId },
         },
-        person: {
-          connect: { id: dto.personId },
-        },
+        person: personConnectData,
       },
     });
 
     // * Save detection image
     let detectionImagePath: string | undefined;
     if (detectionImage) {
-      if (dto.isUnknown === false) {
+      if (isUnknown === false) {
         detectionImagePath = await this.saveDetectionPersonImageToFileSystem(
-          dto.adminId,
+          adminId,
           dto.cameraId,
           dto.sessionId,
           dto.personId,
@@ -61,7 +59,7 @@ export class DetectionLogService {
         );
       } else {
         detectionImagePath = await this.saveDetectionUnknownImageToFileSystem(
-          dto.adminId,
+          adminId,
           dto.cameraId,
           dto.sessionId,
           newDetectionLog.id,

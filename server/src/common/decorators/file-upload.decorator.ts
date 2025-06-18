@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import {
   FileFieldsInterceptor,
-  FilesInterceptor,
+  FileInterceptor,
 } from '@nestjs/platform-express';
 
 export function UploadPersonFiles(maxFaceImages = 3) {
@@ -35,37 +35,10 @@ export function UploadPersonFiles(maxFaceImages = 3) {
   );
 }
 
-export function UploadDetectionFiles(maxDetectionImage = 1) {
+export function UploadDetectionFile() {
   return applyDecorators(
     UseInterceptors(
-      FileFieldsInterceptor(
-        [{ name: 'detectionImage', maxCount: maxDetectionImage }],
-        {
-          fileFilter: (_req, file, callback) => {
-            if (!['image/png'].includes(file.mimetype)) {
-              return callback(
-                new BadRequestException('Only PNG files are allowed!'),
-                false,
-              );
-            }
-            callback(null, true);
-          },
-          limits: {
-            fileSize: 1024 * 1024 * 5, // 5MB
-          },
-        },
-      ),
-    ),
-  );
-}
-
-export function UploadImageFiles(
-  fieldName: string = 'faceImages',
-  maxCount = 5,
-) {
-  return applyDecorators(
-    UseInterceptors(
-      FilesInterceptor(fieldName, maxCount, {
+      FileInterceptor('detectionImage', {
         fileFilter: (_req, file, callback) => {
           if (!['image/png'].includes(file.mimetype)) {
             return callback(

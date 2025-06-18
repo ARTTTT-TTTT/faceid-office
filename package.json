@@ -8,10 +8,10 @@
     "format:client": "pnpm --filter client format",
     "format:server": "pnpm --filter server format",
     "format:ai": "cd ai && poetry run black .",
-    "lint:client": "pnpm --filter client lint",
-    "lint:server": "pnpm --filter server lint",
+    "lint:client": "pnpm --filter client lint:fix",
+    "lint:server": "pnpm --filter server lint:fix",
     "lint:ai": "cd ai && poetry run ruff check . --fix",
-    "format": "prettier -w . && pnpm format:client && pnpm format:server && pnpm format:ai",
+    "format": "prettier -w . --ignore-unknown && pnpm format:client && pnpm format:server && pnpm format:ai",
     "lint": "pnpm lint:client && pnpm lint:server && pnpm lint:ai",
     "prepare": "husky"
   },

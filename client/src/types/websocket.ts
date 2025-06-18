@@ -1,6 +1,6 @@
 interface FaceTrackingResult {
-  person_id: string;
-  detection_image: string;
+  status: string;
+  message: string;
 }
 
 export type { FaceTrackingResult };

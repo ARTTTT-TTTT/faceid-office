@@ -1,16 +1,18 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Post,
   Query,
-  UploadedFiles,
+  UploadedFile,
   UseGuards,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
 import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
-import { UploadDetectionFiles } from '@/common/decorators/file-upload.decorator';
+import { UploadDetectionFile } from '@/common/decorators/file-upload.decorator';
+import { GetUser } from '@/common/decorators/get-user.decorator';
 import { DetectionLogService } from '@/detection-log/detection-log.service';
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
 import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
@@ -25,13 +27,21 @@ export class DetectionLogController {
   // * ========== CORE ===========
 
   @Post()
-  @UploadDetectionFiles(1)
+  @UploadDetectionFile()
   async createDetectionLog(
+    @GetUser('sub') adminId: string,
     @Body() dto: CreateDetectionLogDto,
-    @UploadedFiles()
+    @UploadedFile()
     detectionImage: Express.Multer.File,
   ) {
-    return this.detectionLogService.createDetectionLog(dto, detectionImage);
+    if (!detectionImage) {
+      throw new BadRequestException('Detection image file is required.');
+    }
+    return this.detectionLogService.createDetectionLog(
+      dto,
+      adminId,
+      detectionImage,
+    );
   }
 
   @CheckOwnership('session', 'sessionId', 'query')

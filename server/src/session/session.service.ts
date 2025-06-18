@@ -26,11 +26,11 @@ export class SessionService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private _buildKey(adminId: string, cameraId: string, personId: string) {
+  // * ========== CORE ===========
+
+  private buildKey(adminId: string, cameraId: string, personId: string = '*') {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.personPrefix}:${personId}`;
   }
-
-  // * ========== CORE ===========
 
   private buildMarkerKey(adminId: string, cameraId: string) {
     return `${this.adminPrefix}:${adminId}:${this.cameraPrefix}:${cameraId}:${this.trackingSuffix}`;
@@ -140,9 +140,12 @@ export class SessionService {
     for (const camera of cameraList) {
       const cameraId = camera.id;
       const markerKey = this.buildMarkerKey(adminId, cameraId);
+      const key = this.buildKey(adminId, cameraId);
 
       try {
-        const delCount = await this.redisService.del(markerKey);
+        const keys = await this.redisService.scanKeys(key);
+        keys.push(markerKey);
+        const delCount = await this.redisService.del(keys);
 
         if (delCount > 0) {
           cameras.push({

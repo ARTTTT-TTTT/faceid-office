@@ -56,18 +56,18 @@ class FaceBlob:
             valid_named = {
                 name: count
                 for name, count in self.match_history.items()
-                if name != "Unknown" and count >= self.core_config.sure_know
+                if name != self.core_config.UNKNOWN and count >= self.core_config.sure_know
             }
 
             best_match_name, best_match_count = (None, 0)
             if valid_named:
                 best_match_name, best_match_count = max(valid_named.items(), key=lambda x: x[1])
 
-            unknown_count = self.match_history.get("Unknown", 0)
+            unknown_count = self.match_history.get(self.core_config.UNKNOWN, 0)
 
             # * UNKNOWN PERSON
             if unknown_count >= max(self.core_config.sure_unknown, best_match_count * 2):
-                return "Unknown", self.image
+                return self.core_config.UNKNOWN, self.image
 
             # * FOUND PERSON
             if best_match_name and unknown_count <= best_match_count * 2:

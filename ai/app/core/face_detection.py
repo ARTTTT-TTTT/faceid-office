@@ -34,7 +34,7 @@ class FaceDetection:
         positions, faces = [], []
         try:
             for box in detections.boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                x1, y1, x2, y2 = map(int, list(box.xyxy[0]))
                 face = frame[y1:y2, x1:x2]
                 faces.append(face)
                 positions.append(((x1 + x2) // 2, (y1 + y2) // 2))

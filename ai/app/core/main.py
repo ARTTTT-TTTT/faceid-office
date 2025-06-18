@@ -1,15 +1,16 @@
 import os
 import cv2
 import time
-from app.core.face_tracking import FaceTracking
+
+# from app.core.face_tracking import FaceTracking
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 def main():
     # Initialize face tracking service
-    tracking = FaceTracking()
-    tracking.load_faiss_index()
+    # tracking = FaceTracking()
+    # tracking.load_faiss_index()
 
     # Setup camera
     # === WINDOWS ===
@@ -30,8 +31,8 @@ def main():
             if not ret:
                 break
 
-            result = tracking.tracking_face(frame)
-            cv2.imshow("Face Tracking", result)
+            # result = tracking.tracking_face(frame)
+            # cv2.imshow("Face Tracking", result)
 
             # จำกัด FPS โดยประมาณ
             elapsed = time.time() - start_time

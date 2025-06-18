@@ -1,12 +1,13 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Variants } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { LoginForm } from '@/components/login/login-form';
 import { RegisterForm } from '@/components/login/register-form';
 
-export const h1Variants = {
+const h1Variants: Variants = {
   initial: { opacity: 0, y: 50 },
   animate: {
     opacity: 1,
@@ -15,7 +16,7 @@ export const h1Variants = {
   },
 };
 
-export const cardVariants = {
+const cardVariants: Variants = {
   initial: { opacity: 0, y: 50 },
   animate: {
     opacity: 1,

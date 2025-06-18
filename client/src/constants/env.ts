@@ -8,7 +8,7 @@ const showLogger = isLocal
 // TODO: Check NEXT_PUBLIC_
 
 const SERVER_URL = process.env.SERVER_URL;
-const WS_URL = process.env.WS_URL;
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
 
 const SECRET_KEY = process.env.SECRET_KEY;
 

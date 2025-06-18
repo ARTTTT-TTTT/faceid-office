@@ -25,17 +25,18 @@ import {
 
 import { getSettings } from '@/utils/api/admin';
 import { me } from '@/utils/api/auth';
-import { createWebSocket } from '@/utils/api/detection';
 import {
   endSession,
   getSessionStatus,
   startSession,
 } from '@/utils/api/session';
+import { createWebSocket } from '@/utils/api/websocket';
 import { formatTime } from '@/utils/format-time';
 
 import { AdminSettings } from '@/types/admin';
 import { Me } from '@/types/auth';
 import { Session } from '@/types/session';
+import { FaceTrackingResult } from '@/types/websocket';
 
 interface Props {
   isStreaming: boolean;
@@ -45,6 +46,7 @@ interface Props {
   remoteCanvasRef: React.RefObject<HTMLCanvasElement>;
   setIsWsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
+// TODO: เพิ่ม loading
 
 export const CameraStreamControl: React.FC<Props> = ({
   isStreaming,
@@ -69,9 +71,74 @@ export const CameraStreamControl: React.FC<Props> = ({
   const { data: settingsData, loading: _settingsLoading } =
     useFetch<AdminSettings>(getSettings);
 
+  const showErrorToast = (message: string) => {
+    toast.error(message, {
+      position: 'top-right',
+      style: {
+        background: '#ef4444',
+        color: '#fff',
+      },
+    });
+  };
+
+  // * ========== SESSION ===========
+  const { remainingTTL, isSessionActive } = useSessionCountdown(
+    sessionData,
+    sessionLoading,
+  );
+
+  const handleStartSession = async () => {
+    if (isSessionActive || !sessionData) {
+      showErrorToast('ไม่อยู่ในช่วงปิดเซสชั่น หรือไม่พบข้อมูลของเซสชั่น');
+      return;
+    }
+
+    if (!selectedCameraId) {
+      showErrorToast(
+        'ไม่ข้อมูลกล้องที่ลงทะเบียนในระบบ กรุณาเพิ่มข้อมูลกล้องในหน้าตั้งค่า',
+      );
+      return;
+    }
+
+    const startedSession = await startSession();
+    setSessionData(startedSession);
+  };
+
+  const handleEndSession = async () => {
+    if (!isSessionActive || !sessionData || !sessionData.sessionId) {
+      showErrorToast('ไม่อยู่ในช่วงเปิดเซสชั่น หรือไม่พบข้อมูลของเซสชั่น');
+      return;
+    }
+
+    await handleStopCamera();
+    const endedSession = await endSession(sessionData.sessionId);
+    setSessionData(endedSession);
+  };
+
+  // * ========== DEVICE ===========
+  const listVideoDevices = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = allDevices.filter((d) => d.kind === 'videoinput');
+      setDevices(videoInputs);
+      if (videoInputs.length > 0) {
+        setSelectedDeviceId(videoInputs[0].deviceId);
+      }
+    } catch (error) {
+      logger(error, 'Failed to list video devices:');
+    }
+  }, []);
+
+  useEffect(() => {
+    listVideoDevices();
+  }, [listVideoDevices]);
+
   useEffect(() => {
     if (!selectedDeviceId && devices.length > 0) {
-      setSelectedDeviceId(devices[0].label);
+      setSelectedDeviceId(devices[0].deviceId);
     }
     if (
       !selectedCameraId &&
@@ -83,78 +150,49 @@ export const CameraStreamControl: React.FC<Props> = ({
     }
   }, [devices, settingsData, selectedCameraId, selectedDeviceId]);
 
-  const { remainingTTL, isSessionActive } = useSessionCountdown(
-    sessionData,
-    sessionLoading,
-  );
+  // * ========== CAMERA ===========
+  const handleStartCamera = async () => {
+    if (isStreaming) {
+      showErrorToast('กำลังสตรีมอยู่แล้ว');
+      return;
+    }
 
-  const handleStartSession = async () => {
-    if (isSessionActive || !sessionData) {
-      return toast.error('ไม่อยู่ในช่วงปิดเซสชั่น หรือไม่พบข้อมูลของเซสชั่น', {
-        position: 'top-right',
-        style: {
-          background: '#ef4444',
-          color: '#fff',
-        },
-      });
+    if (!isSessionActive) {
+      showErrorToast('กรุณาเริ่มเซสขั่น ก่อนเริ่มทำการตรวจสอบ');
+      return;
+    }
+
+    if (!selectedDeviceId) {
+      showErrorToast('ไม่พบอุปกรณ์กล้อง กรุณาเลือกอุปกรณ์กล้องที่ใช้');
+      return;
     }
 
     if (!selectedCameraId) {
-      return toast.error(
-        'ไม่ข้อมูลกล้องที่ลงทะเบียนในระบบ กรุณาเพิ่มข้อมูลกล้องในหน้าตั้งค่า',
-        {
-          position: 'top-right',
-          style: {
-            background: '#ef4444',
-            color: '#fff',
-          },
-        },
+      showErrorToast(
+        'ไม่มีข้อมูลกล้องที่ลงทะเบียนในระบบ กรุณาเพิ่มข้อมูลกล้องในหน้าตั้งค่า',
       );
+      return;
     }
 
-    const startedSession = await startSession();
-    setSessionData(startedSession);
-  };
-
-  const handleEndSession = async () => {
-    if (!isSessionActive || !sessionData || !sessionData.sessionId) {
-      return toast.error('ไม่อยู่ในช่วงเปิดเซสชั่น หรือไม่พบข้อมูลของเซสชั่น', {
-        position: 'top-right',
-        style: {
-          background: '#ef4444',
-          color: '#fff',
-        },
-      });
+    if (!sessionData) {
+      showErrorToast('ไม่พบข้อมูลเซสชัน กรุณาลองใหม่อีกครั้ง');
+      return;
     }
 
-    const endedSession = await endSession(sessionData.sessionId);
-    setSessionData(endedSession);
-  };
-
-  const listVideoDevices = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-
-      const allDevices = await navigator.mediaDevices.enumerateDevices();
-      const videoInputs = allDevices.filter((d) => d.kind === 'videoinput');
-      setDevices(videoInputs);
-      if (videoInputs.length > 0) {
-        setSelectedDeviceId(videoInputs[0].label);
-      }
-    } catch (error) {
-      logger(error, 'Failed to list video devices:');
+    if (!remainingTTL || remainingTTL <= 0) {
+      showErrorToast('เวลาเซสชันหมดอายุ กรุณาสร้างเซสชันใหม่');
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    listVideoDevices();
-  }, [listVideoDevices]);
+    if (!userData) {
+      showErrorToast('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบอีกครั้ง');
+      return;
+    }
 
-  const handleStartCamera = async () => {
-    if (!selectedDeviceId || isStreaming || !userData) return;
+    handleStopCamera();
 
     setIsStreaming(true);
+    setIsWsLoading(true);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -166,7 +204,6 @@ export const CameraStreamControl: React.FC<Props> = ({
       const ctx = canvas?.getContext('2d');
 
       if (!video || !canvas || !ctx) {
-        logger('Video or Canvas context not found.');
         handleStopCamera();
         return;
       }
@@ -188,8 +225,11 @@ export const CameraStreamControl: React.FC<Props> = ({
         }
 
         const ws = createWebSocket(
-          userData.sub,
-          (imageData) => {
+          userData.access_token,
+          selectedCameraId,
+          sessionData.sessionId,
+          remainingTTL,
+          (imageData: string) => {
             const img = new Image();
             img.onload = () => {
               const remoteCtx = remoteCanvasRef.current?.getContext('2d');
@@ -206,8 +246,10 @@ export const CameraStreamControl: React.FC<Props> = ({
             };
             img.src = `data:image/jpeg;base64,${imageData}`;
           },
-          (_results) => {
-            // TODO: เช็คว่า เป็นสถานะอะไรถ้าใช้ก็ยิง api last detectionlog
+          (_results: FaceTrackingResult) => {
+            if (_results.status !== 'NOT_FOUND') {
+              logger(_results);
+            }
           },
         );
         wsRef.current = ws;
@@ -222,7 +264,7 @@ export const CameraStreamControl: React.FC<Props> = ({
     }
   };
 
-  const handleStopCamera = () => {
+  const handleStopCamera = useCallback(() => {
     setIsStreaming(false);
 
     const video = localVideoRef.current;
@@ -233,18 +275,18 @@ export const CameraStreamControl: React.FC<Props> = ({
       video.srcObject = null;
     }
 
-    if (wsRef.current) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.close();
-      wsRef.current = null;
     }
+    wsRef.current = null; // ตั้งค่าเป็น null เสมอหลังจากพยายามปิด
 
     const intervalId = video?.dataset.intervalId;
     if (intervalId) {
       clearInterval(Number(intervalId));
       delete video.dataset.intervalId;
     }
-    setIsWsLoading(true);
-  };
+    setIsWsLoading(false);
+  }, [localVideoRef, setIsStreaming, setIsWsLoading]);
 
   const captureAndSendFrames = (
     video: HTMLVideoElement,
@@ -264,13 +306,34 @@ export const CameraStreamControl: React.FC<Props> = ({
           'image/jpeg',
           0.5, // * ความชัดของภาพ
         );
+      } else {
+        clearInterval(Number(video.dataset.intervalId));
+        delete video.dataset.intervalId;
       }
     }, 1000 / 3); // * 3 FPS
     return intervalId;
   };
 
-  const exit = () => {
-    handleStartCamera;
+  useEffect(() => {
+    return () => {
+      handleStopCamera();
+    };
+  }, [handleStopCamera]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      handleStopCamera();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [handleStopCamera]);
+
+  const exit = async () => {
+    await handleStopCamera();
     router.push('/dashboard');
   };
 
@@ -330,7 +393,10 @@ export const CameraStreamControl: React.FC<Props> = ({
       <Popover>
         <PopoverTrigger asChild className='col-span-2'>
           <Button variant='outline'>
-            {!selectedDeviceId ? 'เลือกกล้อง' : selectedDeviceId}
+            {!selectedDeviceId
+              ? 'เลือกกล้อง'
+              : devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
+                'กล้องไม่รู้จัก'}
           </Button>
         </PopoverTrigger>
 
@@ -341,11 +407,11 @@ export const CameraStreamControl: React.FC<Props> = ({
           {devices.map((device) => (
             <Label key={device.deviceId} className='flex items-center gap-2'>
               <Checkbox
-                checked={selectedDeviceId === device.label}
-                onCheckedChange={() => setSelectedDeviceId(device.label)}
+                checked={selectedDeviceId === device.deviceId} // <-- เปรียบเทียบกับ deviceId
+                onCheckedChange={() => setSelectedDeviceId(device.deviceId)} // <-- เก็บ deviceId
               />
               <span className='text-sm'>
-                {device.label || `${device.deviceId.slice(-4)}`}
+                {device.label || `Device ID: ${device.deviceId.slice(-4)}`}{' '}
               </span>
             </Label>
           ))}

@@ -1,6 +1,13 @@
-# Face ID Office
+# ⛶ Face ID Office
 
-[![Status: Development](https://img.shields.io/badge/Status-Development-yellow)](https://your-badge-url)
+[![Status: Stable](https://img.shields.io/badge/Status-Stable-brightgreen)]()
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Platform: Web](https://img.shields.io/badge/Platform-Web-blue)]()
+[![Version](https://img.shields.io/github/v/release/ARTTTT-TTTT/faceid-office)](https://github.com/ARTTTT-TTTT/faceid-office/releases)
+
+> 🔎 **Face ID Office** A face recognition-based attendance system for office check-in and check-out.
+
+---
 
 ## ✨ Root Workspace ✨
 
@@ -13,10 +20,6 @@ pnpm install
 #### 🐳 Docker Compose Up 🐳
 
 ```bash
-./scripts/generate-config.sh
-```
-
-```bash
 docker compose up -d
 ```
 
@@ -26,7 +29,15 @@ docker compose up -d
 docker system prune -af
 ```
 
-## Tech Stack 🚀
+## 🆑 (Optional) Packages 🆑
+
+```bash
+./scripts/linux/clean-packages.sh
+```
+
+---
+
+## 🛠️ Tech Stack
 
 | Technology | Icon                                                                                                              |
 | ---------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -37,12 +48,23 @@ docker system prune -af
 | FastAPI    | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)          |
 | PostgreSQL | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white) |
 | Redis      | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)                |
-| LiveKit    | ![LiveKit](https://img.shields.io/badge/LiveKit-000000?style=for-the-badge&logo=livekit&logoColor=white)          |
-| Coturn     | ![Coturn](https://img.shields.io/badge/Coturn-4676C8?style=for-the-badge&logo=coturn&logoColor=white)             |
+
+---
+
+## ⚠️ License Notice
+
+This project is **proprietary software** and **not open source**.  
+All rights are reserved by the copyright holder.
+
+You **may not** copy, modify, distribute, or use this software without explicit permission from the owner.
+
+---
 
 ## 📚 Pre-Commit 📚
 
 - please read commitlint.config.js
+
+---
 
 ## 🌿 Branch Workflow 🌿
 
@@ -77,6 +99,8 @@ refactor/<module>/<description>
 ```bash
 ci/<system>/<task>
 ```
+
+---
 
 ## 🏗️ Storage Folder Structure 🏗️
 

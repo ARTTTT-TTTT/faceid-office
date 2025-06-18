@@ -1,6 +1,6 @@
 import logger from '@/lib/logger';
 
-import { LoginPayload, RegisterPayload } from '@/types/auth';
+import { LoginPayload, Me, RegisterPayload } from '@/types/auth';
 
 export const register = async (payload: RegisterPayload) => {
   try {
@@ -62,7 +62,7 @@ export const logout = async () => {
   }
 };
 
-export const me = async () => {
+export const me = async (): Promise<Me> => {
   try {
     const res = await fetch('/api/auth/me', {
       method: 'GET',

@@ -1,14 +1,6 @@
-import { IsBoolean, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateDetectionLogDto {
-  @IsNotEmpty()
-  @IsUUID()
-  adminId: string;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  isUnknown: boolean;
-
   @IsNotEmpty()
   @IsUUID()
   cameraId: string;
@@ -18,6 +10,6 @@ export class CreateDetectionLogDto {
   sessionId: string;
 
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   personId: string;
 }

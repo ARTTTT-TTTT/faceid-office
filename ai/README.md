@@ -20,7 +20,7 @@ winget install Python.Python.3.11
 
 ---
 
-#### (Optional) Install pipx
+### (Optional) Install pipx
 
 - `Linux`
 
@@ -40,7 +40,7 @@ pipx ensurepath
 
 ---
 
-### Install Poetry
+## ⚙️ Install Poetry ⚙️
 
 ```bash
 pipx install poetry
@@ -48,7 +48,7 @@ pipx install poetry
 
 [Poetry download](https://python-poetry.org/docs/)
 
-### ⚙️ Configure Poetry to create virtual environment in project ⚙️
+### 🔨 Configure Poetry to create virtual environment in project 🔨
 
 ```bash
 poetry config virtualenvs.in-project true
@@ -56,13 +56,13 @@ poetry config virtualenvs.in-project true
 
 ### 🔧 ! If you encounter issues because you are not using Python 3.11 as your main version, create and set the virtual environment 🔧
 
-- #### MacOS
+- `Linux`
 
 ```bash
 poetry env use python3.11
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 py -3.11 -c "import sys; print(sys.executable)"
@@ -72,7 +72,9 @@ py -3.11 -c "import sys; print(sys.executable)"
 poetry env use [full path\Python\Python311\python.exe]
 ```
 
-### Install dependencies
+---
+
+## ⬇️ Install dependencies ⬇️
 
 ```bash
 cd ai
@@ -91,25 +93,31 @@ poetry env info --path
 
 `Enter interpreter path...`
 
+---
+
 ## 🚀 Compile and run 🚀
 
-#### 🧪 development
+### 🧪 development
 
 ```bash
 fastapi dev
 ```
 
-#### 🚀 production
+### 🚀 production
 
 ```bash
 fastapi run
 ```
 
-## 🧹 Format document 🧹
+---
+
+## 🧹 Format documents 🧹
 
 ```bash
 black .
 ```
+
+---
 
 ## 📚 Documentation 📚
 

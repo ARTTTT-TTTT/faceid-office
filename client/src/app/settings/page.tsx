@@ -1,5 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
+import { Variants } from 'framer-motion';
 import { Loader2, X } from 'lucide-react';
 
 import { useFetch } from '@/hooks/use-fetch';
@@ -11,7 +12,7 @@ import { getSettings } from '@/utils/api/admin';
 
 import { AdminSettings } from '@/types/admin';
 
-export const containerVariants = {
+const _containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -22,7 +23,7 @@ export const containerVariants = {
   },
 };
 
-export const itemVariants = {
+const _itemVariants: Variants = {
   hidden: { y: 40, opacity: 0 },
   visible: (custom: number) => ({
     y: 0,

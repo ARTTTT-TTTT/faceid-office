@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ChevronDown, ChevronUp, Loader2, Plus, Users, X } from 'lucide-react';
 import {
   useCallback,
@@ -19,10 +19,23 @@ import {
 } from '@/components/dashboard/person-table';
 import { Button } from '@/components/ui/button';
 
-import { itemVariants } from '@/app/settings/page';
 import { getPeople } from '@/utils/api/person';
 
 import { Person } from '@/types/person';
+
+const itemVariants: Variants = {
+  hidden: { y: 40, opacity: 0 },
+  visible: (custom: number) => ({
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 700,
+      damping: 30,
+      delay: custom,
+    },
+  }),
+};
 
 export default function DashboardPage() {
   const [sortedData, setSortedData] = useState<Person[]>([]);

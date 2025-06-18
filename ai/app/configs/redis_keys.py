@@ -1,8 +1,9 @@
 class RedisKeys:
-    ADMIN_PREFIX: str = "admin"
-    CAMERA_PREFIX: str = "camera"
-    PERSON_PREFIX: str = "person"
-    TRACKING_SUFFIX: str = "tracking"
+    def __init__(self):
+        self.admin_prefix = "admin"
+        self.camera_prefix = "camera"
+        self.person_prefix = "person"
+        self.tracking_suffix = "tracking"
 
 
 redis_keys = RedisKeys()

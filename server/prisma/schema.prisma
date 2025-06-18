@@ -81,11 +81,11 @@ model DetectionLog {
   detectionImagePath String
   cameraId           String
   sessionId          String
-  personId           String
+  personId           String?
 
   camera  Camera  @relation(fields: [cameraId], references: [id])
   session Session @relation(fields: [sessionId], references: [id])
-  person  Person  @relation(fields: [personId], references: [id])
+  person  Person?  @relation(fields: [personId], references: [id])
 
   @@index([cameraId])
   @@index([sessionId])

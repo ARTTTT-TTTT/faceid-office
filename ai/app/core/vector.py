@@ -23,8 +23,10 @@ pillow_heif.register_heif_opener()
 
 
 class Vector:
-    def __init__(self, core_config: CoreConfig, device=None):
+
+    def __init__(self, core_config: CoreConfig, dummy_embeddings: DummyEmbeddings, device=None):
         self.core_config = core_config
+        self.dummy_embeddings = dummy_embeddings
         self.device = device or self.core_config.default_device
         self.embedding_dim = self.core_config.embedding_dim
         self.model = (
@@ -37,7 +39,7 @@ class Vector:
         self.batch_size = self.core_config.batch_size
         self.transform = face_transform()
 
-    def extract_face_vectors(self, face_images_folder: str):
+    async def _extract_face_vectors(self, face_images_folder: str):
         """
         Extract vectors from all person_id folders in the face_images_folder.
         """
@@ -51,13 +53,13 @@ class Vector:
             if not os.path.isdir(person_folder):
                 continue
 
-            vectors, docs = self.extract_face_vectors_single(person_folder)
+            vectors, docs = await self._extract_face_vectors_single(person_folder)
             all_vectors.extend(vectors)
             all_docs.extend(docs)
 
         return all_vectors, all_docs
 
-    def extract_face_vectors_single(self, person_folder: str):
+    async def _extract_face_vectors_single(self, person_folder: str):
         """
         Extract vectors from all images inside a single person_folder.
         """
@@ -71,7 +73,7 @@ class Vector:
             try:
                 img = Image.open(img_path).convert("RGB")
             except Exception as e:
-                print(f"[!] Error loading image: {img_path} | {e}")
+                print(f"[ERROR] Error loading image: {img_path} | {e}")
                 continue
 
             # YOLO face detection
@@ -79,7 +81,7 @@ class Vector:
             detections = results[0]
 
             if not detections.boxes or len(detections.boxes) == 0:
-                print(f"[!] No face found in: {img_path}")
+                print(f"[ERROR] No face found in: {img_path}")
                 continue
 
             # Crop face
@@ -108,7 +110,7 @@ class Vector:
     ========== CRUD ===========
     """
 
-    def build_empty_vectors(self) -> dict:
+    async def build_empty_vectors(self) -> dict:
         """
         index    : สร้าง vector ขนาด 512
         docstore : สร้าง ที่ว่าง ๆ ที่เก็บ metadata เช่น ชื่อบุคคลและชื่อไฟล์
@@ -122,8 +124,9 @@ class Vector:
         index = faiss.IndexIDMap(faiss.IndexFlatL2(self.embedding_dim))  # ใช้ IndexIDMap
         docstore = InMemoryDocstore({})
         index_to_docstore_id = {}
+
         db = FAISS(
-            embedding_function=DummyEmbeddings(),
+            embedding_function=self.dummy_embeddings,
             index=index,
             docstore=docstore,
             index_to_docstore_id=index_to_docstore_id,
@@ -134,7 +137,23 @@ class Vector:
             "message": f"Empty vectors for {self.core_config.admin_id} created successfully.",
         }
 
-    def build_vectors(self) -> dict:
+    async def delete_vectors(self) -> dict:
+        """
+        ลบข้อมูลเวกเตอร์ที่เคยถูกสร้างไว้ เช่น FAISS index และ metadata ต่าง ๆ
+        """
+        try:
+            os.remove(self.core_config.vector_path)
+            return {
+                "success": True,
+                "message": f"Vectors for {self.core_config.admin_id} deleted successfully.",
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Error deleting vector file: {str(e)}",
+            }
+
+    async def build_vectors(self) -> dict:
         """
         batch_size : แบ่งเป็น batch เพื่อลดการใช้ RAM
         index : สร้าง IndexFlatL2 -ขนาด 512
@@ -145,7 +164,7 @@ class Vector:
         docstore_dict : เป็น unique id ของแต่ละภาพ
         index_to_docstore_id : สสร้าง dictionary ที่ mapping ระหว่าง ลำดับ index ใน FAISS กับ ID ของเอกสารใน docstore
         """
-        vectors, docs = self.extract_face_vectors(self.face_images_path)
+        vectors, docs = await self._extract_face_vectors(self.face_images_path)
         if not vectors:
             return {
                 "success": False,
@@ -157,7 +176,7 @@ class Vector:
         for i in range(0, len(vectors), self.batch_size):
             batch_vecs = np.array(vectors[i : i + self.batch_size]).astype(np.float32)
             batch_ids = ids[i : i + self.batch_size]
-            index.add_with_ids(batch_vecs, batch_ids)
+            index.add_with_ids(batch_vecs, xids=batch_ids)  # type: ignore
 
         docstore_dict = {}
         index_to_docstore_id = {}
@@ -167,7 +186,7 @@ class Vector:
             index_to_docstore_id[i] = doc_id
 
         db = FAISS(
-            embedding_function=DummyEmbeddings(),
+            embedding_function=self.dummy_embeddings,
             index=index,
             docstore=InMemoryDocstore(docstore_dict),
             index_to_docstore_id=index_to_docstore_id,
@@ -178,13 +197,13 @@ class Vector:
             "message": f"Vectors for {self.core_config.admin_id} built successfully with {len(vectors)} vectors.",
         }
 
-    def get_people_vectors(self) -> dict:
+    async def get_people_vectors(self) -> dict:
         """
         แสดงชื่อบุคคลทั้งหมดในฐานข้อมูล พร้อมจำนวนภาพและ metadata ของแต่ละภาพ
         """
         db = FAISS.load_local(
             self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
+            embeddings=self.dummy_embeddings,
             allow_dangerous_deserialization=True,
         )
 
@@ -192,7 +211,14 @@ class Vector:
 
         for idx, doc_id in db.index_to_docstore_id.items():
             doc = db.docstore.search(doc_id)
-            name = doc.metadata.get("name")
+            if (
+                isinstance(doc, Document)
+                and hasattr(doc, "metadata")
+                and isinstance(doc.metadata, dict)
+            ):
+                name = doc.metadata.get("name")
+            else:
+                continue
 
             if name not in people_data:
                 people_data[name] = []
@@ -202,36 +228,41 @@ class Vector:
 
         return people_data
 
-    def get_person_vectors(self, person_id: str) -> dict:
+    async def get_person_vectors(self, person_id: str) -> dict:
         """
         database มี person_name(ชื่อนั้นกี่ภาพและอะไรบ้าง)
         """
         db = FAISS.load_local(
             self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
+            embeddings=self.dummy_embeddings,
             allow_dangerous_deserialization=True,
         )
         results = []
         for idx, doc_id in db.index_to_docstore_id.items():
             doc = db.docstore.search(doc_id)
-            if doc.metadata.get("name") == person_id:
+            if (
+                isinstance(doc, Document)
+                and hasattr(doc, "metadata")
+                and isinstance(doc.metadata, dict)
+                and doc.metadata.get("name") == person_id
+            ):
                 result_info = {"index": idx, "doc_id": doc_id, "metadata": doc.metadata}
                 results.append(result_info)
         return {"person_id": person_id, "total_vectors": len(results), "vectors": results}
 
-    def get_total_vectors(self) -> int:
+    async def get_total_vectors(self) -> int:
         """
         นับจำนวนเวกเตอร์ใบหน้าทั้งหมดใน FAISS database
         """
         db = FAISS.load_local(
             self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
+            embeddings=self.dummy_embeddings,
             allow_dangerous_deserialization=True,
         )
         total_count = db.index.ntotal
         return total_count
 
-    def update_person_vectors(self, person_id: str) -> dict:
+    async def update_person_vectors(self, person_id: str) -> dict:
         """
         db
         load model vector : เดิมมาใช้งานเป็น base
@@ -244,14 +275,16 @@ class Vector:
 
         db = FAISS.load_local(
             self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
+            embeddings=self.dummy_embeddings,
             allow_dangerous_deserialization=True,
         )
+        docstore = db.docstore
+        assert isinstance(docstore, InMemoryDocstore), "Expected InMemoryDocstore"
         existing_keys = {
-            f"{doc.metadata['name']}_{doc.metadata['image']}" for doc in db.docstore._dict.values()
+            f"{doc.metadata['name']}_{doc.metadata['image']}" for doc in docstore._dict.values()
         }
 
-        new_vectors, new_docs = self.extract_face_vectors_single(person_folder)
+        new_vectors, new_docs = await self._extract_face_vectors_single(person_folder)
         if not new_vectors:
             return {
                 "success": False,
@@ -279,7 +312,7 @@ class Vector:
 
         for i, (vec, doc) in enumerate(zip(filtered_vectors, filtered_docs)):
             doc_id = str(uuid.uuid4())
-            db.docstore._dict[doc_id] = doc
+            docstore._dict[doc_id] = doc
             db.index_to_docstore_id[current_count + i] = doc_id
 
         db.save_local(self.core_config.vector_path)
@@ -288,21 +321,25 @@ class Vector:
             "message": f"Updated vectors for {person_id} with {len(filtered_vectors)} new vectors.",
         }
 
-    def delete_person_vectors(self, person_id: str) -> dict:
+    async def delete_person_vectors(self, person_id: str) -> dict:
         """
         เช็คจากชื่อ ว่าใน metadata มีชื่อนั้นมั้ย ถ้ามี ลบ
         """
         # !FEATURE ยิง API ลบ person_folder
         db = FAISS.load_local(
             self.core_config.vector_path,
-            embeddings=DummyEmbeddings(),
+            embeddings=self.dummy_embeddings,
             allow_dangerous_deserialization=True,
         )
 
         indices_to_delete = []
         for idx, doc_id in db.index_to_docstore_id.items():
             doc = db.docstore.search(doc_id)
-            if doc.metadata.get("name") == person_id:
+            if (
+                isinstance(doc, Document)
+                and hasattr(doc, "metadata")
+                and doc.metadata.get("name") == person_id
+            ):
                 faiss_id = idx
                 indices_to_delete.append(faiss_id)
 

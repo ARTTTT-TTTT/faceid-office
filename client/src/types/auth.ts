@@ -10,6 +10,7 @@ interface LoginPayload {
 }
 
 interface Me {
+  access_token: string;
   sub: string;
   email: string;
   name: string;

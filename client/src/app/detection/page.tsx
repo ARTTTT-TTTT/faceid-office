@@ -10,7 +10,7 @@ import { DetectionTable } from '@/components/detection/detection-table';
 import { DetectionUnknown } from '@/components/detection/detection-unknown';
 import { SignYourself } from '@/components/detection/sign-yourself';
 
-import { FaceTrackingResult } from '@/types/detection';
+import { FaceTrackingResult } from '@/types/websocket';
 
 const sectionVariantsTop = {
   hidden: { y: -100, opacity: 0 },

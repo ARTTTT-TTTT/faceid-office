@@ -24,7 +24,7 @@ class FaceEmbedding:
                 f"Failed to load FaceNet model: {e}. Ensure the model is available and the path is correct."
             )
 
-    def get_perceptual_hash(self, cropped_image):
+    def _get_perceptual_hash(self, cropped_image):
         """Generate perceptual hash for a face image"""
         if cropped_image is None or not isinstance(cropped_image, np.ndarray):
             return None
@@ -43,7 +43,7 @@ class FaceEmbedding:
             return None
 
         # Generate perceptual hash
-        face_hash = self.get_perceptual_hash(cropped_image)
+        face_hash = self._get_perceptual_hash(cropped_image)
 
         # Check cache first
         if face_hash in self.embedding_cache:
@@ -54,7 +54,9 @@ class FaceEmbedding:
             pil_img = Image.fromarray(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
 
             # Apply transformations
-            tensor = self.transform(pil_img).unsqueeze(0).to(self.core_config.default_device)
+            tensor = self.transform(pil_img)
+            assert isinstance(tensor, torch.Tensor)
+            tensor = tensor.unsqueeze(0).to(self.core_config.default_device)
 
             # Generate embedding
             with torch.no_grad():
@@ -64,44 +66,6 @@ class FaceEmbedding:
             self.embedding_cache[face_hash] = embedding
             return embedding
 
-        except Exception as e:
-            print(f"[ERROR] Failed to generate embedding: {e}")
-            return None
-
-    def _image_embedding(self, cropped_image):
-        # """Generate embedding for a cropped face image"""
-        # if cropped_image is None or not isinstance(cropped_image, np.ndarray):
-        #     print("[ERROR] Invalid or empty image provided.")
-        #     return None
-
-        # try:
-        #     # Convert OpenCV image (BGR) to PIL RGB image
-        #     pil_img = Image.fromarray(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
-        # except Exception as e:
-        #     print(f"[ERROR] Failed to convert image to PIL format: {e}")
-        #     return None
-
-        # try:
-        #     # Apply transformations
-        #     tensor = self.transform(pil_img).unsqueeze(0).to(self.core_config.default_device)
-
-        #     # Generate embedding
-        #     with torch.no_grad():
-        #         embedding = self.model_Facenet(tensor).cpu().numpy()[0]
-
-        #     return embedding
-        # except Exception as e:
-        #     print(f"[ERROR] Failed to generate embedding: {e}")
-        #     return None
-        if cropped_image is None or not isinstance(cropped_image, np.ndarray):
-            return None
-        try:
-            # แปลง BGR → RGB → Tensor โดยตรง
-            rgb_img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
-            tensor = self.transform(rgb_img).unsqueeze(0).to(self.core_config.default_device)
-            with torch.no_grad():
-                embedding = self.model_Facenet(tensor).cpu().numpy()[0]
-            return embedding
         except Exception as e:
             print(f"[ERROR] Failed to generate embedding: {e}")
             return None

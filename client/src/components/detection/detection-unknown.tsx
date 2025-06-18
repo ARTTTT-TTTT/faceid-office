@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-import { FaceTrackingResult } from '@/types/detection';
+import { FaceTrackingResult } from '@/types/websocket';
 
 interface Props {
   trackingUnknownResults: FaceTrackingResult[];
