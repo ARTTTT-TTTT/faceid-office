@@ -4,6 +4,10 @@ import * as path from 'path';
 
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
 import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
+import {
+  GetDetectionPersonResponse,
+  GetDetectionUnknownResponse,
+} from '@/detection-log/dto/get-detection-log.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -193,5 +197,49 @@ export class DetectionLogService {
         profileImageUrl: log.person.profileImagePath,
       },
     }));
+  }
+
+  async getLatestFilteredDetectionLogs(
+    isUnknown: boolean,
+    limit: number,
+  ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
+    const logs = await this.prisma.detectionLog.findMany({
+      where: {
+        isUnknown: isUnknown, // Apply the isUnknown filter
+      },
+      orderBy: {
+        detectedAt: 'desc', // Sort by detectedAt in descending order (latest first)
+      },
+      take: limit, // Limit the number of results
+      include: isUnknown === false ? { person: true } : undefined,
+    });
+
+    // Map the results to the appropriate response interface
+    return logs.map((log) => {
+      if (log.isUnknown === false) {
+        if (!log.person) {
+          throw new InternalServerErrorException(
+            `Data inconsistency: DetectionLog ${log.id} is marked as known but has no associated person. This indicates a database integrity issue.`,
+          );
+        }
+
+        // Return GetDetectionPersonResponse
+        return {
+          id: log.id,
+          detectedAt: log.detectedAt.toISOString(), // Convert Date to ISO string
+          detectionImagePath: log.detectionImagePath,
+          fullName: log.person.fullName,
+          position: log.person.position, // Cast to Position enum/type
+          profileImagePath: log.person.profileImagePath,
+        } as GetDetectionPersonResponse;
+      } else {
+        // Return GetDetectionUnknownResponse for unknown detections
+        return {
+          id: log.id,
+          detectedAt: log.detectedAt.toISOString(), // Convert Date to ISO string
+          detectionImagePath: log.detectionImagePath,
+        } as GetDetectionUnknownResponse;
+      }
+    });
   }
 }

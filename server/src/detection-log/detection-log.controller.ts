@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   Query,
   UploadedFile,
@@ -16,6 +18,11 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 import { DetectionLogService } from '@/detection-log/detection-log.service';
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
 import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
+import {
+  GetDetectionLogRequest,
+  GetDetectionPersonResponse,
+  GetDetectionUnknownResponse,
+} from '@/detection-log/dto/get-detection-log.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('detection-log')
@@ -54,6 +61,17 @@ export class DetectionLogController {
     return this.detectionLogService.getLatestDetectionLogs(
       sessionId,
       parsedLimit,
+    );
+  }
+
+  @Post('latest/:limit') // Using POST as it receives a body and path params
+  async getLatestFilteredLogs(
+    @Param('limit', ParseIntPipe) limit: number, // Automatically parses 'limit' to an integer
+    @Body() body: GetDetectionLogRequest,
+  ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
+    return this.detectionLogService.getLatestFilteredDetectionLogs(
+      body.isUnknown,
+      limit,
     );
   }
 }
