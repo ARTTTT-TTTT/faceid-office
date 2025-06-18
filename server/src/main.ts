@@ -1,12 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
 import { CustomExceptionFilter } from './common/filters/custom-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
   const frontendUrl = configService.get<string>('FRONTEND_URL');
@@ -29,6 +31,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useStaticAssets(join(__dirname, '..', '..', 'storage'), {
+    prefix: '/files/', // This is the virtual path in your URL
+  });
 
   const port = configService.get<number>('PORT') ?? 8080;
   await app.listen(port);

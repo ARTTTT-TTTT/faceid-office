@@ -1,9 +1,14 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
 import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
+import {
+  GetDetectionPersonResponse,
+  GetDetectionUnknownResponse,
+} from '@/detection-log/dto/get-detection-log.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -193,5 +198,54 @@ export class DetectionLogService {
         profileImageUrl: log.person.profileImagePath,
       },
     }));
+  }
+
+  async getLatestFilteredDetectionLogs(
+    isUnknown: boolean,
+    limit: number,
+    sessionId: string,
+    cameraId: string,
+  ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
+    const whereClause: Prisma.DetectionLogWhereInput = {
+      // Using 'any' for the dynamic where clause
+      isUnknown: isUnknown,
+      sessionId: sessionId,
+      cameraId: cameraId,
+    };
+
+    const logs = await this.prisma.detectionLog.findMany({
+      where: whereClause, // Use the dynamically built where clause
+      orderBy: {
+        detectedAt: 'desc',
+      },
+      take: limit,
+      // Only include person if isUnknown is explicitly false
+      include: isUnknown === false ? { person: true } : undefined,
+    });
+
+    return logs.map((log) => {
+      if (log.isUnknown === false) {
+        if (!log.person) {
+          throw new InternalServerErrorException(
+            `Data inconsistency: DetectionLog ${log.id} is marked as known but has no associated person. This indicates a database integrity issue.`,
+          );
+        }
+
+        return {
+          id: log.id,
+          detectedAt: log.detectedAt.toISOString(),
+          detectionImagePath: log.detectionImagePath,
+          fullName: log.person.fullName,
+          position: log.person.position, // Ensure type assertion for Position
+          profileImagePath: log.person.profileImagePath,
+        };
+      } else {
+        return {
+          id: log.id,
+          detectedAt: log.detectedAt.toISOString(),
+          detectionImagePath: log.detectionImagePath,
+        };
+      }
+    });
   }
 }

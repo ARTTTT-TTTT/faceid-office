@@ -101,31 +101,22 @@ export class OwnershipGuard implements CanActivate {
     }
     switch (resourceType) {
       case 'camera': {
-        const camera = await this.prisma.camera.findFirst({
-          where: { id: resourceId, adminId },
+        const camera = await this.prisma.camera.findUnique({
+          where: { id: resourceId },
         });
-        return { ok: !!camera, found: !!camera };
+        return { ok: camera?.adminId === adminId, found: !!camera };
       }
       case 'person': {
-        const person = await this.prisma.person.findFirst({
+        const person = await this.prisma.person.findUnique({
           where: { id: resourceId, adminId },
         });
         return { ok: !!person, found: !!person };
       }
       case 'session': {
-        const session = await this.prisma.session.findFirst({
+        const session = await this.prisma.session.findUnique({
           where: { id: resourceId },
-          include: { cameras: true },
         });
-        //console.log('session', session);
-        //console.log('adminId', adminId);
-        //console.log('session?.camera?.adminId', session?.camera?.adminId);
-        return {
-          ok:
-            Array.isArray(session?.cameras) &&
-            session.cameras.some((camera) => camera.adminId === adminId),
-          found: !!session,
-        };
+        return { ok: session?.adminId === adminId, found: !!session };
       }
       case 'log': {
         const log = await this.prisma.detectionLog.findFirst({
