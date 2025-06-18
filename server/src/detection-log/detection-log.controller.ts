@@ -3,8 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
-  ParseIntPipe,
   Post,
   Query,
   UploadedFile,
@@ -12,14 +10,12 @@ import {
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/auth/guard/jwt-auth.guard';
-import { CheckOwnership } from '@/common/decorators/check-ownership.decorator';
 import { UploadDetectionFile } from '@/common/decorators/file-upload.decorator';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { DetectionLogService } from '@/detection-log/detection-log.service';
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
-import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
 import {
-  GetDetectionLogRequest,
+  GetDetectionLogQueryDto,
   GetDetectionPersonResponse,
   GetDetectionUnknownResponse,
 } from '@/detection-log/dto/get-detection-log.dto';
@@ -51,27 +47,28 @@ export class DetectionLogController {
     );
   }
 
-  @CheckOwnership('session', 'sessionId', 'query')
-  @Get('latest')
-  async getLatestLogs(
-    @Query('sessionId') sessionId: string,
-    @Query('limit') limit: string,
-  ): Promise<DetectionLogResponse[]> {
-    const parsedLimit = parseInt(limit, 10) || 5;
-    return this.detectionLogService.getLatestDetectionLogs(
-      sessionId,
-      parsedLimit,
-    );
-  }
+  // @CheckOwnership('session', 'sessionId', 'query')
+  // @Get('latest')
+  // async getLatestLogs(
+  //   @Query('sessionId') sessionId: string,
+  //   @Query('limit') limit: string,
+  // ): Promise<DetectionLogResponse[]> {
+  //   const parsedLimit = parseInt(limit, 10) || 5;
+  //   return this.detectionLogService.getLatestDetectionLogs(
+  //     sessionId,
+  //     parsedLimit,
+  //   );
+  // }
 
-  @Post('latest/:limit') // Using POST as it receives a body and path params
+  @Get('latest') // No path parameter for limit now
   async getLatestFilteredLogs(
-    @Param('limit', ParseIntPipe) limit: number, // Automatically parses 'limit' to an integer
-    @Body() body: GetDetectionLogRequest,
+    @Query() query: GetDetectionLogQueryDto, // Receive all query parameters as an instance of your DTO
   ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
     return this.detectionLogService.getLatestFilteredDetectionLogs(
-      body.isUnknown,
-      limit,
+      query.isUnknown,
+      query.limit,
+      query.sessionId,
+      query.cameraId,
     );
   }
 }

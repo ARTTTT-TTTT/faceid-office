@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -202,19 +203,26 @@ export class DetectionLogService {
   async getLatestFilteredDetectionLogs(
     isUnknown: boolean,
     limit: number,
+    sessionId: string,
+    cameraId: string,
   ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
+    const whereClause: Prisma.DetectionLogWhereInput = {
+      // Using 'any' for the dynamic where clause
+      isUnknown: isUnknown,
+      sessionId: sessionId,
+      cameraId: cameraId,
+    };
+
     const logs = await this.prisma.detectionLog.findMany({
-      where: {
-        isUnknown: isUnknown, // Apply the isUnknown filter
-      },
+      where: whereClause, // Use the dynamically built where clause
       orderBy: {
-        detectedAt: 'desc', // Sort by detectedAt in descending order (latest first)
+        detectedAt: 'desc',
       },
-      take: limit, // Limit the number of results
+      take: limit,
+      // Only include person if isUnknown is explicitly false
       include: isUnknown === false ? { person: true } : undefined,
     });
 
-    // Map the results to the appropriate response interface
     return logs.map((log) => {
       if (log.isUnknown === false) {
         if (!log.person) {
@@ -223,22 +231,20 @@ export class DetectionLogService {
           );
         }
 
-        // Return GetDetectionPersonResponse
         return {
           id: log.id,
-          detectedAt: log.detectedAt.toISOString(), // Convert Date to ISO string
+          detectedAt: log.detectedAt.toISOString(),
           detectionImagePath: log.detectionImagePath,
           fullName: log.person.fullName,
-          position: log.person.position, // Cast to Position enum/type
+          position: log.person.position, // Ensure type assertion for Position
           profileImagePath: log.person.profileImagePath,
-        } as GetDetectionPersonResponse;
+        };
       } else {
-        // Return GetDetectionUnknownResponse for unknown detections
         return {
           id: log.id,
-          detectedAt: log.detectedAt.toISOString(), // Convert Date to ISO string
+          detectedAt: log.detectedAt.toISOString(),
           detectionImagePath: log.detectionImagePath,
-        } as GetDetectionUnknownResponse;
+        };
       }
     });
   }

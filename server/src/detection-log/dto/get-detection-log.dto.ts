@@ -1,10 +1,23 @@
 import { Position } from '@prisma/client';
-import { IsBoolean, IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
-export class GetDetectionLogRequest {
-  @IsNotEmpty()
+export class GetDetectionLogQueryDto {
   @IsBoolean()
+  @Transform(({ value }) => value === 'true') // Manually transform 'true'/'false' strings to boolean
   isUnknown: boolean;
+
+  @IsInt()
+  @Transform(({ value }: { value: string }) => parseInt(value, 10))
+  limit: number;
+
+  @IsString()
+  @IsNotEmpty()
+  sessionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  cameraId: string;
 }
 
 export interface GetDetectionPersonResponse {
