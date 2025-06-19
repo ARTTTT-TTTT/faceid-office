@@ -6,41 +6,41 @@
 pnpm install
 ```
 
+---
+
 ## 🚀 Compile and run 🚀
 
-#### 🧪 development
+### 🧪 development
+
+```bash
+pnpm dev
+```
+
+### 🚀 production
+
+```bash
+pnpm build
+```
 
 ```bash
 pnpm start
 ```
 
-#### 🔎 watch
+### 🔎 watch
 
 ```bash
 pnpm start:watch
 ```
 
-#### 🚀 production
+---
 
-```bash
-pnpm start:prod
-```
-
-## 🆑 Delete node_modules 🆑
-
-```bash
-rm -rf node_modules pnpm-lock.yaml
-```
-
-## 🧹 Clean project 🧹
+## 🧹 Format documents 🧹
 
 ```bash
 pnpm lint:fix
 ```
 
-## 📚 Pre-Commit 📚
-
-- please read commitlint.config.js
+---
 
 ## Component Logic Flow
 

@@ -1,0 +1,9 @@
+node_modules
+.next
+dist
+build
+client/build
+server/dist
+ai/__pycache__
+*.log
+.venv

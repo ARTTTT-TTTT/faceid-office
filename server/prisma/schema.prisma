@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+enum Position {
+  STUDENT
+  MANAGER
+  EMPLOYEE
+  OFFICER
+  GUEST
+}
+
+model Admin {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  passwordHash    String
+  sessionDuration Int      @default(3600)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cameras  Camera[]
+  people   Person[]
+  sessions Session[]
+}
+
+model Person {
+  id               String    @id @default(uuid())
+  fullName         String
+  position         Position?
+  profileImagePath String
+  faceImagePaths   String[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  adminId          String
+
+  admin Admin          @relation(fields: [adminId], references: [id])
+  logs  DetectionLog[]
+
+  @@unique([adminId, fullName])
+  @@index([adminId])
+}
+
+model Camera {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  adminId   String
+
+  admin    Admin          @relation(fields: [adminId], references: [id])
+  sessions Session[]      @relation("CameraToSession") // * Many-to-Many กับ Session
+  logs     DetectionLog[]
+
+  @@index([adminId])
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  adminId   String
+
+  admin   Admin          @relation(fields: [adminId], references: [id])
+  cameras Camera[]       @relation("CameraToSession") // * Many-to-Many กับ Camera
+  logs    DetectionLog[]
+
+  @@index([adminId])
+}
+
+model DetectionLog {
+  id                 String   @id @default(uuid())
+  detectedAt         DateTime @default(now())
+  isUnknown          Boolean  @default(false)
+  detectionImagePath String
+  cameraId           String
+  sessionId          String
+  personId           String?
+
+  camera  Camera  @relation(fields: [cameraId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+  person  Person?  @relation(fields: [personId], references: [id])
+
+  @@index([cameraId])
+  @@index([sessionId])
+  @@index([personId])
+}

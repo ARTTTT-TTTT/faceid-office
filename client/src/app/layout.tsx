@@ -3,8 +3,9 @@ import { Metadata } from 'next';
 import '@/styles/globals.css';
 
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
-import { siteConfig } from '@/constant/config';
+import { siteConfig } from '@/constants/config';
 // !STARTERCONF Change these default meta
 // !STARTERCONF Look at @/constant/config to change them
 export const metadata: Metadata = {
@@ -49,9 +50,10 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <head />
       <body>
+        <Toaster />
         <ThemeProvider
           attribute='class'
-          defaultTheme='system'
+          defaultTheme='light'
           enableSystem
           disableTransitionOnChange
         >

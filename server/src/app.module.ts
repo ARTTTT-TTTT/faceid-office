@@ -1,37 +1,32 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+import { AdminModule } from './admin/admin.module';
+import { AiVectorModule } from './ai-vector/ai-vector.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { UsersModule } from './users/users.module';
-import { AttendanceModule } from './attendance/attendance.module';
-import { FacedataModule } from './facedata/facedata.module';
+import { AuthModule } from './auth/auth.module';
+import { CameraModule } from './camera/camera.module';
+import { CommonModule } from './common/common.module';
+import { DetectionLogModule } from './detection-log/detection-log.module';
+import { PersonModule } from './person/person.module';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      expandVariables: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-      synchronize: true, // or true in development
-      entities: ['dist/**/*.entity.js'], // adjust to your build
-      migrations: ['dist/migrations/*.js'], // if you're using migrations
-      autoLoadEntities: true,
-    }),
-    UsersModule,
-    AttendanceModule,
-    FacedataModule,
+    AuthModule,
+    PersonModule,
+    SessionModule,
+    DetectionLogModule,
+    AdminModule,
+    CameraModule,
+    CommonModule,
+    AiVectorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-  constructor(private dataSource: DataSource) {}
-}
+export class AppModule {}

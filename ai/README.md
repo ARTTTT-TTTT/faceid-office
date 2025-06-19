@@ -4,13 +4,13 @@
 
 ### Install Python 3.11
 
-- #### MacOS
+- `Linux`
 
 ```bash
 brew install python@3.11
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 winget install Python.Python.3.11
@@ -18,18 +18,18 @@ winget install Python.Python.3.11
 
 [Python download](https://www.python.org/downloads/)
 
-##
+---
 
-#### (Optional) Install pipx
+### (Optional) Install pipx
 
-- #### MacOS
+- `Linux`
 
 ```bash
 brew install pipx
 pipx ensurepath
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 python -m pip install --upgrade pipx
@@ -38,9 +38,9 @@ pipx ensurepath
 
 [Pipx download](https://pipx.pypa.io/stable/installation/)
 
-##
+---
 
-### Install Poetry
+## ⚙️ Install Poetry ⚙️
 
 ```bash
 pipx install poetry
@@ -48,28 +48,21 @@ pipx install poetry
 
 [Poetry download](https://python-poetry.org/docs/)
 
-### ⚙️ Configure Poetry to create virtual environment in project ⚙️
+### 🔨 Configure Poetry to create virtual environment in project 🔨
 
 ```bash
 poetry config virtualenvs.in-project true
 ```
 
-### Install dependencies
+### 🔧 ! If you encounter issues because you are not using Python 3.11 as your main version, create and set the virtual environment 🔧
 
-```bash
-cd ai
-poetry install
-```
-
-### 🔧 Create and Set the Virtual Environment 🔧
-
-- #### MacOS
+- `Linux`
 
 ```bash
 poetry env use python3.11
 ```
 
-- #### Windows
+- `Windows`
 
 ```bash
 py -3.11 -c "import sys; print(sys.executable)"
@@ -77,6 +70,15 @@ py -3.11 -c "import sys; print(sys.executable)"
 
 ```bash
 poetry env use [full path\Python\Python311\python.exe]
+```
+
+---
+
+## ⬇️ Install dependencies ⬇️
+
+```bash
+cd ai
+poetry install
 ```
 
 ### 🔧 Setting Up Virtual Environment in VS Code 🔧
@@ -91,31 +93,31 @@ poetry env info --path
 
 `Enter interpreter path...`
 
+---
+
 ## 🚀 Compile and run 🚀
 
-#### 🧪 development
+### 🧪 development
 
 ```bash
-poetry run fastapi dev
+fastapi dev
 ```
 
-#### 🚀 production
+### 🚀 production
 
 ```bash
-poetry run fastapi run
+fastapi run
 ```
 
-## 🛢 Running Redis on Docker 🛢
+---
 
-```bash
-docker run -d -p 6379:6379 --name redis redis
-```
-
-## 🧹 Format document 🧹
+## 🧹 Format documents 🧹
 
 ```bash
 black .
 ```
+
+---
 
 ## 📚 Documentation 📚
 

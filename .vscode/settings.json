@@ -1,0 +1,110 @@
+{
+  // Files & Editor Settings
+  "files.autoSave": "afterDelay",
+  "files.eol": "auto",
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "editor.guides.bracketPairs": true,
+  "editor.linkedEditing": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.rulers": [],
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // Default formatter for unknown file types
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "editor.selectionHighlight": false,
+  "editor.suggestSelection": "first",
+  "editor.tabCompletion": "onlySnippets",
+  "editor.wordBasedSuggestions": "off",
+
+  // JavaScript/TypeScript Settings
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // Diff Editor Settings
+  "diffEditor.ignoreTrimWhitespace": true,
+  "diffEditor.wordWrap": "off",
+
+  // Prettier Settings
+  "prettier.printWidth": 100,
+  "prettier.tabWidth": 2,
+  "prettier.proseWrap": "preserve",
+  "prettier.endOfLine": "lf",
+  "prettier.resolveGlobalModules": true,
+  "prettier.arrowParens": "always",
+  "prettier.singleQuote": true,
+  "prettier.jsxSingleQuote": true,
+  "prettier.semi": true,
+  "prettier.trailingComma": "all",
+
+  // Specific Language Formatters & Settings (Overrides editor.defaultFormatter)
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "isort.args": ["--profile", "black"],
+  "ruff.organizeImports": true,
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+
+  // Extension Specific Settings
+  "python.createEnvironment.trigger": "off", // Python extension setting
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "classNames",
+    "containerClassName"
+  ], // Tailwind CSS extension setting
+  "css.validate": false, // Disable default CSS validation, often useful with Tailwind
+  "github.copilot.nextEditSuggestions.enabled": false, // GitHub Copilot setting
+  "database-client.autoSync": true, // Database client extension setting
+  "path-intellisense.extensionOnImport": true
+}

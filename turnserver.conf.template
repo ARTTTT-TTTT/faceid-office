@@ -1,0 +1,30 @@
+# ==== Listening settings ====
+listening-ip=0.0.0.0
+listening-port=3478
+tls-listening-port=5349
+
+external-ip=${TURN_EXTERNAL_IP}
+# e.g. TURN_EXTERNAL_IP=127.0.0.1 [DEV], 203.0.113.1/192.168.1.10 [PROD]
+
+# ==== TURN authentication ====
+fingerprint
+lt-cred-mech
+use-auth-secret
+static-auth-secret=${TURN_SECRET}
+realm=${TURN_REALM}
+
+# ==== CLI access ====
+cli-password=${TURN_CLI_PASSWORD}
+
+# ==== Relay settings ====
+min-port=50000
+max-port=60000
+
+# ==== Security and performance ====
+no-sqlite
+no-loopback-peers
+no-multicast-peers
+
+# ==== Debugging ====
+${TURN_VERBOSE}
+# e.g. TURN_VERBOSE=verbose [DEV], TURN_VERBOSE= [empty] in PROD

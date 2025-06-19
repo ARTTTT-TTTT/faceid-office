@@ -1,5 +1,8 @@
 import { Metadata } from 'next';
-import * as React from 'react';
+
+import { AppSidebar } from '@/components/app-bar/app-sidebar';
+import { SiteHeader } from '@/components/dashboard/site-header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -11,5 +14,13 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <SidebarProvider>
+      <AppSidebar variant='inset' />
+      <SidebarInset>
+        <SiteHeader />
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

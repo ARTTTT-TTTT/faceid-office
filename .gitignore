@@ -1,2 +1,10 @@
-# misc
 .DS_Store
+
+node_modules
+pnpm-lock.yaml
+
+storage
+
+.env
+livekit.yaml
+turnserver.conf

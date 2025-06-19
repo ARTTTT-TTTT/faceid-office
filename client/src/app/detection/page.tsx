@@ -1,121 +1,155 @@
 'use client';
 
+import type { Variants } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 
-import logger from '@/lib/logger';
-import { useFetch } from '@/hooks/useFetch';
+import { useFetch } from '@/hooks/use-fetch';
 
-import { AttendanceCard } from '@/components/detection/attendance_card';
-import { CameraStream } from '@/components/detection/camera_stream';
-import SessionEnd from '@/components/detection/session_end';
+import { CameraStream } from '@/components/detection/camera-stream';
+import { DetectionPerson } from '@/components/detection/detection-person';
+import { DetectionTable } from '@/components/detection/detection-table';
+import { DetectionUnknown } from '@/components/detection/detection-unknown';
+import { SignYourself } from '@/components/detection/sign-yourself';
 
-import { fetchLatestUserLogs } from '@/app/api/detection/route';
-import { fetchRedisStatus, fetchSetting } from '@/app/api/setting/route';
+import { getSettings } from '@/utils/api/admin';
+import { me } from '@/utils/api/auth';
+import { getLatestDetectionLogs } from '@/utils/api/detection-log';
+import { getSessionStatus } from '@/utils/api/session';
 
+import { AdminSettings } from '@/types/admin';
+import { Me } from '@/types/auth';
 import {
-  RedisStartStatus,
-  RedisStatus,
-  RedisStopStatus,
-  Setting,
-} from '@/types/setting';
-import { UserLog } from '@/types/user-log';
+  DetectionPersonResponse,
+  DetectionUnknownResponse,
+} from '@/types/detection-log';
+import { Session } from '@/types/session';
 
-// !FIX แสดงผลเวลาผิด
+const sectionVariantsTop = {
+  hidden: { y: -100, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 20,
+      delay: 0.4,
+    },
+  },
+};
+
+const sectionVariantsLeft: Variants = {
+  hidden: { x: -100, opacity: 0 },
+  visible: (custom = 0) => ({
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
+      delay: custom,
+    },
+  }),
+};
+
+const sectionVariantsRight = {
+  hidden: { x: 100, opacity: 0 },
+  visible: (custom = 0) => ({
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 20,
+      delay: custom,
+    },
+  }),
+};
+
+// TODO: เพิ่ม loading
 
 export default function DetectionPage() {
-  const [logUsers, setLogUsers] = useState<UserLog[]>([]);
-  const [animationKey, setAnimationKey] = useState<number>(0);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
 
-  const { data: settingData, loading: loadingSetting } =
-    useFetch<Setting | null>(fetchSetting);
+  const { data: userData } = useFetch<Me>(me);
+  const {
+    data: sessionData,
+    setData: setSessionData,
+    loading: sessionLoading,
+  } = useFetch<Session>(getSessionStatus);
+  const { data: settingsData } = useFetch<AdminSettings>(getSettings);
 
-  const fetchRedis = useCallback(() => {
-    if (!settingData) return Promise.resolve(null);
-    return fetchRedisStatus(settingData._id);
-  }, [settingData]);
+  const fetchUnknownLogs = useCallback(async () => {
+    if (!sessionData || !selectedCameraId) return [];
+    return (await getLatestDetectionLogs({
+      isUnknown: true,
+      limit: 2,
+      sessionId: sessionData.sessionId,
+      cameraId: selectedCameraId,
+    })) as DetectionUnknownResponse[];
+  }, [sessionData, selectedCameraId]);
 
-  const { data: redisStatusData, loading: loadingRedisStatus } = useFetch<
-    RedisStartStatus | RedisStopStatus | null
-  >(fetchRedis);
+  const { data: detectionUnknownData, refetch: refetchDetectionUnknown } =
+    useFetch<DetectionUnknownResponse[]>(fetchUnknownLogs);
 
-  const handleUserDetected = async () => {
-    try {
-      const latestUsers = await fetchLatestUserLogs();
-      setLogUsers(latestUsers);
-      setAnimationKey((prev) => prev + 1);
-    } catch (error) {
-      logger(error, '[DetectionPage] handleUserDetected');
-    }
-  };
+  const fetchPersonLogs = useCallback(async () => {
+    if (!sessionData || !selectedCameraId) return [];
+    return (await getLatestDetectionLogs({
+      isUnknown: false,
+      limit: 4,
+      sessionId: sessionData.sessionId,
+      cameraId: selectedCameraId,
+    })) as DetectionPersonResponse[];
+  }, [sessionData, selectedCameraId]);
 
-  const formatBangkokTime = (utcString: string): string => {
-    const date = new Date(utcString);
-    if (isNaN(date.getTime())) return 'Incorrect time';
-
-    const bangkokTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
-    const hours = String(bangkokTime.getHours()).padStart(2, '0');
-    const minutes = String(bangkokTime.getMinutes()).padStart(2, '0');
-
-    return `${hours}:${minutes}`;
-  };
-
-  if (loadingRedisStatus || loadingSetting) return;
-
-  if (
-    !settingData ||
-    !redisStatusData ||
-    redisStatusData.status === RedisStatus.END
-  )
-    return <SessionEnd />;
+  const { data: detectionPersonData, refetch: refetchDetectionPerson } =
+    useFetch<DetectionPersonResponse[]>(fetchPersonLogs);
 
   return (
-    <main
-      className={`grid grid-cols-5 gap-4 p-4 h-screen bg-gray-200 ${
-        logUsers.length > 0 && 'grid-rows-[30%_70%] pb-8'
-      }`}
-      dir='rtl'
-    >
-      {logUsers
-        .sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )
-        .slice(0, 5)
-        .map((user, index) => {
-          const card = (
-            <AttendanceCard
-              key={user._id}
-              name={user.name}
-              image={user.image}
-              timestamp={formatBangkokTime(user.timestamp)}
-              status={user.status}
-            />
-          );
+    <main className='grid h-screen w-screen grid-cols-[35%_25%_40%] grid-rows-1 overflow-hidden'>
+      {/* Section 1 */}
+      <motion.section
+        variants={sectionVariantsLeft}
+        initial='hidden'
+        animate='visible'
+        custom={0.2}
+        className='grid grid-rows-[60%_40%]'
+      >
+        <CameraStream
+          selectedCameraId={selectedCameraId}
+          setSelectedCameraId={setSelectedCameraId}
+          sessionData={sessionData}
+          sessionLoading={sessionLoading}
+          setSessionData={setSessionData}
+          settingsData={settingsData}
+          userData={userData}
+          refetchDetectionPerson={refetchDetectionPerson}
+          refetchDetectionUnknown={refetchDetectionUnknown}
+        />
+        <SignYourself />
+      </motion.section>
 
-          return index === 0 ? (
-            <motion.div
-              key={animationKey}
-              initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 12,
-              }}
-            >
-              {card}
-            </motion.div>
-          ) : (
-            <div key={user._id}>{card}</div>
-          );
-        })}
+      {/* Section 2 */}
+      <motion.section
+        variants={sectionVariantsTop}
+        initial='hidden'
+        animate='visible'
+        className='grid grid-rows-[50%_50%]'
+      >
+        <DetectionUnknown detectionUnknownData={detectionUnknownData ?? []} />
+        <DetectionTable />
+      </motion.section>
 
-      <CameraStream
-        onUserDetected={handleUserDetected}
-        admin_id={settingData._id}
-        work_start_time={settingData.work_start_time}
-      />
+      {/* Section 3 */}
+      <motion.section
+        variants={sectionVariantsRight}
+        initial='hidden'
+        animate='visible'
+        custom={0.6}
+      >
+        <DetectionPerson detectionPersonData={detectionPersonData ?? []} />
+      </motion.section>
     </main>
   );
 }
