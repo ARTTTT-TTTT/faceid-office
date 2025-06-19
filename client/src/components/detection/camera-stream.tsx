@@ -3,13 +3,40 @@ import { useRef, useState } from 'react';
 
 import { CameraStreamControl } from '@/components/detection/camera-stream-control';
 
-export const CameraStream: React.FC = () => {
+import { AdminSettings } from '@/types/admin';
+import { Me } from '@/types/auth';
+import { Session } from '@/types/session';
+
+interface Props {
+  selectedCameraId: string | null;
+  setSelectedCameraId: React.Dispatch<React.SetStateAction<string | null>>;
+  sessionData: Session | null;
+  sessionLoading: boolean;
+  setSessionData: React.Dispatch<React.SetStateAction<Session | null>>;
+  settingsData: AdminSettings | null;
+  userData: Me | null;
+  refetchDetectionPerson: () => void;
+  refetchDetectionUnknown: () => void;
+}
+
+// TODO: เพิ่ม loading
+
+export const CameraStream: React.FC<Props> = ({
+  selectedCameraId,
+  setSelectedCameraId,
+  sessionData,
+  sessionLoading,
+  setSessionData,
+  settingsData,
+  userData,
+  refetchDetectionPerson,
+  refetchDetectionUnknown,
+}) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const localCanvasRef = useRef<HTMLCanvasElement>(null);
   const remoteCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [isWsLoading, setIsWsLoading] = useState(false);
-
   const [isStreaming, setIsStreaming] = useState(false);
 
   return (
@@ -21,9 +48,18 @@ export const CameraStream: React.FC = () => {
         localCanvasRef={localCanvasRef}
         remoteCanvasRef={remoteCanvasRef}
         setIsWsLoading={setIsWsLoading}
+        selectedCameraId={selectedCameraId}
+        setSelectedCameraId={setSelectedCameraId}
+        sessionData={sessionData}
+        sessionLoading={sessionLoading}
+        setSessionData={setSessionData}
+        settingsData={settingsData}
+        userData={userData}
+        refetchDetectionPerson={refetchDetectionPerson}
+        refetchDetectionUnknown={refetchDetectionUnknown}
       />
 
-      {/* DETECTED PERSON CAMERA STREAM */}
+      {/* DETECTED CAMERA STREAM */}
       <article className='flex size-full flex-col items-center justify-center gap-2'>
         {!isStreaming ? (
           <div className='flex flex-col items-center gap-2 text-red-600'>

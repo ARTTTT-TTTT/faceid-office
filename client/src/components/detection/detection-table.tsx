@@ -16,13 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-import { FaceTrackingResult } from '@/types/websocket';
-
-interface Props {
-  trackingResults: FaceTrackingResult[];
-}
-
-export const DetectionTable: React.FC<Props> = ({ trackingResults }) => {
+export const DetectionTable: React.FC = () => {
   return (
     <Card className='overflow-hidden rounded-none'>
       <CardHeader className='sr-only'>
@@ -38,14 +32,12 @@ export const DetectionTable: React.FC<Props> = ({ trackingResults }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trackingResults.slice(0, 12).map((item, index) => (
-              <TableRow className='w-full' key={index}>
-                <TableCell className='whitespace-normal break-all'>
-                  {item.person_id}
-                </TableCell>
-                <TableCell className='text-center'>{item.person_id}</TableCell>
-              </TableRow>
-            ))}
+            <TableRow className='w-full'>
+              <TableCell className='whitespace-normal break-all'>
+                item.person_id
+              </TableCell>
+              <TableCell className='text-center'>item.person_id</TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </CardContent>

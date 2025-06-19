@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 import numpy
+import time
 
 from app.configs.core_config import CoreConfig
 from app.services.redis_service import RedisService
@@ -51,7 +52,7 @@ class FaceTracking:
             print(f"[ERROR] Error in _is_near: {e}")
             return False
 
-    def _match_or_create_blob(self, position, face_img, matched_person, matched_ids):
+    async def _match_or_create_blob(self, position, face_img, matched_person, matched_ids):
         """Update existing blob if near, else create new blob"""
         try:
             for blob in self.blobs:
@@ -81,7 +82,7 @@ class FaceTracking:
             print(f"[ERROR] Failed in _match_or_create_blob: {e}")
             # return {"id": None, "name": None}
 
-    def _decrease_life_and_cleanup(self, matched_ids=set()):
+    async def _decrease_life_and_cleanup(self, matched_ids=set()):
         """
         Decrease life of unmatched blobs and remove those expired
 
@@ -109,7 +110,7 @@ class FaceTracking:
         try:
             results = []
             for blob in to_remove:
-                name, detection_image = blob.get_match_summary()
+                name, detection_image = await blob.get_match_summary()
                 if detection_image is None or name is None:
                     continue  # ข้ามไปถ้าไม่มีภาพ ไม่มีชื่อ
 
@@ -270,12 +271,13 @@ class FaceTracking:
         Returns:
             Dict[str, str]: {"status": ..., "message": ...}
         """
+        start_total = time.perf_counter()
         try:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
             if not detections or not hasattr(detections, "boxes") or not detections.boxes:
-                tracking_results = self._decrease_life_and_cleanup()
+                tracking_results = await self._decrease_life_and_cleanup()
                 result = await self._process_tracking_result(tracking_results or [])
                 return frame, result
 
@@ -286,7 +288,9 @@ class FaceTracking:
                     "message": "ไม่พบใบหน้าในเฟรม",
                 }
 
-            positions, face_images = self.detection.extract_faces_and_positions(frame, detections)
+            positions, face_images = await self.detection.extract_faces_and_positions(
+                frame, detections
+            )
             matched_ids = set()
 
             # Parallel embedding generation
@@ -299,17 +303,22 @@ class FaceTracking:
                 if embedding is None:
                     continue  # Skip invalid embeddings
 
-                matched_person = self.recognition.find_best_match(embedding)
-                result = self._match_or_create_blob(position, face_img, matched_person, matched_ids)
+                matched_person = await self.recognition.find_best_match(embedding)
+                result = await self._match_or_create_blob(
+                    position, face_img, matched_person, matched_ids
+                )
                 tracking_results.append(result)
 
-            tracking_results = self._decrease_life_and_cleanup(matched_ids)
+            tracking_results = await self._decrease_life_and_cleanup(matched_ids)
             result = await self._process_tracking_result(tracking_results or [])
+
+            end_total = time.perf_counter()
+            print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
             return annotation, result
 
         except Exception as e:
             print(f"[ERROR] in tracking_face: {e}")
-            self._decrease_life_and_cleanup()
+            await self._decrease_life_and_cleanup()
             return frame, {
                 "status": self.core_config.ERROR,
                 "message": "tracking face: {e}",

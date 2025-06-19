@@ -62,7 +62,7 @@ class FaceRecognition:
         except Exception as e:
             print(f"[ERROR] Failed to load FAISS index: {e}")
 
-    def find_best_match(self, embedding):
+    async def find_best_match(self, embedding):
         """Find the best matching person for given embedding with error handling."""
         try:
             if self.index is None:

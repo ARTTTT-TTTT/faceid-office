@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 
 import logger from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import { useFetch } from '@/hooks/use-fetch';
 import { useSessionCountdown } from '@/hooks/use-session-countdown';
 
 import { Button } from '@/components/ui/button';
@@ -23,13 +22,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { getSettings } from '@/utils/api/admin';
-import { me } from '@/utils/api/auth';
-import {
-  endSession,
-  getSessionStatus,
-  startSession,
-} from '@/utils/api/session';
+import { endSession, startSession } from '@/utils/api/session';
 import { createWebSocket } from '@/utils/api/websocket';
 import { formatTime } from '@/utils/format-time';
 
@@ -45,6 +38,15 @@ interface Props {
   localCanvasRef: React.RefObject<HTMLCanvasElement>;
   remoteCanvasRef: React.RefObject<HTMLCanvasElement>;
   setIsWsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedCameraId: string | null;
+  setSelectedCameraId: React.Dispatch<React.SetStateAction<string | null>>;
+  sessionData: Session | null;
+  sessionLoading: boolean;
+  setSessionData: React.Dispatch<React.SetStateAction<Session | null>>;
+  settingsData: AdminSettings | null;
+  userData: Me | null;
+  refetchDetectionPerson: () => void;
+  refetchDetectionUnknown: () => void;
 }
 // TODO: เพิ่ม loading
 
@@ -55,21 +57,20 @@ export const CameraStreamControl: React.FC<Props> = ({
   localCanvasRef,
   remoteCanvasRef,
   setIsWsLoading,
+  selectedCameraId,
+  setSelectedCameraId,
+  sessionData,
+  sessionLoading,
+  setSessionData,
+  settingsData,
+  userData,
+  refetchDetectionPerson,
+  refetchDetectionUnknown,
 }) => {
   const router = useRouter();
   const wsRef = useRef<WebSocket | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
-
-  const { data: userData, loading: _userLoading } = useFetch<Me>(me);
-  const {
-    data: sessionData,
-    setData: setSessionData,
-    loading: sessionLoading,
-  } = useFetch<Session>(getSessionStatus);
-  const { data: settingsData, loading: _settingsLoading } =
-    useFetch<AdminSettings>(getSettings);
 
   const showErrorToast = (message: string) => {
     toast.error(message, {
@@ -148,7 +149,13 @@ export const CameraStreamControl: React.FC<Props> = ({
     ) {
       setSelectedCameraId(settingsData.cameras[0]?.id);
     }
-  }, [devices, settingsData, selectedCameraId, selectedDeviceId]);
+  }, [
+    devices,
+    settingsData,
+    selectedCameraId,
+    selectedDeviceId,
+    setSelectedCameraId,
+  ]);
 
   // * ========== CAMERA ===========
   const handleStartCamera = async () => {
@@ -247,8 +254,25 @@ export const CameraStreamControl: React.FC<Props> = ({
             img.src = `data:image/jpeg;base64,${imageData}`;
           },
           (_results: FaceTrackingResult) => {
-            if (_results.status !== 'NOT_FOUND') {
+            if (_results.status === 'SESSION_END') {
+              handleEndSession();
+            }
+            if (_results.status === 'FOUND_PERSON') {
+              refetchDetectionPerson();
               logger(_results);
+            }
+            if (_results.status === 'FOUND_UNKNOWN') {
+              refetchDetectionUnknown();
+              logger(_results);
+            }
+            if (_results.status === 'FOUND_PERSON_AND_UNKNOWN') {
+              refetchDetectionPerson();
+              refetchDetectionUnknown();
+              logger(_results);
+            }
+            if (_results.status === 'ALREADY_LOGGED') {
+              logger(_results);
+              showErrorToast('Already logged');
             }
           },
         );

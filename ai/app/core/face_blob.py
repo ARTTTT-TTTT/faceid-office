@@ -51,7 +51,7 @@ class FaceBlob:
         except Exception as e:
             print(f"[ERROR] Update failed for blob {self.id}: {e}")
 
-    def get_match_summary(self):
+    async def get_match_summary(self):
         try:
             valid_named = {
                 name: count

@@ -83,7 +83,7 @@ class WebsocketService:
                         pass
                     break
 
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.05)
 
     async def _process_and_send_frame(self, websocket: WebSocket, data: bytes, connection_key: str):
         try:

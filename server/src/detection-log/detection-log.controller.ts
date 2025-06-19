@@ -21,7 +21,7 @@ import {
 } from '@/detection-log/dto/get-detection-log.dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('detection-log')
+@Controller('detection-logs')
 export class DetectionLogController {
   constructor(private readonly detectionLogService: DetectionLogService) {}
 

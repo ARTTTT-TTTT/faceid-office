@@ -52,7 +52,7 @@ class ServerService:
             "personId": person_id,
         }
 
-        api_url = f"{self.app_config.SERVER_URL}/detection-log"
+        api_url = f"{self.app_config.SERVER_URL}/detection-logs"
 
         async with httpx.AsyncClient() as client:
             try:

@@ -38,6 +38,8 @@ import { createPerson } from '@/utils/api/person';
 
 import { CreatePersonPayload, Person, Position } from '@/types/person';
 
+// TODO: handdle error .png
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;

@@ -26,7 +26,7 @@ class FaceDetection:
             print(f"[ERROR] Face detection failed: {e}")
             return None
 
-    def extract_faces_and_positions(self, frame, detections):
+    async def extract_faces_and_positions(self, frame, detections):
         """Extract face images and their center positions from detections"""
         if detections is None or not detections.boxes:
             return [], []

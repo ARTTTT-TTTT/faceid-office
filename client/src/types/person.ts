@@ -1,9 +1,9 @@
 export enum Position {
-  STUDENT,
-  MANAGER,
-  EMPLOYEE,
-  OFFICER,
-  GUEST,
+  STUDENT = 'นักเรียน/นักศึกษา',
+  MANAGER = 'ผู้จัดการ',
+  EMPLOYEE = 'พนักงาน',
+  OFFICER = 'เจ้าหน้าที่',
+  GUEST = 'แขก',
 }
 
 export interface Person {
@@ -13,8 +13,8 @@ export interface Person {
   fullName: string;
   id: string;
   position: Position;
-  profileImagePath: Position;
-  updatedAt: Position;
+  profileImagePath: string;
+  updatedAt: string;
 }
 
 export interface CreatePersonPayload {

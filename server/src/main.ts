@@ -33,7 +33,7 @@ async function bootstrap() {
   );
 
   app.useStaticAssets(join(__dirname, '..', '..', 'storage'), {
-    prefix: '/files/', // This is the virtual path in your URL
+    prefix: '/api/storage',
   });
 
   const port = configService.get<number>('PORT') ?? 8080;
