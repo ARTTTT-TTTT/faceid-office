@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 
 import '@/styles/globals.css';
 
-import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 
 import { siteConfig } from '@/constants/config';
@@ -51,14 +50,7 @@ export default function RootLayout({
       <head />
       <body>
         <Toaster />
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='light'
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

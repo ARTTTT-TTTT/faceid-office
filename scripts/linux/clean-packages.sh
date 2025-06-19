@@ -2,7 +2,6 @@
 
 # * chmod +x scripts/linux/clean-packages.sh
 # * ./scripts/linux/clean-packages.sh
-
 echo "Cleaning node_modules, lock files, and build caches..."
 
 ROOT_DIR=$(pwd)
