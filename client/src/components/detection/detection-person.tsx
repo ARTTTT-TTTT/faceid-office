@@ -18,7 +18,7 @@ export const DetectionPerson: React.FC<Props> = ({ detectionPersonData }) => {
           <section className='flex h-full w-full flex-shrink-0 gap-2'>
             <figure className='relative flex h-full w-full flex-col items-center justify-center'>
               <Image
-                src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.detectionImagePath.replace('/storage', '')}`}
+                src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.detectionImagePath}`}
                 alt='Detection'
                 fill
                 className='rounded-lg object-fill ring-2 ring-blue-400'
@@ -29,7 +29,7 @@ export const DetectionPerson: React.FC<Props> = ({ detectionPersonData }) => {
             </figure>
             <figure className='relative flex h-full w-full flex-col items-center justify-center'>
               <Image
-                src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.profileImagePath.replace('/storage', '')}`}
+                src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.profileImagePath}`}
                 alt='Profile'
                 fill
                 className='rounded-lg object-fill ring-2 ring-green-600'
