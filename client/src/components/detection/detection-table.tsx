@@ -33,10 +33,8 @@ export const DetectionTable: React.FC = () => {
           </TableHeader>
           <TableBody>
             <TableRow className='w-full'>
-              <TableCell className='whitespace-normal break-all'>
-                item.person_id
-              </TableCell>
-              <TableCell className='text-center'>item.person_id</TableCell>
+              <TableCell className='whitespace-normal break-all'></TableCell>
+              <TableCell className='text-center'></TableCell>
             </TableRow>
           </TableBody>
         </Table>
