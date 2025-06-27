@@ -4,7 +4,35 @@ import {
   DetectionPersonResponse,
   DetectionUnknownResponse,
   LatestDetectionLogPayload,
+  PersonDetectionLogPayload,
 } from '@/types/detection-log';
+
+export const getPersonDetectionLogs = async (
+  payload: PersonDetectionLogPayload,
+): Promise<DetectionPersonResponse[]> => {
+  try {
+    const queryParams = new URLSearchParams({
+      limit: payload.limit.toString(),
+      sessionId: payload.sessionId,
+      cameraId: payload.cameraId,
+    }).toString();
+
+    const res = await fetch(`api/detection-logs?${queryParams}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Fetch list failed');
+    }
+
+    return data;
+  } catch (error) {
+    logger(error, '[API] getPersonDetectionLogs');
+    throw error;
+  }
+};
 
 export const getLatestDetectionLogs = async (
   payload: LatestDetectionLogPayload,

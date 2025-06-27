@@ -73,6 +73,7 @@ export default function DetectionPage() {
   const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
 
   const { data: userData } = useFetch<Me>(me);
+
   const {
     data: sessionData,
     setData: setSessionData,

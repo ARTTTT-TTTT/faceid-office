@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { PersonRow } from '@/components/dashboard/person-row';
+import { DetectionRow } from '@/components/dashboard/detection-row';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -21,15 +21,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-import { Person } from '@/types/person';
+import { DetectionPersonResponse } from '@/types/detection-log';
 
 interface Props {
-  handleSort: (key: keyof Person) => void;
-  getSortIcon: (key: keyof Person) => JSX.Element | null;
-  currentItems: Person[];
+  handleSort: (key: keyof DetectionPersonResponse) => void;
+  getSortIcon: (key: keyof DetectionPersonResponse) => JSX.Element | null;
+  currentItems: DetectionPersonResponse[];
 }
 
-export const PersonTable: React.FC<Props> = ({
+export const DetectionTable: React.FC<Props> = ({
   handleSort,
   getSortIcon,
   currentItems,
@@ -45,17 +45,22 @@ export const PersonTable: React.FC<Props> = ({
               label: 'ตำแหน่ง',
               className: 'justify-center',
             },
+            {
+              key: 'detectedAt',
+              label: 'เวลา',
+              className: 'justify-center',
+            },
           ].map(({ key, label, className }) => (
             <TableHead
               key={key}
               className='text-nowrap hover:bg-blue-400'
-              onClick={() => handleSort(key as keyof Person)}
+              onClick={() => handleSort(key as keyof DetectionPersonResponse)}
             >
               <span
                 className={`flex items-center gap-1 font-semibold text-white ${className}`}
               >
                 {label}
-                {getSortIcon(key as keyof Person)}
+                {getSortIcon(key as keyof DetectionPersonResponse)}
               </span>
             </TableHead>
           ))}
@@ -63,13 +68,13 @@ export const PersonTable: React.FC<Props> = ({
       </TableHeader>
       <TableBody>
         {currentItems.length > 0 ? (
-          currentItems.map((person: Person) => (
-            <PersonRow key={person.id} person={person} />
+          currentItems.map((person: DetectionPersonResponse) => (
+            <DetectionRow key={person.id} person={person} />
           ))
         ) : (
           <TableRow className='hover:bg-blue-200'>
-            <TableCell colSpan={2} className='py-4 text-center text-gray-500'>
-              ไม่มีข้อมูลสมาชิก
+            <TableCell colSpan={3} className='py-4 text-center text-gray-500'>
+              ไม่พบบุคคลที่ตรวจสอบได้
             </TableCell>
           </TableRow>
         )}
@@ -78,9 +83,9 @@ export const PersonTable: React.FC<Props> = ({
         <TableRow className='bg-gray-50'>
           <TableCell
             className='pl-5 font-semibold text-gray-700 dark:text-gray-200'
-            colSpan={1}
+            colSpan={2}
           >
-            จำนวนสมาชิก
+            จำนวนที่ตรวจสอบได้
           </TableCell>
           <TableCell className='text-center font-semibold text-gray-700 dark:text-gray-200'>
             {currentItems.length}
@@ -91,7 +96,7 @@ export const PersonTable: React.FC<Props> = ({
   );
 };
 
-type PersonTableFooterProps = {
+type DetectionTableFooterProps = {
   currentPage: number;
   totalPages: number;
   itemsPerPage: number;
@@ -99,7 +104,7 @@ type PersonTableFooterProps = {
   setCurrentPage: Dispatch<SetStateAction<number>>;
 };
 
-export const PersonTableFooter: React.FC<PersonTableFooterProps> = ({
+export const DetectionTableFooter: React.FC<DetectionTableFooterProps> = ({
   currentPage,
   totalPages,
   itemsPerPage,

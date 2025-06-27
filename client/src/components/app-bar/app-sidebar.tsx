@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboardIcon, SettingsIcon } from 'lucide-react';
+import { LayoutDashboardIcon, SettingsIcon, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
 
@@ -23,6 +23,11 @@ const staticData = {
       title: 'แดชบอร์ด',
       url: 'dashboard',
       icon: LayoutDashboardIcon,
+    },
+    {
+      title: 'สมาชิก',
+      url: 'person',
+      icon: UsersRound,
     },
   ],
   navSecondary: [

@@ -51,3 +51,23 @@ export const getPeople = async (): Promise<Person[]> => {
     throw error;
   }
 };
+
+export const countPeople = async (): Promise<number> => {
+  try {
+    const res = await fetch('/api/people/count', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Fetch count people failed');
+    }
+
+    return data;
+  } catch (error) {
+    logger(error, '[API] countPeople');
+    throw error;
+  }
+};

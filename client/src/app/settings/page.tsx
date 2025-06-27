@@ -60,7 +60,7 @@ export default function SettingsPage() {
 
       {/* Stagger Container */}
       {settingsLoading ? (
-        <div className='flex size-fit items-center justify-center gap-2 rounded-md border p-4 text-muted-foreground'>
+        <div className='my-auto flex size-fit items-center justify-center gap-2 rounded-md border p-4 text-muted-foreground'>
           <Loader2 className='size-6 animate-spin' />
           <span>กำลังโหลดข้อมูลการตั้งค่า...</span>
         </div>
@@ -93,7 +93,7 @@ export default function SettingsPage() {
           </motion.div>
         </motion.section>
       ) : (
-        <div className='flex size-fit items-center justify-center gap-2 rounded-md border border-red-500 p-4 text-red-500'>
+        <div className='my-auto flex size-fit items-center justify-center gap-2 rounded-md border border-red-500 p-4 text-red-500'>
           <X className='size-6' />
           <span>ไม่พบข้อมูลการตั้งค่า โปรดติดต่อผู้พัฒนา...</span>
         </div>

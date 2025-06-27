@@ -27,17 +27,18 @@ export const DetectionPerson: React.FC<Props> = ({ detectionPersonData }) => {
                 ตรวจจับได้
               </span>{' '}
             </figure>
-            <figure className='relative flex h-full w-full flex-col items-center justify-center'>
-              <Image
-                src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.profileImagePath}`}
-                alt='Profile'
-                fill
-                className='rounded-lg object-fill ring-2 ring-green-600'
-              />
-              <span className='sr-only absolute bottom-0 rounded bg-white bg-opacity-75 p-0.5 text-xs text-gray-500'>
-                โปรไฟล์
-              </span>{' '}
-              <figcaption className='absolute bottom-0 flex h-fit w-full flex-col items-center justify-center rounded-lg border border-black bg-white'>
+            <figure className='flex w-full flex-col overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-gray-200'>
+              <div className='relative h-full w-full'>
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_SERVER_URL}${item.profileImagePath}`}
+                  alt='Profile'
+                  fill
+                  className='rounded-lg object-fill ring-2 ring-green-600'
+                />
+                <span className='sr-only'>โปรไฟล์</span>
+              </div>
+
+              <figcaption className='flex w-full flex-col items-center justify-center p-1 text-center'>
                 <h3 className='text-lg font-semibold text-gray-800'>
                   {item.fullName}
                 </h3>

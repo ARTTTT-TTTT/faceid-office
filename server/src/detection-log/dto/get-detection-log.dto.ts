@@ -1,10 +1,17 @@
 import { Position } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class GetDetectionLogQueryDto {
   @IsBoolean()
-  @Transform(({ value }) => value === 'true') // Manually transform 'true'/'false' strings to boolean
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
   isUnknown: boolean;
 
   @IsInt()

@@ -160,6 +160,12 @@ export class PersonService {
     return people;
   }
 
+  async countPeople(adminId: string): Promise<number> {
+    return this.prisma.person.count({
+      where: { adminId },
+    });
+  }
+
   // * ========== OTHER ===========
 
   async getPerson(personId: string) {

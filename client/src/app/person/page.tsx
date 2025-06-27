@@ -1,6 +1,6 @@
 'use client';
 import { motion, Variants } from 'framer-motion';
-import { ChevronDown, ChevronUp, Loader2, Users, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, Plus, Users, X } from 'lucide-react';
 import {
   useCallback,
   useDeferredValue,
@@ -8,24 +8,20 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { DateRange } from 'react-day-picker';
 
 import { useFetch } from '@/hooks/use-fetch';
 
-import { DetectionFilter } from '@/components/dashboard/detection-filter';
-import DetectionSummary from '@/components/dashboard/detection-summary';
+import { AddPersonDialog } from '@/components/person/add-person-dialog';
+import { PersonFilter } from '@/components/person/person-filter';
 import {
-  DetectionTable,
-  DetectionTableFooter,
-} from '@/components/dashboard/detection-table';
+  PersonTable,
+  PersonTableFooter,
+} from '@/components/person/person-table';
+import { Button } from '@/components/ui/button';
 
-import { getSettings } from '@/utils/api/admin';
-import { getPersonDetectionLogs } from '@/utils/api/detection-log';
-import { getSessionStatus } from '@/utils/api/session';
+import { getPeople } from '@/utils/api/person';
 
-import { AdminSettings } from '@/types/admin';
-import { DetectionPersonResponse } from '@/types/detection-log';
-import { Session } from '@/types/session';
+import { Person } from '@/types/person';
 
 const itemVariants: Variants = {
   hidden: { y: 40, opacity: 0 },
@@ -41,18 +37,16 @@ const itemVariants: Variants = {
   }),
 };
 
-// TODO: filter cameras, sessions, days
-
-export default function DashboardPage() {
-  const [sortedData, setSortedData] = useState<DetectionPersonResponse[]>([]);
+export default function PersonPage() {
+  const [sortedData, setSortedData] = useState<Person[]>([]);
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof DetectionPersonResponse;
+    key: keyof Person;
     direction: string;
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const deferredSearch = useDeferredValue(searchTerm);
 
   // * PAGINATION
@@ -61,27 +55,16 @@ export default function DashboardPage() {
   const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
-  const { data: sessionData, loading: sessionLoading } =
-    useFetch<Session>(getSessionStatus);
-  const { data: settingsData, loading: settingsLoading } =
-    useFetch<AdminSettings>(getSettings);
-
-  const fetchPersonLogs = useCallback(async () => {
-    if (!sessionData || !settingsData?.cameras) return [];
-    return (await getPersonDetectionLogs({
-      limit: 100,
-      sessionId: sessionData.sessionId,
-      cameraId: settingsData.cameras[1]?.id,
-    })) as DetectionPersonResponse[];
-  }, [sessionData, settingsData?.cameras]);
-
-  const { data: detectionPersonData, loading: detectionPersonLoading } =
-    useFetch<DetectionPersonResponse[]>(fetchPersonLogs);
+  const {
+    data: peopleData,
+    setData: setPeopleData,
+    loading: peopleLoading,
+  } = useFetch<Person[]>(getPeople);
 
   const filteredData = useMemo(() => {
-    if (!detectionPersonData) return [];
+    if (!peopleData) return [];
 
-    let data = [...detectionPersonData];
+    let data = [...peopleData];
 
     if (deferredSearch) {
       data = data.filter((person) =>
@@ -97,16 +80,16 @@ export default function DashboardPage() {
       );
     }
     return data;
-  }, [detectionPersonData, deferredSearch]);
+  }, [peopleData, deferredSearch]);
 
   const sortData = useCallback(
     (
-      data: DetectionPersonResponse[],
+      data: Person[],
       config: {
-        key: keyof DetectionPersonResponse;
+        key: keyof Person;
         direction: string;
       } | null,
-    ): DetectionPersonResponse[] => {
+    ): Person[] => {
       if (!config) return data;
 
       return [...data].sort((a, b) => {
@@ -137,7 +120,7 @@ export default function DashboardPage() {
     [],
   );
 
-  const getSortIcon = (key: keyof DetectionPersonResponse) => {
+  const getSortIcon = (key: keyof Person) => {
     if (!sortConfig || sortConfig.key !== key) return null;
     return sortConfig.direction === 'ascending' ? (
       <ChevronUp className='ml-1 inline-block h-4 w-4' />
@@ -146,7 +129,7 @@ export default function DashboardPage() {
     );
   };
 
-  const handleSort = (key: keyof DetectionPersonResponse) => {
+  const handleSort = (key: keyof Person) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig?.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
@@ -167,40 +150,33 @@ export default function DashboardPage() {
 
   return (
     <main className='flex size-full flex-col items-center justify-start gap-6 rounded-b-xl bg-gray-100 px-4'>
-      {detectionPersonLoading || sessionLoading || settingsLoading ? (
+      {/* Title */}
+      <motion.h1
+        // initial={{ y: -170 }}
+        // animate={{ y: 0 }}
+        // transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className='mt-2 text-4xl font-extrabold tracking-tight text-gray-800'
+      >
+        ตารางสมาชิก
+      </motion.h1>
+
+      {peopleLoading ? (
         <div className='my-auto flex size-fit items-center justify-center gap-2 rounded-md border p-4 text-muted-foreground'>
           <Loader2 className='size-6 animate-spin' />
           <span>กำลังโหลดข้อมูลสมาชิก...</span>
         </div>
-      ) : detectionPersonData || sessionData || settingsData ? (
+      ) : peopleData ? (
         <>
           <motion.div
             variants={itemVariants}
             initial='hidden'
             animate='visible'
             custom={0.1}
-            className='w-full max-w-2xl'
-          >
-            <DetectionSummary
-              person={
-                detectionPersonData && detectionPersonData.length > 0
-                  ? detectionPersonData
-                  : null
-              }
-            />
-          </motion.div>
-          <motion.div
-            variants={itemVariants}
-            initial='hidden'
-            animate='visible'
-            custom={0.2}
             className='w-full max-w-2xl rounded-lg'
           >
-            <DetectionFilter
-              searchTerm={searchTerm}
+            <PersonFilter
+              searchTerm={deferredSearch}
               setSearchTerm={setSearchTerm}
-              dateRange={dateRange}
-              setDateRange={setDateRange}
             />
           </motion.div>
 
@@ -208,24 +184,38 @@ export default function DashboardPage() {
             variants={itemVariants}
             initial='hidden'
             animate='visible'
-            custom={0.3}
+            custom={0.2}
             className='flex h-fit w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 shadow-lg'
           >
             <section className='flex items-center justify-between bg-blue-400 p-4'>
               <span className='flex items-center justify-center gap-2 text-xl font-bold text-white'>
                 <Users className='size-6' />
-                จำนวนบุคคลที่ตรวจสอบได้
+                สมาชิกทั้งหมด
               </span>
+
+              {/* ADD PERSON */}
+              <Button
+                onClick={() => setIsAddPersonDialogOpen(true)}
+                className='w-40 gap-2 bg-green-500 font-bold hover:bg-green-500'
+              >
+                <Plus className='size-10 font-bold' />
+                เพิ่มสมาชิก
+              </Button>
+              <AddPersonDialog
+                isOpen={isAddPersonDialogOpen}
+                onClose={() => setIsAddPersonDialogOpen(false)}
+                setPeopleData={setPeopleData}
+              />
             </section>
 
-            <DetectionTable
+            <PersonTable
               handleSort={handleSort}
               getSortIcon={getSortIcon}
               currentItems={currentItems}
             />
 
             {sortedData.length > 0 && (
-              <DetectionTableFooter
+              <PersonTableFooter
                 currentPage={currentPage}
                 totalPages={totalPages}
                 itemsPerPage={itemsPerPage}
@@ -238,7 +228,7 @@ export default function DashboardPage() {
       ) : (
         <div className='my-auto flex size-fit items-center justify-center gap-2 rounded-md border border-red-500 p-4 text-red-500'>
           <X className='size-6' />
-          <span>ไม่พบข้อมูลบุคคลที่ตรวจสอบได้ โปรดติดต่อผู้พัฒนา...</span>
+          <span>ไม่พบข้อมูลสมาชิก โปรดติดต่อผู้พัฒนา...</span>
         </div>
       )}
     </main>

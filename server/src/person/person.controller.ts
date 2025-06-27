@@ -51,6 +51,11 @@ export class PersonController {
     return this.personService.getPeople(adminId);
   }
 
+  @Get('count')
+  async countPeople(@GetUser('sub') adminId: string) {
+    return this.personService.countPeople(adminId);
+  }
+
   // * ========== OTHER ===========
 
   @Get(':personId')

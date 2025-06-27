@@ -1,5 +1,11 @@
 import { Position } from '@/types/person';
 
+export interface PersonDetectionLogPayload {
+  limit: number;
+  sessionId: string;
+  cameraId: string;
+}
+
 export interface LatestDetectionLogPayload {
   isUnknown: boolean;
   limit: number;

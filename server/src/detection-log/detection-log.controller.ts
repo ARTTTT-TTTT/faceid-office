@@ -60,11 +60,22 @@ export class DetectionLogController {
   //   );
   // }
 
-  @Get('latest') // No path parameter for limit now
-  async getLatestFilteredLogs(
-    @Query() query: GetDetectionLogQueryDto, // Receive all query parameters as an instance of your DTO
+  @Get()
+  async getPersonDetectionLogs(
+    @Query() query: GetDetectionLogQueryDto,
+  ): Promise<GetDetectionPersonResponse[]> {
+    return this.detectionLogService.getPersonDetectionLogs(
+      query.limit,
+      query.sessionId,
+      query.cameraId,
+    );
+  }
+
+  @Get('latest')
+  async getLatestDetectionLogs(
+    @Query() query: GetDetectionLogQueryDto,
   ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
-    return this.detectionLogService.getLatestFilteredDetectionLogs(
+    return this.detectionLogService.getLatestDetectionLogs(
       query.isUnknown,
       query.limit,
       query.sessionId,

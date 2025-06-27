@@ -4,7 +4,6 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { CreateDetectionLogDto } from '@/detection-log/dto/create-detection-log.dto';
-import { DetectionLogResponse } from '@/detection-log/dto/detection-log-response.dto';
 import {
   GetDetectionPersonResponse,
   GetDetectionUnknownResponse,
@@ -157,13 +156,16 @@ export class DetectionLogService {
     }
   }
 
-  async getLatestDetectionLogs(
-    sessionId: string,
+  async getPersonDetectionLogs(
     limit: number,
-  ): Promise<DetectionLogResponse[]> {
+    sessionId: string,
+    cameraId: string,
+  ): Promise<GetDetectionPersonResponse[]> {
     const logs = await this.prisma.detectionLog.findMany({
       where: {
-        sessionId: sessionId,
+        isUnknown: false,
+        sessionId,
+        cameraId,
       },
       orderBy: {
         detectedAt: 'desc',
@@ -171,55 +173,45 @@ export class DetectionLogService {
       take: limit,
       include: {
         person: true,
-        session: {
-          include: {
-            cameras: true,
-          },
-        },
       },
     });
 
-    return logs.map((log) => ({
-      id: log.id,
-      detectedAt: log.detectedAt,
-      detectionImagePath: log.detectionImagePath,
-      camera:
-        Array.isArray(log.session.cameras) && log.session.cameras.length > 0
-          ? {
-              id: log.session.cameras[0].id,
-              name: log.session.cameras[0].name,
-              location: log.session.cameras[0].location,
-            }
-          : null,
-      person: {
-        id: log.person.id,
+    return logs.map((log) => {
+      if (!log.person) {
+        throw new InternalServerErrorException(
+          `Data inconsistency: DetectionLog ${log.id} is marked as known but has no associated person. This indicates a database integrity issue.`,
+        );
+      }
+
+      return {
+        id: log.id,
+        detectedAt: log.detectedAt.toISOString(),
+        detectionImagePath: log.detectionImagePath,
         fullName: log.person.fullName,
         position: log.person.position,
-        profileImageUrl: log.person.profileImagePath,
-      },
-    }));
+        profileImagePath: log.person.profileImagePath,
+      };
+    });
   }
 
-  async getLatestFilteredDetectionLogs(
+  async getLatestDetectionLogs(
     isUnknown: boolean,
     limit: number,
     sessionId: string,
     cameraId: string,
   ): Promise<Array<GetDetectionPersonResponse | GetDetectionUnknownResponse>> {
     const whereClause: Prisma.DetectionLogWhereInput = {
-      // Using 'any' for the dynamic where clause
       isUnknown: isUnknown,
       sessionId: sessionId,
       cameraId: cameraId,
     };
 
     const logs = await this.prisma.detectionLog.findMany({
-      where: whereClause, // Use the dynamically built where clause
+      where: whereClause,
       orderBy: {
         detectedAt: 'desc',
       },
       take: limit,
-      // Only include person if isUnknown is explicitly false
       include: isUnknown === false ? { person: true } : undefined,
     });
 
@@ -236,7 +228,7 @@ export class DetectionLogService {
           detectedAt: log.detectedAt.toISOString(),
           detectionImagePath: log.detectionImagePath,
           fullName: log.person.fullName,
-          position: log.person.position, // Ensure type assertion for Position
+          position: log.person.position,
           profileImagePath: log.person.profileImagePath,
         };
       } else {
