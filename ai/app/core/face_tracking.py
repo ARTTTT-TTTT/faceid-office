@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 import numpy
 
@@ -299,8 +298,11 @@ class FaceTracking:
             matched_ids = set()
 
             # Parallel embedding generation
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                embeddings = list(executor.map(self.embedding.image_embedding, face_images))
+            # with ThreadPoolExecutor(max_workers=1) as executor:
+            #     embeddings = list(executor.map(self.embedding.image_embedding, face_images))
+
+            # embeddings sequentially (no threading)
+            embeddings = [self.embedding.image_embedding(face_img) for face_img in face_images]
 
             # Process each face with precomputed embedding
             tracking_results = []
