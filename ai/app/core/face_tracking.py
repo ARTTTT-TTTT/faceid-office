@@ -108,10 +108,14 @@ class FaceTracking:
             print(f"[ERROR] Error in _decrease_life_and_cleanup: {e}")
         try:
             results = []
+            # print("how blob:", len(to_remove))
             for blob in to_remove:
                 name, detection_image = await blob.get_match_summary()
                 print(f"name: {name}")
+
                 if detection_image is None or name is None:
+                    print(f"[WARNING] Invalid data from blob {blob.id}")
+                    self.blobs.remove(blob)
                     continue  # ข้ามไปถ้าไม่มีภาพ ไม่มีชื่อ
 
                 results.append(
