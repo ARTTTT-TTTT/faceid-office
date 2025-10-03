@@ -83,7 +83,7 @@ class WebsocketService:
                         pass
                     break
 
-            await asyncio.sleep(0.05)
+            # await asyncio.sleep(0.05)
 
     async def _process_and_send_frame(self, websocket: WebSocket, data: bytes, connection_key: str):
         try:
@@ -97,9 +97,12 @@ class WebsocketService:
             frame = cv2.resize(frame, (640, 480))
             annotation, result = await self.face_tracking.tracking_face(frame)
 
-            display_frame = annotation if annotation is not None else frame
+            _display_frame = annotation if annotation is not None else frame
 
-            _, buffer = cv2.imencode(".jpg", display_frame)
+            # _, buffer = cv2.imencode(".jpg", display_frame)
+            # img_str = base64.b64encode(buffer.tobytes()).decode("utf-8")
+
+            _, buffer = cv2.imencode(".jpg", frame)  # ส่งรูปเดิม
             img_str = base64.b64encode(buffer.tobytes()).decode("utf-8")
 
             await websocket.send_text(json.dumps({"image": img_str, "result": result}))

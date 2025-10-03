@@ -1,13 +1,12 @@
 import os
 import uuid
 import faiss
-import torch
 import numpy as np
 import pillow_heif
 from PIL import Image
 from tqdm import tqdm
 from ultralytics import YOLO
-from facenet_pytorch import InceptionResnetV1
+import cv2
 
 
 from langchain_community.vectorstores import FAISS
@@ -15,9 +14,9 @@ from langchain.docstore.document import Document
 from langchain_community.docstore.in_memory import InMemoryDocstore
 
 
-from app.utils.transform_factory import face_transform
 from app.core.dummy_embedding import DummyEmbeddings
 from app.configs.core_config import CoreConfig
+from app.core.face_embedding import FaceEmbedding
 
 pillow_heif.register_heif_opener()
 
@@ -29,15 +28,11 @@ class Vector:
         self.dummy_embeddings = dummy_embeddings
         self.device = device or self.core_config.default_device
         self.embedding_dim = self.core_config.embedding_dim
-        self.model = (
-            InceptionResnetV1(pretrained=self.core_config.face_embedder_model)
-            .eval()
-            .to(self.device)
-        )
+        self.face_embedder = FaceEmbedding(core_config)
         self.model_YOLO = YOLO(self.core_config.yolo_model_path)
         self.face_images_path = self.core_config.face_images_path
         self.batch_size = self.core_config.batch_size
-        self.transform = face_transform()
+        # Embedding transform handled inside FaceEmbedding
 
     async def _extract_face_vectors(self, face_images_folder: str):
         """
@@ -88,21 +83,27 @@ class Vector:
             x1, y1, x2, y2 = map(int, detections.boxes[0].xyxy[0])
             cropped = img.crop((x1, y1, x2, y2))
 
-            # Convert to tensor
-            face_tensor = self.transform(cropped).unsqueeze(0).to(self.device)
+            # Convert PIL RGB to OpenCV BGR ndarray for FaceEmbedding
+            cropped_bgr = cv2.cvtColor(np.array(cropped), cv2.COLOR_RGB2BGR)
 
             # Extract embedding
-            with torch.no_grad():
-                embedding = self.model(face_tensor).squeeze().cpu().numpy()
-                embedding = embedding / np.linalg.norm(embedding)
+            embedding = self.face_embedder.image_embedding(cropped_bgr)
+            if embedding is None:
+                print(f"[WARN] Failed to get embedding for: {img_path}")
+                continue
 
-                vectors.append(embedding)
-                docs.append(
-                    Document(
-                        page_content="face_vector",
-                        metadata={"name": person_id, "image": img_file},
-                    )
+            embedding = embedding.astype(np.float32)
+            norm = np.linalg.norm(embedding)
+            if norm > 0:
+                embedding = embedding / norm
+
+            vectors.append(embedding)
+            docs.append(
+                Document(
+                    page_content="face_vector",
+                    metadata={"name": person_id, "image": img_file},
                 )
+            )
 
         return vectors, docs
 

@@ -1,5 +1,6 @@
 from typing import Dict
 import numpy
+import time
 
 from app.configs.core_config import CoreConfig
 from app.services.redis_service import RedisService
@@ -115,6 +116,12 @@ class FaceTracking:
                 if detection_image is None or name is None:
                     print(f"[WARNING] Invalid data from blob {blob.id}")
                     self.blobs.remove(blob)
+                    results.append(
+                        {
+                            "person_id": self.core_config.UNKNOWN,
+                            "detection_image": detection_image,
+                        }
+                    )
                     continue  # ข้ามไปถ้าไม่มีภาพ ไม่มีชื่อ
 
                 results.append(
@@ -275,7 +282,7 @@ class FaceTracking:
         Returns:
             Dict[str, str]: {"status": ..., "message": ...}
         """
-        # start_total = time.perf_counter()
+        start_total = time.perf_counter()
         try:
             detections = self.detection.detect_faces(frame)
 
@@ -319,8 +326,8 @@ class FaceTracking:
             tracking_results = await self._decrease_life_and_cleanup(matched_ids)
             result = await self._process_tracking_result(tracking_results or [])
 
-            # end_total = time.perf_counter()
-            # print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
+            end_total = time.perf_counter()
+            print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
             return annotation, result
 
         except Exception as e:

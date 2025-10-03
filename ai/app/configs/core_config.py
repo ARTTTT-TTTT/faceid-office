@@ -20,10 +20,12 @@ class CoreConfig:
         self.yolo_model_path = os.path.join(self.base_dir, "app/models", self.yolo_model_name)
         self.yolo_threshold = 0.8  # ! 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
-        # * FACENET
-        self.face_embedder_model = "vggface2"
+        # * FACE EMBEDDER
+        # Options: 'arcface' (insightface pack 'buffalo_l'), 'antelopev2', 'vggface2' (facenet-pytorch)
+        self.face_embedder_model = "arcface"
         self.default_device = "cuda" if torch.cuda.is_available() else "cpu"
         self.embedding_dim = 512
+        # Distance threshold for recognition (lower is closer). Keep name for backward-compat.
         self.facenet_threshold = 0.65  # ! 0.6 - 0.8 ยิ่งน้อยยิ่งเหมือน
 
         # * VECTOR
