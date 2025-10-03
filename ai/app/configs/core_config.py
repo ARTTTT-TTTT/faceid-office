@@ -42,6 +42,8 @@ class CoreConfig:
         self.sure_unknown = 5
         self.blob_life_time = 5
         self.blob_distance_threshold = 250
+        # Early confirmation: finalize when the same name is seen this many times consecutively/overall
+        self.instant_confirm_count = 10
 
         # * RECOGNITION
         self.recognition_k_neighbors = 5

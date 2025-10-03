@@ -1,6 +1,5 @@
-from typing import Dict
+from typing import Dict, List
 import numpy
-import time
 
 from app.configs.core_config import CoreConfig
 from app.services.redis_service import RedisService
@@ -42,27 +41,51 @@ class FaceTracking:
                 "Failed to load FAISS index. Ensure the index file exists and is valid."
             ) from e
 
-    def _is_near(self, pos1, pos2):
+    def is_near(self, pos1, pos2):
         """Check if two positions are within the blob distance threshold"""
         try:
             dx, dy = pos1[0] - pos2[0], pos1[1] - pos2[1]
             return dx * dx + dy * dy < self.core_config.blob_distance_threshold**2
         except Exception as e:
-            print(f"[ERROR] Error in _is_near: {e}")
+            print(f"[ERROR] Error in is_near: {e}")
             return False
 
-    async def _match_or_create_blob(self, position, face_img, matched_person, matched_ids):
-        """Update existing blob if near, else create new blob"""
+    async def match_or_create_blob(
+        self, position, face_img, matched_person, matched_ids
+    ) -> List[Dict[str, str]]:
+        """Update existing blob if near, else create new blob.
+        Additionally, attempt early finalization by calling get_match_summary on updated blob.
+        Returns a list of finalized match results (may be empty or contain one item).
+        """
+        results: List[Dict[str, str]] = []
+        # ดึง list ของ person_id
+
         try:
             for blob in self.blobs:
-                if self._is_near(blob.predict_position(), position):
+                if self.is_near(blob.predict_position(), position):
                     blob.update(
                         position=position,
                         image=face_img,
                         matched_person_name=matched_person or blob.matched_person_name,
                     )
                     matched_ids.add(blob.id)
-                    return
+
+                    # Early finalization: if the same name observed enough times, finalize now
+                    if (
+                        blob.matched_person_name
+                        and blob.matched_person_name != self.core_config.UNKNOWN
+                        and blob.match_history.get(blob.matched_person_name, 0)
+                        >= self.core_config.instant_confirm_count
+                    ):
+                        name, detection_image = await blob.get_match_summary()
+                        if name is not None and detection_image is not None:
+                            results.append({"person_id": name, "detection_image": detection_image})
+                            # Remove blob as it's finalized
+                            try:
+                                self.blobs.remove(blob)
+                            except ValueError:
+                                pass
+                    return results
 
             # หากไม่มี blob ใกล้เคียง สร้างใหม่
             blob_id = f"face_{self.id_counter}"
@@ -74,14 +97,40 @@ class FaceTracking:
                 core_config=self.core_config,
             )
             new_blob.matched_person_name = matched_person
+            # Initialize history for immediate count
+            if matched_person is not None:
+                new_blob.match_history[matched_person] = (
+                    new_blob.match_history.get(matched_person, 0) + 1
+                )
+                # print(
+                #     f"[TRACK] พบ {matched_person} {new_blob.match_history.get(matched_person, 0)} ครั้ง (blob: {new_blob.id})"
+                # )
             self.blobs.append(new_blob)
             matched_ids.add(new_blob.id)
 
-        except Exception as e:
-            print(f"[ERROR] Failed in _match_or_create_blob: {e}")
-            # return {"id": None, "name": None}
+            # Early finalization for a brand new blob if threshold == 1 (edge/testing)
+            if (
+                matched_person
+                and matched_person != self.core_config.UNKNOWN
+                and new_blob.match_history.get(matched_person, 0)
+                >= self.core_config.instant_confirm_count
+            ):
+                name, detection_image = await new_blob.get_match_summary()
+                if name is not None and detection_image is not None:
+                    results.append({"person_id": name, "detection_image": detection_image})
+                    print("result :", results)
+                    try:
+                        self.blobs.remove(new_blob)
+                    except ValueError:
+                        pass
 
-    async def _decrease_life_and_cleanup(self, matched_ids=set()):
+            return results
+
+        except Exception as e:
+            print(f"[ERROR] Failed in match_or_create_blob: {e}")
+            return results
+
+    async def decrease_life_and_cleanup(self, matched_ids=set()):
         """
         Decrease life of unmatched blobs and remove those expired
 
@@ -105,7 +154,7 @@ class FaceTracking:
                     if blob.life <= 0:
                         to_remove.append(blob)
         except Exception as e:
-            print(f"[ERROR] Error in _decrease_life_and_cleanup: {e}")
+            print(f"[ERROR] Error in decrease_life_and_cleanup: {e}")
         try:
             results = []
             # print("how blob:", len(to_remove))
@@ -113,29 +162,26 @@ class FaceTracking:
                 name, detection_image = await blob.get_match_summary()
                 print(f"name: {name}")
 
-                if detection_image is None or name is None:
-                    print(f"[WARNING] Invalid data from blob {blob.id}")
-                    self.blobs.remove(blob)
+                # If we can conclude at expiration time, return that.
+                if detection_image is not None and name is not None:
+                    results.append({"person_id": name, "detection_image": detection_image})
+                else:
+                    # Otherwise, mark as UNKNOWN on expiry (no confident identity)
                     results.append(
                         {
                             "person_id": self.core_config.UNKNOWN,
-                            "detection_image": detection_image,
+                            "detection_image": blob.image,
                         }
                     )
-                    continue  # ข้ามไปถ้าไม่มีภาพ ไม่มีชื่อ
-
-                results.append(
-                    {
-                        "person_id": name,
-                        "detection_image": detection_image,
-                    }
-                )
-                self.blobs.remove(blob)
+                try:
+                    self.blobs.remove(blob)
+                except ValueError:
+                    pass
             return results
         except Exception as e:
             print(f"[ERROR] Error removing expired blobs: {e}")
 
-    async def _process_tracking_result(self, tracking_results: list) -> Dict[str, str]:
+    async def process_tracking_result(self, tracking_results: list) -> Dict[str, str]:
         """
         ประมวลผลผลลัพธ์ดิบที่ได้จากการติดตามใบหน้า (FaceTracking)
         เพื่อให้ได้สถานะการตรวจจับที่ชัดเจน.
@@ -156,7 +202,7 @@ class FaceTracking:
             กรณีที่10 คือถ้าไม่มีใครสักคนเป็น array ว่างๆ ให้ NOT_FOUND
 
         Args:
-            tracking_results (List): ผลลัพธ์ดิบจาก _decrease_life_and_cleanup().
+            tracking_results (List): ผลลัพธ์ดิบจาก decrease_life_and_cleanup().
                                         คาดว่าเป็น List[Dict[str, str]] แต่ก็ต้องเผื่อกรณีอื่น.
 
         Returns:
@@ -282,14 +328,14 @@ class FaceTracking:
         Returns:
             Dict[str, str]: {"status": ..., "message": ...}
         """
-        start_total = time.perf_counter()
+        # start_total = time.perf_counter()
         try:
             detections = self.detection.detect_faces(frame)
 
             # Check if detections is empty or invalid
             if not detections or not hasattr(detections, "boxes") or not detections.boxes:
-                tracking_results = await self._decrease_life_and_cleanup()
-                result = await self._process_tracking_result(tracking_results or [])
+                tracking_results = await self.decrease_life_and_cleanup()
+                result = await self.process_tracking_result(tracking_results or [])
                 return frame, result
 
             annotation = detections.plot()
@@ -312,27 +358,31 @@ class FaceTracking:
             embeddings = [self.embedding.image_embedding(face_img) for face_img in face_images]
 
             # Process each face with precomputed embedding
-            tracking_results = []
+            tracking_results: list = []
             for position, face_img, embedding in zip(positions, face_images, embeddings):
                 if embedding is None:
                     continue  # Skip invalid embeddings
 
                 matched_person = await self.recognition.find_best_match(embedding)
-                result = await self._match_or_create_blob(
+                result = await self.match_or_create_blob(
                     position, face_img, matched_person, matched_ids
                 )
-                tracking_results.append(result)
+                if isinstance(result, list) and result:
+                    tracking_results.extend(result)
 
-            tracking_results = await self._decrease_life_and_cleanup(matched_ids)
-            result = await self._process_tracking_result(tracking_results or [])
+            # Also include any expirations
+            expired_results = await self.decrease_life_and_cleanup(matched_ids)
+            if isinstance(expired_results, list) and expired_results:
+                tracking_results.extend(expired_results)
+            result = await self.process_tracking_result(tracking_results or [])
 
-            end_total = time.perf_counter()
-            print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
+            # end_total = time.perf_counter()
+            # print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
             return annotation, result
 
         except Exception as e:
             print(f"[ERROR] in tracking_face: {e}")
-            await self._decrease_life_and_cleanup()
+            await self.decrease_life_and_cleanup()
             return frame, {
                 "status": self.core_config.ERROR,
                 "message": "tracking face: {e}",
