@@ -48,10 +48,10 @@ class FaceBlob:
             self.match_history[matched_person_name] = (
                 self.match_history.get(matched_person_name, 0) + 1
             )
-            # Debug: show who and how many times this blob has seen the current match
-            if matched_person_name is not None:
-                count = self.match_history.get(matched_person_name, 0)
-                print(f"[TRACK] พบ {matched_person_name} {count} ครั้ง (blob: {self.id})")
+            # Debug: Show match history
+            # if matched_person_name is not None:
+            #     count = self.match_history.get(matched_person_name, 0)
+            #     print(f"[TRACK] พบ {matched_person_name} {count} ครั้ง (blob: {self.id})")
         except Exception as e:
             print(f"[ERROR] Update failed for blob {self.id}: {e}")
 

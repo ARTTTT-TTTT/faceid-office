@@ -6,7 +6,7 @@ from app.configs.app_config import app_config
 from app.configs.redis_keys import redis_keys
 from app.services.redis_service import RedisService
 from app.services.server_service import ServerService
-from app.core.dummy_embedding import dummy_embeddings
+from app.core.dummy_embedding import DummyEmbeddings
 from app.core.face_detection import FaceDetection
 from app.core.face_embedding import FaceEmbedding
 from app.core.face_recognition import FaceRecognition
@@ -48,6 +48,7 @@ async def websocket_endpoint(
         server_service = ServerService(app_config, core_config, access_token)
         face_detection = FaceDetection(core_config)
         face_embedding = FaceEmbedding(core_config)
+        dummy_embeddings = DummyEmbeddings(core_config)
         face_recognition = FaceRecognition(core_config, dummy_embeddings)
 
         face_tracking = FaceTracking(

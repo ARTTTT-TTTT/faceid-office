@@ -1,12 +1,25 @@
 from ultralytics import YOLO
 from app.configs.core_config import CoreConfig
+import mediapipe as mp
 
 
 class FaceDetection:
     def __init__(self, core_config: CoreConfig):
         self.core_config = core_config
+        self.mp_face = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=True,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
+        )
         try:
-            self.model_YOLO = YOLO(self.core_config.yolo_model_path).half()
+            self.model_YOLO = YOLO(self.core_config.yolo_model_path)
+            if self.core_config.default_device == "cuda":
+                try:
+                    self.model_YOLO = self.model_YOLO.half()
+                except Exception:
+                    pass
         except Exception as e:
             raise RuntimeError(
                 f"Failed to load YOLO model from {self.core_config.yolo_model_path}: {e}"
@@ -24,7 +37,7 @@ class FaceDetection:
             )
             res = results[0]
 
-            # If there are multiple boxes, keep only the largest by area
+            # Find largest box only
             try:
                 boxes_xyxy = res.boxes.xyxy if hasattr(res, "boxes") else None
                 if boxes_xyxy is not None and len(boxes_xyxy) > 0:

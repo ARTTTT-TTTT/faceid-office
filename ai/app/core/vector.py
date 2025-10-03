@@ -1,4 +1,5 @@
 import os
+import shutil
 import uuid
 import faiss
 import numpy as np
@@ -62,7 +63,11 @@ class Vector:
         docs = []
         person_id = os.path.basename(person_folder)
 
+        # Only process common image extensions
+        exts = {".jpg", ".jpeg", ".png", ".bmp", ".heic", ".webp"}
         for img_file in os.listdir(person_folder):
+            if os.path.splitext(img_file)[1].lower() not in exts:
+                continue
             img_path = os.path.join(person_folder, img_file)
 
             try:
@@ -143,7 +148,11 @@ class Vector:
         ลบข้อมูลเวกเตอร์ที่เคยถูกสร้างไว้ เช่น FAISS index และ metadata ต่าง ๆ
         """
         try:
-            os.remove(self.core_config.vector_path)
+            # Remove saved FAISS dir (contains index.faiss, index.pkl)
+            if os.path.isdir(self.core_config.vector_path):
+                shutil.rmtree(self.core_config.vector_path, ignore_errors=True)
+            elif os.path.exists(self.core_config.vector_path):
+                os.remove(self.core_config.vector_path)
             return {
                 "success": True,
                 "message": f"Vectors for {self.core_config.admin_id} deleted successfully.",
@@ -160,7 +169,6 @@ class Vector:
         index : สร้าง IndexFlatL2 -ขนาด 512
         index.add : เอา vector ที่ extract มาไปใส่ ใน index
         docstore : loop เอา vector ที่อยู่ใน index มาเก็บใน docstore
-
         doc_ids : เก็บ uuid ตามจำนวน vector ที่ได้จาก image_person
         docstore_dict : เป็น unique id ของแต่ละภาพ
         index_to_docstore_id : สสร้าง dictionary ที่ mapping ระหว่าง ลำดับ index ใน FAISS กับ ID ของเอกสารใน docstore

@@ -61,20 +61,15 @@ class FaceEmbedding:
             return self.embedding_cache[face_hash]
 
         try:
-            # InsightFace expects BGR np.ndarray; it will detect+align within the crop
             faces = self.model_ArcFace.get(cropped_image)
             if not faces:
-                # Attempt a quick resize to typical ArcFace input size and retry
                 resized = cv2.resize(cropped_image, (160, 160))
                 faces = self.model_ArcFace.get(resized)
             if not faces:
                 print("[WARN] ArcFace could not find a face in the provided crop.")
                 return None
-            # Use the most confident detection from the crop
             face = max(faces, key=lambda f: getattr(f, "det_score", 0.0))
             embedding = face.normed_embedding.astype(np.float32)
-
-            # Store in cache
             if face_hash is not None:
                 self.embedding_cache[face_hash] = embedding
             return embedding

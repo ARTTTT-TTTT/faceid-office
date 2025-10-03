@@ -1,5 +1,5 @@
-from typing import Dict, List
-import numpy
+from __future__ import annotations
+import numpy as np
 
 from app.configs.core_config import CoreConfig
 from app.services.redis_service import RedisService
@@ -52,14 +52,12 @@ class FaceTracking:
 
     async def match_or_create_blob(
         self, position, face_img, matched_person, matched_ids
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """Update existing blob if near, else create new blob.
         Additionally, attempt early finalization by calling get_match_summary on updated blob.
         Returns a list of finalized match results (may be empty or contain one item).
         """
-        results: List[Dict[str, str]] = []
-        # ดึง list ของ person_id
-
+        results: list[dict[str, str]] = []
         try:
             for blob in self.blobs:
                 if self.is_near(blob.predict_position(), position):
@@ -130,7 +128,7 @@ class FaceTracking:
             print(f"[ERROR] Failed in match_or_create_blob: {e}")
             return results
 
-    async def decrease_life_and_cleanup(self, matched_ids=set()):
+    async def decrease_life_and_cleanup(self, matched_ids: set[str] | None = None):
         """
         Decrease life of unmatched blobs and remove those expired
 
@@ -146,6 +144,9 @@ class FaceTracking:
                                                                  ในรูปแบบ Base64-encoded JPEG.
         """
 
+        if matched_ids is None:
+            matched_ids = set()
+
         to_remove = []
         try:
             for blob in self.blobs:
@@ -157,7 +158,6 @@ class FaceTracking:
             print(f"[ERROR] Error in decrease_life_and_cleanup: {e}")
         try:
             results = []
-            # print("how blob:", len(to_remove))
             for blob in to_remove:
                 name, detection_image = await blob.get_match_summary()
                 print(f"name: {name}")
@@ -181,7 +181,7 @@ class FaceTracking:
         except Exception as e:
             print(f"[ERROR] Error removing expired blobs: {e}")
 
-    async def process_tracking_result(self, tracking_results: list) -> Dict[str, str]:
+    async def process_tracking_result(self, tracking_results: list) -> dict[str, str]:
         """
         ประมวลผลผลลัพธ์ดิบที่ได้จากการติดตามใบหน้า (FaceTracking)
         เพื่อให้ได้สถานะการตรวจจับที่ชัดเจน.
@@ -215,27 +215,11 @@ class FaceTracking:
                 "message": "ไม่พบใบหน้าในเฟรม",
             }
 
-        # if not isinstance(tracking_results, list):
-        #     return {
-        #         "status": self.core_config.ERROR,
-        #         "message": "ประเภทข้อมูล tracking results ไม่ถูกต้อง (ต้องเป็น list)",
-        #     }
-
         person_ids = []
         unknown_ids = []
         already_logged_ids = []
 
         for item in tracking_results:
-            # if (
-            #     not isinstance(item, dict)
-            #     or "person_id" not in item
-            #     or "detection_image" not in item
-            # ):
-            #     return {
-            #         "status": self.core_config.ERROR,
-            #         "message": "ข้อมูล tracking บางรายการไม่ถูกต้อง (ต้องมี person_id และ detection_image)",
-            #     }
-
             person_id = item["person_id"]
             detection_image = item["detection_image"]
 
@@ -318,7 +302,7 @@ class FaceTracking:
             "message": "ไม่สามารถประมวลผลผลลัพธ์ได้ (รูปแบบไม่ตรงเงื่อนไขที่รู้จัก)",
         }
 
-    async def tracking_face(self, frame: numpy.ndarray) -> tuple[numpy.ndarray, Dict[str, str]]:
+    async def tracking_face(self, frame: np.ndarray) -> tuple[np.ndarray, dict[str, str]]:
         """
         Main method to track faces in a frame
 
@@ -328,7 +312,6 @@ class FaceTracking:
         Returns:
             Dict[str, str]: {"status": ..., "message": ...}
         """
-        # start_total = time.perf_counter()
         try:
             detections = self.detection.detect_faces(frame)
 
@@ -349,10 +332,6 @@ class FaceTracking:
                 frame, detections
             )
             matched_ids = set()
-
-            # Parallel embedding generation
-            # with ThreadPoolExecutor(max_workers=1) as executor:
-            #     embeddings = list(executor.map(self.embedding.image_embedding, face_images))
 
             # embeddings sequentially (no threading)
             embeddings = [self.embedding.image_embedding(face_img) for face_img in face_images]
@@ -376,8 +355,6 @@ class FaceTracking:
                 tracking_results.extend(expired_results)
             result = await self.process_tracking_result(tracking_results or [])
 
-            # end_total = time.perf_counter()
-            # print(f"Total tracking_face execution time: {end_total - start_total:.4f} seconds\n")
             return annotation, result
 
         except Exception as e:
