@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 import os
-
+import app.core  # noqa: F401
 from app.api import api_router
 from app.configs.app_config import app_config
 

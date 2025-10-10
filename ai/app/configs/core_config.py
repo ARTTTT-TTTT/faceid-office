@@ -16,7 +16,7 @@ class CoreConfig:
         self.project_dir = current_file.parents[3]
 
         # * YOLO
-        self.yolo_model_name = "yolov11n-face.pt"
+        self.yolo_model_name = "yolov8n-face.pt"
         self.yolo_model_path = os.path.join(self.base_dir, "app/models", self.yolo_model_name)
         self.yolo_threshold = 0.8  # ! 0.7 - 0.9 ยิ่งมากยิ่งมั่นใจ
 
